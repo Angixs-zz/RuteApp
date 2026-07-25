@@ -5,8 +5,11 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.ruteapp.ruteapp.model.Usuario;
+import com.ruteapp.ruteapp.dto.entrada.UsuarioEntrada;
+import com.ruteapp.ruteapp.dto.respuesta.UsuarioRespuesta;
 import com.ruteapp.ruteapp.service.UsuarioService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -19,41 +22,38 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public List<Usuario> listar() {
+    public List<UsuarioRespuesta> listar() {
         return usuarioService.listarTodos();
     }
 
     @GetMapping("/{id}")
-    public Usuario buscarPorId(@PathVariable Long id) {
+    public UsuarioRespuesta buscarPorId(@PathVariable Long id) {
         return usuarioService.buscarPorId(id);
     }
 
     @GetMapping("/correo/{correo}")
-    public Usuario buscarPorCorreo(@PathVariable String correo) {
+    public UsuarioRespuesta buscarPorCorreo(@PathVariable String correo) {
         return usuarioService.buscarPorCorreo(correo);
     }
 
     @PostMapping
-    public Usuario crear(@RequestBody Usuario usuario) {
-        return usuarioService.guardar(usuario);
+    public UsuarioRespuesta crear(
+            @Valid @RequestBody UsuarioEntrada entrada) {
+
+        return usuarioService.crear(entrada);
     }
 
     @PutMapping("/{id}")
-    public Usuario actualizar(
+    public UsuarioRespuesta actualizar(
             @PathVariable Long id,
-            @RequestBody Usuario usuario) {
+            @Valid @RequestBody UsuarioEntrada entrada) {
 
-        usuarioService.buscarPorId(id);
-        usuario.setId(id);
-
-        return usuarioService.guardar(usuario);
+        return usuarioService.actualizar(id, entrada);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        usuarioService.buscarPorId(id);
         usuarioService.eliminar(id);
-
         return ResponseEntity.noContent().build();
     }
 }

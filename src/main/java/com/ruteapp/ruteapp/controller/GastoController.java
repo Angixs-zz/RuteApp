@@ -5,72 +5,64 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.ruteapp.ruteapp.model.Gasto;
-import com.ruteapp.ruteapp.model.Usuario;
-import com.ruteapp.ruteapp.model.Viaje;
+import com.ruteapp.ruteapp.dto.entrada.GastoEntrada;
+import com.ruteapp.ruteapp.dto.respuesta.GastoRespuesta;
 import com.ruteapp.ruteapp.service.GastoService;
-import com.ruteapp.ruteapp.service.UsuarioService;
-import com.ruteapp.ruteapp.service.ViajeService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/gastos")
 public class GastoController {
 
     private final GastoService gastoService;
-    private final ViajeService viajeService;
-    private final UsuarioService usuarioService;
 
-    public GastoController(
-            GastoService gastoService,
-            ViajeService viajeService,
-            UsuarioService usuarioService) {
-
+    public GastoController(GastoService gastoService) {
         this.gastoService = gastoService;
-        this.viajeService = viajeService;
-        this.usuarioService = usuarioService;
     }
 
     @GetMapping
-    public List<Gasto> listar() {
+    public List<GastoRespuesta> listarTodos() {
         return gastoService.listarTodos();
     }
 
     @GetMapping("/{id}")
-    public Gasto buscarPorId(@PathVariable Long id) {
+    public GastoRespuesta buscarPorId(@PathVariable Long id) {
         return gastoService.buscarPorId(id);
     }
 
     @GetMapping("/viaje/{viajeId}")
-    public List<Gasto> listarPorViaje(@PathVariable Long viajeId) {
-        Viaje viaje = viajeService.buscarPorId(viajeId);
-        return gastoService.listarPorViaje(viaje);
+    public List<GastoRespuesta> listarPorViaje(
+            @PathVariable Long viajeId) {
+
+        return gastoService.listarPorViaje(viajeId);
     }
 
-    @GetMapping("/pagador/{usuarioId}")
-    public List<Gasto> listarPorPagador(@PathVariable Long usuarioId) {
-        Usuario usuario = usuarioService.buscarPorId(usuarioId);
-        return gastoService.listarPorPagador(usuario);
+    @GetMapping("/pagador/{pagadorId}")
+    public List<GastoRespuesta> listarPorPagador(
+            @PathVariable Long pagadorId) {
+
+        return gastoService.listarPorPagador(pagadorId);
     }
 
     @PostMapping
-    public Gasto crear(@RequestBody Gasto gasto) {
-        return gastoService.guardar(gasto);
+    public GastoRespuesta crear(
+            @Valid @RequestBody GastoEntrada entrada) {
+
+        return gastoService.crear(entrada);
     }
 
     @PutMapping("/{id}")
-    public Gasto actualizar(
+    public GastoRespuesta actualizar(
             @PathVariable Long id,
-            @RequestBody Gasto gasto) {
+            @Valid @RequestBody GastoEntrada entrada) {
 
-        gastoService.buscarPorId(id);
-        gasto.setId(id);
-
-        return gastoService.guardar(gasto);
+        return gastoService.actualizar(id, entrada);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        gastoService.buscarPorId(id);
+
         gastoService.eliminar(id);
 
         return ResponseEntity.noContent().build();

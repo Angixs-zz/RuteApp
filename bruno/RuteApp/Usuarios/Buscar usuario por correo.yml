@@ -1,0 +1,15 @@
+info:
+  name: Buscar usuario por correo
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/usuarios/correo/{{usuarioCorreo}}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,25 @@
+info:
+  name: Actualizar usuario
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/usuarios/{{usuarioId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Miguel Angel actualizado",
+        "correo": "angixs@gmail.com",
+        "password": "Miguel123!",
+        "avatar": null,
+        "rolId": {{rolId}}
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

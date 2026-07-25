@@ -2,19 +2,34 @@ name: local
 variables:
   - name: baseUrl
     value: http://localhost:8080
+    description: ""
   - name: usuarioId
     value: "2"
+    description: ""
   - name: viajeId
-    value: "1"
+    value: "2"
+    description: ""
   - name: participanteId
     value: "1"
+    description: ""
   - name: actividadId
     value: "1"
+    description: ""
   - name: gastoId
     value: "1"
+    description: ""
   - name: rolId
     value: "2"
+    description: ""
   - name: token
     value: ""
+    description: ""
   - name: usuarioCorreo
     value: angixs@gmail.com
+    description: ""
+  - name: organizadorId
+    value: "2"
+    description: ""
+  - name: pagadorId
+    value: "2"
+    description: ""

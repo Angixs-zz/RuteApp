@@ -1,0 +1,31 @@
+info:
+  name: Actualizar Viaje
+  type: http
+  seq: 6
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/viajes/{{viajeId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Viaje a Guadalajara actualizado",
+        "descripcion": "Viaje actualizado desde Bruno",
+        "origen": "Aguascalientes",
+        "destino": "Guadalajara",
+        "fechaInicio": "2026-08-11",
+        "fechaFin": "2026-08-14",
+        "presupuestoEstimado": 6500.00,
+        "transporte": "AUTO",
+        "estado": "PLANIFICACION",
+        "organizadorId": {{organizadorId}},
+        "publico": false
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

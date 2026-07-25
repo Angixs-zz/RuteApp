@@ -1,0 +1,26 @@
+info:
+  name: Actualizar gasto
+  type: http
+  seq: 6
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/gastos/{{gastoId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "viajeId": {{viajeId}},
+        "pagadorId": {{pagadorId}},
+        "concepto": "Boletos de autobús actualizados",
+        "monto": 950.00,
+        "categoria": null,
+        "fecha": "2026-08-11"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

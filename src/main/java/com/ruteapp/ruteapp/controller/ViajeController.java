@@ -5,68 +5,62 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.ruteapp.ruteapp.model.Usuario;
-import com.ruteapp.ruteapp.model.Viaje;
-import com.ruteapp.ruteapp.service.UsuarioService;
+import com.ruteapp.ruteapp.dto.entrada.ViajeEntrada;
+import com.ruteapp.ruteapp.dto.respuesta.ViajeRespuesta;
 import com.ruteapp.ruteapp.service.ViajeService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/viajes")
 public class ViajeController {
 
     private final ViajeService viajeService;
-    private final UsuarioService usuarioService;
 
-    public ViajeController(
-            ViajeService viajeService,
-            UsuarioService usuarioService) {
-
+    public ViajeController(ViajeService viajeService) {
         this.viajeService = viajeService;
-        this.usuarioService = usuarioService;
     }
 
     @GetMapping
-    public List<Viaje> listar() {
+    public List<ViajeRespuesta> listar() {
         return viajeService.listarTodos();
     }
 
     @GetMapping("/{id}")
-    public Viaje buscarPorId(@PathVariable Long id) {
+    public ViajeRespuesta buscarPorId(@PathVariable Long id) {
         return viajeService.buscarPorId(id);
     }
 
     @GetMapping("/publicos")
-    public List<Viaje> listarPublicos() {
+    public List<ViajeRespuesta> listarPublicos() {
         return viajeService.listarPublicos();
     }
 
     @GetMapping("/organizador/{usuarioId}")
-    public List<Viaje> listarPorOrganizador(
+    public List<ViajeRespuesta> listarPorOrganizador(
             @PathVariable Long usuarioId) {
 
-        Usuario organizador = usuarioService.buscarPorId(usuarioId);
-        return viajeService.listarPorOrganizador(organizador);
+        return viajeService.listarPorOrganizador(usuarioId);
     }
 
     @PostMapping
-    public Viaje crear(@RequestBody Viaje viaje) {
-        return viajeService.guardar(viaje);
+    public ViajeRespuesta crear(
+            @Valid @RequestBody ViajeEntrada entrada) {
+
+        return viajeService.crear(entrada);
     }
 
     @PutMapping("/{id}")
-    public Viaje actualizar(
+    public ViajeRespuesta actualizar(
             @PathVariable Long id,
-            @RequestBody Viaje viaje) {
+            @Valid @RequestBody ViajeEntrada entrada) {
 
-        viajeService.buscarPorId(id);
-        viaje.setId(id);
-
-        return viajeService.guardar(viaje);
+        return viajeService.actualizar(id, entrada);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        viajeService.buscarPorId(id);
+
         viajeService.eliminar(id);
 
         return ResponseEntity.noContent().build();

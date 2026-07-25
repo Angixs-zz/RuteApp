@@ -1,0 +1,31 @@
+info:
+  name: Crear viaje
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/viajes"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Viaje para pruebas de gastos",
+        "descripcion": "Viaje temporal para probar gastos",
+        "origen": "Aguascalientes",
+        "destino": "Guadalajara",
+        "fechaInicio": "2026-08-10",
+        "fechaFin": "2026-08-13",
+        "presupuestoEstimado": 5000.00,
+        "transporte": "AUTOBUS",
+        "estado": "PLANIFICACION",
+        "organizadorId": 2,
+        "publico": false
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

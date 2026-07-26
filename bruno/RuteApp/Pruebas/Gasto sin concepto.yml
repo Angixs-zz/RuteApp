@@ -1,0 +1,26 @@
+info:
+  name: Gasto sin concepto
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/gastos"
+  body:
+    type: json
+    data: |-
+      {
+        "viajeId": {{viajeId}},
+        "pagadorId": {{pagadorId}},
+        "concepto": "",
+        "monto": 850.00,
+        "categoria": null,
+        "fecha": "2026-08-10"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

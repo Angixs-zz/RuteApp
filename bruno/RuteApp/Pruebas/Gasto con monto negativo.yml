@@ -1,0 +1,26 @@
+info:
+  name: Gasto con monto negativo
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/gastos"
+  body:
+    type: json
+    data: |-
+      {
+        "viajeId": {{viajeId}},
+        "pagadorId": {{pagadorId}},
+        "concepto": "Gasto monton negativo",
+        "monto": -850.00,
+        "categoria": null,
+        "fecha": "2026-08-10"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.ruteapp.ruteapp.dto.entrada.UsuarioEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.UsuarioRespuesta;
+import com.ruteapp.ruteapp.exception.CorreoDuplicadoException;
+import com.ruteapp.ruteapp.exception.RecursoNoEncontradoException;
 import com.ruteapp.ruteapp.model.Rol;
 import com.ruteapp.ruteapp.model.Usuario;
 import com.ruteapp.ruteapp.repositories.RolRepository;
@@ -49,7 +51,7 @@ public class UsuarioService {
 
         Usuario usuario = usuarioRepository.findByCorreo(correo)
                 .orElseThrow(() ->
-                        new RuntimeException("Usuario no encontrado"));
+                        new RecursoNoEncontradoException("Usuario no encontrado"));
 
         return convertirARespuesta(usuario);
     }
@@ -57,7 +59,7 @@ public class UsuarioService {
     public UsuarioRespuesta crear(UsuarioEntrada entrada) {
 
         if (usuarioRepository.existsByCorreo(entrada.getCorreo())) {
-            throw new RuntimeException("El correo ya está registrado");
+            throw new CorreoDuplicadoException("El correo ya está registrado");
         }
 
         Rol rol = obtenerRolPorId(entrada.getRolId());
@@ -101,14 +103,14 @@ public class UsuarioService {
 
         return usuarioRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Usuario no encontrado"));
+                        new RecursoNoEncontradoException("Usuario no encontrado"));
     }
 
     private Rol obtenerRolPorId(Long rolId) {
 
         return rolRepository.findById(rolId)
                 .orElseThrow(() ->
-                        new RuntimeException("Rol no encontrado"));
+                        new RecursoNoEncontradoException("Rol no encontrado"));
     }
 
     private void copiarDatos(
@@ -134,7 +136,7 @@ public class UsuarioService {
         if (usuarioConCorreo != null
                 && !usuarioConCorreo.getId().equals(usuarioId)) {
 
-            throw new RuntimeException(
+            throw new CorreoDuplicadoException(
                     "El correo ya está registrado"
             );
         }

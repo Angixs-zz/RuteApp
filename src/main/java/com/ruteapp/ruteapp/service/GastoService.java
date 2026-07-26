@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.ruteapp.ruteapp.dto.entrada.GastoEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.GastoRespuesta;
+import com.ruteapp.ruteapp.exception.RecursoNoEncontradoException;
 import com.ruteapp.ruteapp.model.CategoriaGasto;
 import com.ruteapp.ruteapp.model.Gasto;
 import com.ruteapp.ruteapp.model.Usuario;
@@ -55,7 +56,7 @@ public class GastoService {
 
         Viaje viaje = viajeRepository.findById(viajeId)
                 .orElseThrow(() ->
-                        new RuntimeException("Viaje no encontrado"));
+                        new RecursoNoEncontradoException("Viaje no encontrado"));
 
         List<Gasto> gastos = gastoRepository.findByViaje(viaje);
         List<GastoRespuesta> respuestas = new ArrayList<>();
@@ -71,7 +72,7 @@ public class GastoService {
 
         Usuario pagador = usuarioRepository.findById(pagadorId)
                 .orElseThrow(() ->
-                        new RuntimeException("Usuario no encontrado"));
+                        new RecursoNoEncontradoException("Usuario no encontrado"));
 
         List<Gasto> gastos = gastoRepository.findByPagador(pagador);
         List<GastoRespuesta> respuestas = new ArrayList<>();
@@ -87,11 +88,11 @@ public class GastoService {
 
         Viaje viaje = viajeRepository.findById(entrada.getViajeId())
                 .orElseThrow(() ->
-                        new RuntimeException("Viaje no encontrado"));
+                        new RecursoNoEncontradoException("Viaje no encontrado"));
 
         Usuario pagador = usuarioRepository.findById(entrada.getPagadorId())
                 .orElseThrow(() ->
-                        new RuntimeException("Usuario pagador no encontrado"));
+                        new RecursoNoEncontradoException("Usuario pagador no encontrado"));
 
         Gasto gasto = new Gasto();
 
@@ -110,11 +111,11 @@ public class GastoService {
 
         Viaje viaje = viajeRepository.findById(entrada.getViajeId())
                 .orElseThrow(() ->
-                        new RuntimeException("Viaje no encontrado"));
+                        new RecursoNoEncontradoException("Viaje no encontrado"));
 
         Usuario pagador = usuarioRepository.findById(entrada.getPagadorId())
                 .orElseThrow(() ->
-                        new RuntimeException("Usuario pagador no encontrado"));
+                        new RecursoNoEncontradoException("Usuario pagador no encontrado"));
 
         copiarDatos(entrada, gasto, viaje, pagador);
 
@@ -134,7 +135,7 @@ public class GastoService {
 
         return gastoRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Gasto no encontrado"));
+                        new RecursoNoEncontradoException("Gasto no encontrado"));
     }
 
     private void copiarDatos(

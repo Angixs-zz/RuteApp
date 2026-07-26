@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.ruteapp.ruteapp.dto.entrada.ViajeEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.ViajeRespuesta;
+import com.ruteapp.ruteapp.exception.RecursoNoEncontradoException;
 import com.ruteapp.ruteapp.model.EstadoViaje;
 import com.ruteapp.ruteapp.model.Usuario;
 import com.ruteapp.ruteapp.model.Viaje;
@@ -63,7 +64,7 @@ public class ViajeService {
         Usuario organizador = usuarioRepository
                 .findById(organizadorId)
                 .orElseThrow(() ->
-                        new RuntimeException("Organizador no encontrado"));
+                        new RecursoNoEncontradoException("Organizador no encontrado"));
 
         List<Viaje> viajes =
                 viajeRepository.findByOrganizador(organizador);
@@ -84,7 +85,7 @@ public class ViajeService {
         Usuario organizador = usuarioRepository
                 .findById(entrada.getOrganizadorId())
                 .orElseThrow(() ->
-                        new RuntimeException("Organizador no encontrado"));
+                        new RecursoNoEncontradoException("Organizador no encontrado"));
 
         Viaje viaje = new Viaje();
 
@@ -106,7 +107,7 @@ public class ViajeService {
         Usuario organizador = usuarioRepository
                 .findById(entrada.getOrganizadorId())
                 .orElseThrow(() ->
-                        new RuntimeException("Organizador no encontrado"));
+                        new RecursoNoEncontradoException("Organizador no encontrado"));
 
         copiarDatos(entrada, viaje, organizador);
 
@@ -126,7 +127,7 @@ public class ViajeService {
 
         return viajeRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Viaje no encontrado"));
+                        new RecursoNoEncontradoException("Viaje no encontrado"));
     }
 
     private void copiarDatos(

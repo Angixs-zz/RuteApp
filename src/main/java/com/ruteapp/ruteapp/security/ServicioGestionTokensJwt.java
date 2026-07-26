@@ -10,20 +10,21 @@ import org.springframework.stereotype.Service;
 
 import com.ruteapp.ruteapp.model.Usuario;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
 @Service
-public class JwtService {
+public class ServicioGestionTokensJwt {
 
     private final SecretKey clave;
     private final long duracionToken;
 
-    public JwtService(
+    public ServicioGestionTokensJwt(
             @Value("${jwt.secret}") String secreto,
             @Value("${jwt.expiration}") long duracionToken) {
 
-        // Convertimos nuestra clave de texto en una clave que JWT pueda usar
         this.clave = Keys.hmacShaKeyFor(
                 secreto.getBytes(StandardCharsets.UTF_8)
         );
@@ -47,5 +48,47 @@ public class JwtService {
                 .expiration(vencimiento)
                 .signWith(clave)
                 .compact();
+    }
+
+    public Claims extraerClaims(String token) {
+
+        return Jwts.parser()
+                .verifyWith(clave)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    public String extraerCorreo(String token) {
+
+        return extraerClaims(token)
+                .getSubject();
+    }
+
+    public String extraerRol(String token) {
+
+        return extraerClaims(token)
+                .get("rol", String.class);
+    }
+
+    public Long extraerUsuarioId(String token) {
+
+        Number usuarioId = extraerClaims(token)
+                .get("usuarioId", Number.class);
+
+        return usuarioId.longValue();
+    }
+
+    public boolean esTokenValido(String token) {
+
+        try {
+            Claims claims = extraerClaims(token);
+
+            return claims.getExpiration()
+                    .after(new Date());
+
+        } catch (JwtException | IllegalArgumentException ex) {
+            return false;
+        }
     }
 }

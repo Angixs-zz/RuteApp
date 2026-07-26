@@ -3,6 +3,7 @@ package com.ruteapp.ruteapp.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.ruteapp.ruteapp.dto.entrada.UsuarioEntrada;
@@ -26,11 +27,16 @@ public class UsuarioController {
         return usuarioService.listarTodos();
     }
 
+    @PreAuthorize(
+        "hasRole('ADMINISTRADOR') or " +
+        "@usuarioPermisos.esMismoUsuario(#id, authentication)"
+    )
     @GetMapping("/{id}")
     public UsuarioRespuesta buscarPorId(@PathVariable Long id) {
         return usuarioService.buscarPorId(id);
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     @GetMapping("/correo/{correo}")
     public UsuarioRespuesta buscarPorCorreo(@PathVariable String correo) {
         return usuarioService.buscarPorCorreo(correo);
@@ -43,6 +49,10 @@ public class UsuarioController {
         return usuarioService.crear(entrada);
     }
 
+    @PreAuthorize(
+        "hasRole('ADMINISTRADOR') or " +
+        "@usuarioPermisos.esMismoUsuario(#id, authentication)"
+    )
     @PutMapping("/{id}")
     public UsuarioRespuesta actualizar(
             @PathVariable Long id,
@@ -51,6 +61,7 @@ public class UsuarioController {
         return usuarioService.actualizar(id, entrada);
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         usuarioService.eliminar(id);

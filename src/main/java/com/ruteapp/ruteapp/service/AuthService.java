@@ -8,19 +8,19 @@ import com.ruteapp.ruteapp.dto.respuesta.LoginRespuesta;
 import com.ruteapp.ruteapp.exception.CredencialesInvalidas;
 import com.ruteapp.ruteapp.model.Usuario;
 import com.ruteapp.ruteapp.repositories.UsuarioRepository;
-import com.ruteapp.ruteapp.security.JwtService;
+import com.ruteapp.ruteapp.security.ServicioGestionTokensJwt;
 
 @Service
 public class AuthService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final ServicioGestionTokensJwt jwtService;
 
     public AuthService(
             UsuarioRepository usuarioRepository,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService) {
+            ServicioGestionTokensJwt jwtService) {
 
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;

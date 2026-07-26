@@ -1,0 +1,27 @@
+info:
+  name: Agencia actualiza al usuario
+  type: http
+  seq: 3
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/usuarios/2"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Usuario Modificado Por Agencia",
+        "correo": "usuario@ruteapp.com",
+        "password": "Prueba123!",
+        "avatar": null,
+        "rolId": 2
+      }
+  auth:
+    type: bearer
+    token: "{{agenciaToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

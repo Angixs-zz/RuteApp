@@ -1,7 +1,7 @@
 info:
-  name: Crear usuario
+  name: Crear Usuario NOrmal
   type: http
-  seq: 1
+  seq: 3
 
 http:
   method: POST
@@ -10,11 +10,11 @@ http:
     type: json
     data: |-
       {
-        "nombre": "Admin",
-        "correo": "admin@gmail.com",
-        "password": "Miguel123!",
+        "nombre": "Usuario Prueba",
+        "correo": "usuario@ruteapp.com",
+        "password": "Prueba123!",
         "avatar": null,
-        "rolId": {{rolId}}
+        "rolId": 2
       }
   auth: inherit
 

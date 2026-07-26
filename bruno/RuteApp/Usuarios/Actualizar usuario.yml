@@ -10,13 +10,15 @@ http:
     type: json
     data: |-
       {
-        "nombre": "Miguel Angel actualizado",
-        "correo": "angixs@gmail.com",
+        "nombre": "Agencia",
+        "correo": "agencia@gmail.com",
         "password": "Miguel123!",
         "avatar": null,
         "rolId": {{rolId}}
       }
-  auth: inherit
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"
 
 settings:
   encodeUrl: true

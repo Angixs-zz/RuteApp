@@ -1,0 +1,25 @@
+info:
+  name: Admin modifica agencia
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/usuarios/3"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Agencia Actualizada Por Admin",
+        "correo": "agencia@ruteapp.com",
+        "password": "Prueba123!",
+        "avatar": "agencia.png",
+        "rolId": 3
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

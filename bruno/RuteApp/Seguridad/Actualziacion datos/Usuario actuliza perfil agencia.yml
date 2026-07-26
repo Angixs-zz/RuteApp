@@ -1,0 +1,27 @@
+info:
+  name: Usuario actuliza perfil agencia
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/usuarios/2"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Usuario Actualizado",
+        "correo": "usuario@ruteapp.com",
+        "password": "Prueba123!",
+        "avatar": "usuario.png",
+        "rolId": 2
+      }
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

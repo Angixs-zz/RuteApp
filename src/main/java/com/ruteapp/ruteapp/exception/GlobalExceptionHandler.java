@@ -77,6 +77,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(respuesta);
     }
 
+    @ExceptionHandler(CredencialesInvalidas.class)
+    public ResponseEntity<ErrorRespuesta> manejarCredencialesInvalidas(
+            CredencialesInvalidas ex,
+            HttpServletRequest request) {
+
+        ErrorRespuesta respuesta = new ErrorRespuesta(
+                LocalDateTime.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                null
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(respuesta);
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorRespuesta> manejarRuntimeException(
             RuntimeException ex,

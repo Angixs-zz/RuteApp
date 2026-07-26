@@ -1,8 +1,7 @@
 package com.ruteapp.ruteapp.controller;
 
 import com.ruteapp.ruteapp.dto.entrada.ActividadEntrada;
-import com.ruteapp.ruteapp.model.ActividadItinerario;
-import com.ruteapp.ruteapp.model.Viaje;
+import com.ruteapp.ruteapp.dto.respuesta.ActividadRespuesta;
 import com.ruteapp.ruteapp.service.ActividadItinerarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -23,46 +22,28 @@ public class ActividadItinerarioController {
 
     // GET: Listar todas las actividades de la plataforma
     @GetMapping
-    public ResponseEntity<List<ActividadItinerario>> listarTodas() {
+    public ResponseEntity<List<ActividadRespuesta>> listarTodas() {
         return ResponseEntity.ok(actividadService.listarTodos());
     }
 
     // GET: Buscar actividad por ID
     @GetMapping("/{id}")
-    public ResponseEntity<ActividadItinerario> buscarPorId(@PathVariable Long id) {
-        ActividadItinerario actividad = actividadService.buscarPorId(id);
+    public ResponseEntity<ActividadRespuesta> buscarPorId(@PathVariable Long id) {
+        ActividadRespuesta actividad = actividadService.buscarPorId(id);
         return ResponseEntity.ok(actividad);
     }
 
     // GET: Listar actividades por ID de viaje
     @GetMapping("/viaje/{viajeId}")
-    public ResponseEntity<List<ActividadItinerario>> listarPorViaje(@PathVariable Long viajeId) {
-        Viaje viaje = new Viaje();
-        viaje.setId(viajeId);
-        List<ActividadItinerario> actividades = actividadService.listarPorViaje(viaje);
+    public ResponseEntity<List<ActividadRespuesta>> listarPorViaje(@PathVariable Long viajeId) {
+        List<ActividadRespuesta> actividades = actividadService.listarPorViajeId(viajeId);
         return ResponseEntity.ok(actividades);
     }
 
     // POST: Crear una nueva actividad validando con @Valid
     @PostMapping
-    public ResponseEntity<ActividadItinerario> guardar(@Valid @RequestBody ActividadEntrada entrada) {
-        ActividadItinerario actividad = new ActividadItinerario();
-
-        Viaje viaje = new Viaje();
-        viaje.setId(entrada.getViajeId());
-        actividad.setViaje(viaje);
-
-        actividad.setLugar(entrada.getLugar());
-        actividad.setHorario(entrada.getHorario());
-        actividad.setDescripcion(entrada.getDescripcion());
-        actividad.setResponsable(entrada.getResponsable());
-        actividad.setCostoEstimado(entrada.getCostoEstimado());
-        
-        if (entrada.getEstado() != null) {
-            actividad.setEstado(entrada.getEstado());
-        }
-
-        ActividadItinerario nuevaActividad = actividadService.guardar(actividad);
+    public ResponseEntity<ActividadRespuesta> guardar(@Valid @RequestBody ActividadEntrada entrada) {
+        ActividadRespuesta nuevaActividad = actividadService.crear(entrada);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaActividad);
     }
 
@@ -71,5 +52,15 @@ public class ActividadItinerarioController {
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         actividadService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+
+    // PUT: Actualizar una actividad existente
+    @PutMapping("/{id}")
+    public ResponseEntity<ActividadRespuesta> actualizar(
+            @PathVariable Long id, 
+            @Valid @RequestBody ActividadEntrada entrada) {
+        ActividadRespuesta actividadActualizada = actividadService.actualizar(id, entrada);
+        return ResponseEntity.ok(actividadActualizada);
     }
 }

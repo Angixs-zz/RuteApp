@@ -11,7 +11,8 @@ public class ActividadRespuesta {
     private String lugar;
     private LocalDateTime horario;
     private String descripcion;
-    private String responsable;
+    private Long responsableId;       // Añadido para el ID
+    private String nombreResponsable; // Añadido para mostrar el nombre limpio
     private BigDecimal costoEstimado;
     private String estado;
 
@@ -34,8 +35,11 @@ public class ActividadRespuesta {
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
-    public String getResponsable() { return responsable; }
-    public void setResponsable(String responsable) { this.responsable = responsable; }
+    public Long getResponsableId() { return responsableId; }
+    public void setResponsableId(Long responsableId) { this.responsableId = responsableId; }
+
+    public String getNombreResponsable() { return nombreResponsable; }
+    public void setNombreResponsable(String nombreResponsable) { this.nombreResponsable = nombreResponsable; }
 
     public BigDecimal getCostoEstimado() { return costoEstimado; }
     public void setCostoEstimado(BigDecimal costoEstimado) { this.costoEstimado = costoEstimado; }

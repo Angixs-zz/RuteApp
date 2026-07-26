@@ -1,9 +1,9 @@
 package com.ruteapp.ruteapp.controller;
 
-import com.ruteapp.ruteapp.model.ParticipanteViaje;
-import com.ruteapp.ruteapp.model.Usuario;
-import com.ruteapp.ruteapp.model.Viaje;
+import com.ruteapp.ruteapp.dto.entrada.ParticipanteEntrada;
+import com.ruteapp.ruteapp.dto.respuesta.ParticipanteRespuesta;
 import com.ruteapp.ruteapp.service.ParticipanteViajeService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,40 +20,41 @@ public class ParticipanteViajeController {
         this.participanteViajeService = participanteViajeService;
     }
 
-    // GET: Listar todos los participantes de la plataforma
     @GetMapping
-    public ResponseEntity<List<ParticipanteViaje>> listarTodos() {
+    public ResponseEntity<List<ParticipanteRespuesta>> listarTodos() {
         return ResponseEntity.ok(participanteViajeService.listarTodos());
     }
 
-    // GET: Buscar participante por ID
     @GetMapping("/{id}")
-    public ResponseEntity<ParticipanteViaje> buscarPorId(@PathVariable Long id) {
-        ParticipanteViaje participante = participanteViajeService.buscarPorId(id);
+    public ResponseEntity<ParticipanteRespuesta> buscarPorId(@PathVariable Long id) {
+        ParticipanteRespuesta participante = participanteViajeService.buscarPorId(id);
         return ResponseEntity.ok(participante);
     }
 
-    // GET: Listar participantes por ID de viaje
     @GetMapping("/viaje/{viajeId}")
-    public ResponseEntity<List<ParticipanteViaje>> listarPorViaje(@PathVariable Long viajeId) {
-        Viaje viaje = new Viaje();
-        viaje.setId(viajeId);
-        List<ParticipanteViaje> participantes = participanteViajeService.listarPorViaje(viaje);
+    public ResponseEntity<List<ParticipanteRespuesta>> listarPorViaje(@PathVariable Long viajeId) {
+        List<ParticipanteRespuesta> participantes = participanteViajeService.listarPorViaje(viajeId);
         return ResponseEntity.ok(participantes);
     }
 
-    // POST: Registrar / invitar un nuevo participante a un viaje
     @PostMapping
-    public ResponseEntity<ParticipanteViaje> guardar(@RequestBody ParticipanteViaje participante) {
-        ParticipanteViaje nuevoParticipante = participanteViajeService.guardar(participante);
+    public ResponseEntity<ParticipanteRespuesta> guardar(@Valid @RequestBody ParticipanteEntrada entrada) {
+        ParticipanteRespuesta nuevoParticipante = participanteViajeService.crear(entrada);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoParticipante);
     }
 
-    // DELETE: Eliminar un participante del viaje
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         participanteViajeService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
-}
 
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ParticipanteRespuesta> actualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody ParticipanteEntrada entrada) {
+        ParticipanteRespuesta actualizado = participanteViajeService.actualizar(id, entrada);
+        return ResponseEntity.ok(actualizado);
+    }
+}

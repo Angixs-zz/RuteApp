@@ -21,8 +21,8 @@ public class ActividadEntrada {
 
     private String descripcion;
 
-    @Size(max = 100, message = "El responsable no puede superar los 100 caracteres")
-    private String responsable;
+    @NotNull(message = "El ID del responsable es obligatorio")
+    private Long responsableId; // Cambiado de String a Long para el ID del usuario
 
     @DecimalMin(value = "0.0", inclusive = true, message = "El costo estimado no puede ser negativo")
     private BigDecimal costoEstimado;
@@ -42,8 +42,8 @@ public class ActividadEntrada {
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
-    public String getResponsable() { return responsable; }
-    public void setResponsable(String responsable) { this.responsable = responsable; }
+    public Long getResponsableId() { return responsableId; }
+    public void setResponsableId(Long responsableId) { this.responsableId = responsableId; }
 
     public BigDecimal getCostoEstimado() { return costoEstimado; }
     public void setCostoEstimado(BigDecimal costoEstimado) { this.costoEstimado = costoEstimado; }

@@ -1,0 +1,27 @@
+info:
+  name: EDITAR ACTIVIDAD
+  type: http
+  seq: 3
+
+http:
+  method: PUT
+  url: http://localhost:8080/api/actividades/1
+  body:
+    type: json
+    data: |-
+      {
+        "viajeId": 1,
+        "lugar": "Nuevo Lugar Actualizado",
+        "horario": "2026-08-10T18:30:00",
+        "descripcion": "Descripción modificada de la actividad",
+        "responsableId": 2,
+        "costoEstimado": 100.00,
+        "estado": "EN_PROCESO"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

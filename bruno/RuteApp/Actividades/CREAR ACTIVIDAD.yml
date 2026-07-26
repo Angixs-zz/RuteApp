@@ -1,0 +1,27 @@
+info:
+  name: CREAR ACTIVIDAD
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/actividades"
+  body:
+    type: json
+    data: |-
+      {
+        "viajeId": 1,
+        "lugar": "Punto de encuentro en el hotel",
+        "horario": "2026-08-10T09:00:00",
+        "descripcion": "Coordinar la salida del grupo hacia la primera atracción",
+        "responsableId": 2,
+        "costoEstimado": 0.00,
+        "estado": "PENDIENTE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

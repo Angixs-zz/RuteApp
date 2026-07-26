@@ -20,4 +20,8 @@ public interface ParticipanteViajeRepository
             Usuario usuario,
             Viaje viaje
     );
+
+
+ 
+    boolean existsByViajeAndUsuario(Viaje viaje, Usuario usuario);
 }

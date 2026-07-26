@@ -10,8 +10,8 @@ http:
     type: json
     data: |-
       {
-        "nombre": "Miguel Angel",
-        "correo": "angixs@gmail.com",
+        "nombre": "Santi",
+        "correo": "hombrearaña@gmail.com",
         "password": "Miguel123!",
         "avatar": null,
         "rolId": {{rolId}}

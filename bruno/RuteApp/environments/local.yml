@@ -25,7 +25,7 @@ variables:
     value: ""
     description: ""
   - name: usuarioCorreo
-    value: angixs@gmail.com
+    value: hombrearaña@gmail.com
     description: ""
   - name: organizadorId
     value: "2"

@@ -3,6 +3,7 @@ package com.ruteapp.ruteapp.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ruteapp.ruteapp.dto.entrada.UsuarioEntrada;
@@ -19,13 +20,16 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UsuarioService(
             UsuarioRepository usuarioRepository,
-            RolRepository rolRepository) {
+            RolRepository rolRepository,
+            PasswordEncoder passwordEncoder) {
 
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<UsuarioRespuesta> listarTodos() {
@@ -120,7 +124,7 @@ public class UsuarioService {
 
         usuario.setNombre(entrada.getNombre());
         usuario.setCorreo(entrada.getCorreo());
-        usuario.setPassword(entrada.getPassword());
+        usuario.setPassword(passwordEncoder.encode(entrada.getPassword()));
         usuario.setAvatar(entrada.getAvatar());
         usuario.setRol(rol);
     }

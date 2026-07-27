@@ -3,9 +3,14 @@ package com.ruteapp.ruteapp.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.ruteapp.ruteapp.dto.entrada.ViajeEntrada;
+import com.ruteapp.ruteapp.dto.respuesta.PaginaRespuesta;
 import com.ruteapp.ruteapp.dto.respuesta.ViajeRespuesta;
 import com.ruteapp.ruteapp.exception.RecursoNoEncontradoException;
 import com.ruteapp.ruteapp.model.EstadoViaje;
@@ -42,6 +47,56 @@ public class ViajeService {
         }
 
         return respuestas;
+    }
+
+    public PaginaRespuesta<ViajeRespuesta> listarPaginados(
+            int pagina,
+            int tamanio,
+            String busqueda) {
+
+        if (pagina < 0) {
+            throw new IllegalArgumentException("La página no puede ser menor que 0");
+        }
+
+        if (tamanio < 1 || tamanio > 50) {
+            throw new IllegalArgumentException("El tamaño de la página debe estar entre 1 y 50");
+        }
+
+        Pageable pageable = PageRequest.of(
+                pagina,
+                tamanio,
+                Sort.by("fechaCreacion").descending()
+        );
+
+        String texto = busqueda == null ? "" : busqueda.trim();
+
+        Page<Viaje> resultado;
+        if (texto.isEmpty()) {
+            resultado = viajeRepository.findAll(pageable);
+        } else {
+            resultado = viajeRepository
+                    .findByNombreContainingIgnoreCaseOrOrigenContainingIgnoreCaseOrDestinoContainingIgnoreCase(
+                            texto,
+                            texto,
+                            texto,
+                            pageable
+                    );
+        }
+
+        List<ViajeRespuesta> contenido = resultado
+                .getContent()
+                .stream()
+                .map(this::convertirARespuesta)
+                .toList();
+
+        return new PaginaRespuesta<>(
+                contenido,
+                resultado.getNumber(),
+                resultado.getSize(),
+                resultado.getTotalElements(),
+                resultado.getTotalPages(),
+                resultado.isLast()
+        );
     }
 
     public ViajeRespuesta buscarPorId(Long id) {

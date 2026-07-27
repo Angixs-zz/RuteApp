@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 import com.ruteapp.ruteapp.model.EstadoViaje;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -39,6 +40,12 @@ public class ViajeEntrada {
     private Long organizadorId;
 
     private Boolean publico;
+
+    @Valid
+    private LugarEntrada origenLugar;
+
+    @Valid
+    private LugarEntrada destinoLugar;
 
     public String getNombre() {
         return nombre;
@@ -126,5 +133,21 @@ public class ViajeEntrada {
 
     public void setPublico(Boolean publico) {
         this.publico = publico;
+    }
+
+    public LugarEntrada getOrigenLugar() {
+        return origenLugar;
+    }
+
+    public void setOrigenLugar(LugarEntrada origenLugar) {
+        this.origenLugar = origenLugar;
+    }
+
+    public LugarEntrada getDestinoLugar() {
+        return destinoLugar;
+    }
+
+    public void setDestinoLugar(LugarEntrada destinoLugar) {
+        this.destinoLugar = destinoLugar;
     }
 }

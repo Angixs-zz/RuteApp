@@ -1,0 +1,33 @@
+info:
+  name: CREAR VIAJE SIN LUGARES
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/viajes"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Viaje tradicional",
+        "descripcion": "Prueba de compatibilidad sin lugares estructurados",
+        "origen": "Puebla",
+        "destino": "Oaxaca",
+        "fechaInicio": "2026-08-10",
+        "fechaFin": "2026-08-14",
+        "presupuestoEstimado": 8000,
+        "transporte": "AUTOBUS",
+        "estado": "PLANIFICACION",
+        "organizadorId": 2,
+        "publico": false
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ1c3VhcmlvQHJ1dGVhcHAuY29tIiwidXN1YXJpb0lkIjoyLCJub21icmUiOiJVc3VhcmlvIEFjdHVhbGl6YWRvIiwicm9sIjoiVVNVQVJJTyIsImlhdCI6MTc4NTEyMTU2NywiZXhwIjoxNzg1MjA3OTY3fQ.rusEoj_jM_NlHm9XWQfIp2oXc9Re6u1mejs6lW_RDhd3cifmZNsNdIkS6gFfGDD9
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

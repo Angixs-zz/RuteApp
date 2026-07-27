@@ -1,0 +1,17 @@
+info:
+  name: BUSCAR VIAJE INEXISTENTE
+  type: http
+  seq: 12
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/viajes?page=0&size=10&busqueda=NoExiste123"
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

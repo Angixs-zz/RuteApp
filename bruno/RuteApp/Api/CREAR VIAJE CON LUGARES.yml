@@ -1,0 +1,51 @@
+info:
+  name: CREAR VIAJE CON LUGARES
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/viajes"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Viaje con Geoapify",
+        "descripcion": "Prueba de persistencia de lugares reales",
+        "origen": "Puebla de Zaragoza",
+        "destino": "Puerto Vallarta",
+        "fechaInicio": "2026-08-10",
+        "fechaFin": "2026-08-15",
+        "presupuestoEstimado": 10000,
+        "transporte": "AUTOBUS",
+        "estado": "PLANIFICACION",
+        "organizadorId": 2,
+        "publico": false,
+        "origenLugar": {
+          "placeId": "51e22f7777ae8c58c059b7312c35310b3340f00103f901757da60e00000000c00208920312507565626c61206465205a617261676f7a61",
+          "nombre": "Puebla de Zaragoza",
+          "direccionFormateada": "Puebla de Zaragoza, PUE, México",
+          "ciudad": "Puebla de Zaragoza",
+          "estado": "Puebla",
+          "pais": "México",
+          "latitud": 19.0437196,
+          "longitud": -98.1981486
+        },
+        "destinoLugar": {
+          "placeId": "513447567e194e5ac059bbf8911106a43440f00103f901790e547a00000000c0020892030f50756572746f2056616c6c61727461",
+          "nombre": "Puerto Vallarta",
+          "direccionFormateada": "Puerto Vallarta, JAL, México",
+          "ciudad": "Puerto Vallarta",
+          "estado": "Jalisco",
+          "pais": "México",
+          "latitud": 20.6407176,
+          "longitud": -105.220306
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

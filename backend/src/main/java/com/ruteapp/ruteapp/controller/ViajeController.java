@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.ruteapp.ruteapp.dto.entrada.ViajeEntrada;
+import com.ruteapp.ruteapp.dto.respuesta.PaginaRespuesta;
 import com.ruteapp.ruteapp.dto.respuesta.ViajeRespuesta;
 import com.ruteapp.ruteapp.service.ViajeService;
 
@@ -22,8 +23,14 @@ public class ViajeController {
     }
 
     @GetMapping
-    public List<ViajeRespuesta> listar() {
-        return viajeService.listarTodos();
+    public ResponseEntity<PaginaRespuesta<ViajeRespuesta>> listarTodos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String busqueda) {
+
+        return ResponseEntity.ok(
+                viajeService.listarPaginados(page, size, busqueda)
+        );
     }
 
     @GetMapping("/{id}")

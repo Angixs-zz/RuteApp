@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../service/api'; // <--- Subimos dos niveles y entramos a service/api
 
 export function registro() {
+  const navigate = useNavigate();
+  
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
@@ -62,7 +65,7 @@ export function registro() {
 
     setLoading(true);
     try {
-      await api.post('/api/usuarios', {
+      await api.post('/usuarios', {
         nombre,
         correo,
         password,
@@ -76,6 +79,10 @@ export function registro() {
       setPassword('');
       setAvatar('');
       setRolId('1');
+      
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } catch (error) {
       console.error(error);
       setErrorGeneral('Error al registrarse. Es posible que el correo ya esté registrado.');

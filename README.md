@@ -45,6 +45,21 @@ El sistema tendrá las siguientes entidades principales:
 - GitHub Projects
 - Figma
 
+## Ejecución del proyecto
+
+### Backend
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
 ## Repositorio
 
 https://github.com/Angixs-zz/RuteApp

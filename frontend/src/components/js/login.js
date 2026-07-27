@@ -1,7 +1,12 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../service/api';
+import { AuthContext } from '../../context/AuthContext';
 
 export function useLogin() {
+  const { loginContext } = useContext(AuthContext);
+  const navigate = useNavigate();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
@@ -52,13 +57,18 @@ export function useLogin() {
 
     setLoading(true);
     try {
-      const response = await api.post('/api/auth/login', {
+      const response = await api.post('/auth/login', {
         correo: email,
         password
       });
 
-      localStorage.setItem('token', response.data.token);
+      loginContext(response.data.token);
       setMensajeExito('¡Bienvenido a RuteApp!');
+      
+      // Redirigir al dashboard después de un breve delay
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
       
     } catch (error) {
       console.error(error);

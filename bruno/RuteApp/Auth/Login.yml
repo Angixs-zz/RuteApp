@@ -11,7 +11,7 @@ http:
     data: |-
       {
         "correo": "{{usuarioCorreo}}",
-        "password": "Miguel123!"
+        "password": "Prueba123!"
       }
   auth: inherit
 

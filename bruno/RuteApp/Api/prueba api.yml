@@ -1,0 +1,19 @@
+info:
+  name: prueba api
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://localhost:8080/api/lugares/autocompletar?texto=puerto
+  params:
+    - name: texto
+      value: puerto
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -25,7 +25,7 @@ variables:
     value: ""
     description: ""
   - name: usuarioCorreo
-    value: usuario@gmail.com
+    value: admin@gmail.com
     description: ""
   - name: organizadorId
     value: "2"
@@ -34,7 +34,7 @@ variables:
     value: "2"
     description: ""
   - name: adminToken
-    value: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbkBydXRlYXBwLmNvbSIsInVzdWFyaW9JZCI6MSwibm9tYnJlIjoiQWRtaW5pc3RyYWRvciBQcnVlYmEiLCJyb2wiOiJBRE1JTklTVFJBRE9SIiwiaWF0IjoxNzg1MDgzOTk5LCJleHAiOjE3ODUxNzAzOTl9.aNPkTRdJke7QV0G1mDOTxwgEhlby-s-L95SxtB_ACM1CyUt5z3IJ0fB5vCTCFlEM
+    value: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c3VhcmlvSWQiOjQsIm5vbWJyZSI6IkFkbWluIiwicm9sIjoiQURNSU5JU1RSQURPUiIsImlhdCI6MTc4NTExNzI4MCwiZXhwIjoxNzg1MjAzNjgwfQ.2TDr8riQIgarQFr459GlMo5IGkMCfBpsgx0cgzbvyaniwR8iRUUpfCgaTSgbG8zO
     description: ""
   - name: usuarioToken
     value: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ1c3VhcmlvQHJ1dGVhcHAuY29tIiwidXN1YXJpb0lkIjoyLCJub21icmUiOiJVc3VhcmlvIFBydWViYSIsInJvbCI6IlVTVUFSSU8iLCJpYXQiOjE3ODUwODQwMzYsImV4cCI6MTc4NTE3MDQzNn0.doYkZCu4QCKVFQDZw9FH5SEQ_F5A4ugmUCn0NwQfuiwBpxhEIIhTr0DhqXe8LDb4

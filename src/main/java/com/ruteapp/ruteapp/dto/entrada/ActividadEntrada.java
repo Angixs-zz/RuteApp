@@ -1,5 +1,6 @@
 package com.ruteapp.ruteapp.dto.entrada;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -29,6 +30,9 @@ public class ActividadEntrada {
 
     private String estado; // Opcional, por defecto se asigna PENDIENTE
 
+    @Valid
+    private LugarEntrada lugarReferencia;
+
     // Getters y Setters
     public Long getViajeId() { return viajeId; }
     public void setViajeId(Long viajeId) { this.viajeId = viajeId; }
@@ -50,4 +54,7 @@ public class ActividadEntrada {
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+
+    public LugarEntrada getLugarReferencia() { return lugarReferencia; }
+    public void setLugarReferencia(LugarEntrada lugarReferencia) { this.lugarReferencia = lugarReferencia; }
 }

@@ -9,6 +9,7 @@ import com.ruteapp.ruteapp.dto.entrada.ActividadEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.ActividadRespuesta;
 import com.ruteapp.ruteapp.exception.RecursoNoEncontradoException;
 import com.ruteapp.ruteapp.model.ActividadItinerario;
+import com.ruteapp.ruteapp.model.Lugar;
 import com.ruteapp.ruteapp.model.Usuario;
 import com.ruteapp.ruteapp.model.Viaje;
 import com.ruteapp.ruteapp.repositories.ActividadItinerarioRepository;
@@ -23,16 +24,19 @@ public class ActividadItinerarioService {
     private final ViajeRepository viajeRepository;
     private final UsuarioRepository usuarioRepository;
     private final ParticipanteViajeRepository participanteViajeRepository;
+    private final LugarPersistenciaService lugarPersistenciaService;
 
     public ActividadItinerarioService(
             ActividadItinerarioRepository actividadRepository,
             ViajeRepository viajeRepository,
             UsuarioRepository usuarioRepository,
-            ParticipanteViajeRepository participanteViajeRepository) {
+            ParticipanteViajeRepository participanteViajeRepository,
+            LugarPersistenciaService lugarPersistenciaService) {
         this.actividadRepository = actividadRepository;
         this.viajeRepository = viajeRepository;
         this.usuarioRepository = usuarioRepository;
         this.participanteViajeRepository = participanteViajeRepository;
+        this.lugarPersistenciaService = lugarPersistenciaService;
     }
 
     public List<ActividadRespuesta> listarTodos() {
@@ -87,6 +91,11 @@ public class ActividadItinerarioService {
             actividad.setEstado(entrada.getEstado());
         }
 
+        if (entrada.getLugarReferencia() != null) {
+            Lugar lugar = lugarPersistenciaService.obtenerOCrear(entrada.getLugarReferencia());
+            actividad.setLugarReferencia(lugar);
+        }
+
         ActividadItinerario guardada = actividadRepository.save(actividad);
         return convertirARespuesta(guardada);
     }
@@ -119,6 +128,11 @@ public class ActividadItinerarioService {
             actividad.setEstado(entrada.getEstado());
         }
 
+        if (entrada.getLugarReferencia() != null) {
+            Lugar lugar = lugarPersistenciaService.obtenerOCrear(entrada.getLugarReferencia());
+            actividad.setLugarReferencia(lugar);
+        }
+
         ActividadItinerario actualizada = actividadRepository.save(actividad);
         return convertirARespuesta(actualizada);
     }
@@ -145,6 +159,8 @@ public class ActividadItinerarioService {
         respuesta.setNombreResponsable(a.getResponsable().getNombre());
         respuesta.setCostoEstimado(a.getCostoEstimado());
         respuesta.setEstado(a.getEstado());
+        respuesta.setLugarReferencia(
+                lugarPersistenciaService.convertirARespuesta(a.getLugarReferencia()));
         return respuesta;
     }
 }

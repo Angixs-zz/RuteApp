@@ -45,6 +45,14 @@ public class Viaje {
     @Column(nullable = false, length = 150)
     private String destino;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "origen_lugar_id")
+    private Lugar origenLugar;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "destino_lugar_id")
+    private Lugar destinoLugar;
+
     @Column(name = "fecha_inicio", nullable = false)
     private LocalDate fechaInicio;
 

@@ -11,10 +11,11 @@ public class ActividadRespuesta {
     private String lugar;
     private LocalDateTime horario;
     private String descripcion;
-    private Long responsableId;       // Añadido para el ID
-    private String nombreResponsable; // Añadido para mostrar el nombre limpio
+    private Long responsableId;
+    private String nombreResponsable;
     private BigDecimal costoEstimado;
     private String estado;
+    private LugarRespuesta lugarReferencia;
 
     // Getters y Setters
     public Long getId() { return id; }
@@ -46,4 +47,7 @@ public class ActividadRespuesta {
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+
+    public LugarRespuesta getLugarReferencia() { return lugarReferencia; }
+    public void setLugarReferencia(LugarRespuesta lugarReferencia) { this.lugarReferencia = lugarReferencia; }
 }

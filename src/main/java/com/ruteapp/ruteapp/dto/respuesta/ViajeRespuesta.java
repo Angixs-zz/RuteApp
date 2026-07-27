@@ -13,6 +13,8 @@ public class ViajeRespuesta {
     private String descripcion;
     private String origen;
     private String destino;
+    private LugarRespuesta origenLugar;
+    private LugarRespuesta destinoLugar;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private BigDecimal presupuestoEstimado;
@@ -32,6 +34,8 @@ public class ViajeRespuesta {
             String descripcion,
             String origen,
             String destino,
+            LugarRespuesta origenLugar,
+            LugarRespuesta destinoLugar,
             LocalDate fechaInicio,
             LocalDate fechaFin,
             BigDecimal presupuestoEstimado,
@@ -47,6 +51,8 @@ public class ViajeRespuesta {
         this.descripcion = descripcion;
         this.origen = origen;
         this.destino = destino;
+        this.origenLugar = origenLugar;
+        this.destinoLugar = destinoLugar;
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
         this.presupuestoEstimado = presupuestoEstimado;
@@ -76,6 +82,14 @@ public class ViajeRespuesta {
 
     public String getDestino() {
         return destino;
+    }
+
+    public LugarRespuesta getOrigenLugar() {
+        return origenLugar;
+    }
+
+    public LugarRespuesta getDestinoLugar() {
+        return destinoLugar;
     }
 
     public LocalDate getFechaInicio() {

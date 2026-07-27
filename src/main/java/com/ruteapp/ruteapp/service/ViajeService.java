@@ -9,6 +9,7 @@ import com.ruteapp.ruteapp.dto.entrada.ViajeEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.ViajeRespuesta;
 import com.ruteapp.ruteapp.exception.RecursoNoEncontradoException;
 import com.ruteapp.ruteapp.model.EstadoViaje;
+import com.ruteapp.ruteapp.model.Lugar;
 import com.ruteapp.ruteapp.model.Usuario;
 import com.ruteapp.ruteapp.model.Viaje;
 import com.ruteapp.ruteapp.repositories.UsuarioRepository;
@@ -19,13 +20,16 @@ public class ViajeService {
 
     private final ViajeRepository viajeRepository;
     private final UsuarioRepository usuarioRepository;
+    private final LugarPersistenciaService lugarPersistenciaService;
 
     public ViajeService(
             ViajeRepository viajeRepository,
-            UsuarioRepository usuarioRepository) {
+            UsuarioRepository usuarioRepository,
+            LugarPersistenciaService lugarPersistenciaService) {
 
         this.viajeRepository = viajeRepository;
         this.usuarioRepository = usuarioRepository;
+        this.lugarPersistenciaService = lugarPersistenciaService;
     }
 
     public List<ViajeRespuesta> listarTodos() {
@@ -158,6 +162,16 @@ public class ViajeService {
         } else {
             viaje.setPublico(entrada.getPublico());
         }
+
+        if (entrada.getOrigenLugar() != null) {
+            Lugar origen = lugarPersistenciaService.obtenerOCrear(entrada.getOrigenLugar());
+            viaje.setOrigenLugar(origen);
+        }
+
+        if (entrada.getDestinoLugar() != null) {
+            Lugar destino = lugarPersistenciaService.obtenerOCrear(entrada.getDestinoLugar());
+            viaje.setDestinoLugar(destino);
+        }
     }
 
     private void validarFechas(ViajeEntrada entrada) {
@@ -179,6 +193,8 @@ public class ViajeService {
                 viaje.getDescripcion(),
                 viaje.getOrigen(),
                 viaje.getDestino(),
+                lugarPersistenciaService.convertirARespuesta(viaje.getOrigenLugar()),
+                lugarPersistenciaService.convertirARespuesta(viaje.getDestinoLugar()),
                 viaje.getFechaInicio(),
                 viaje.getFechaFin(),
                 viaje.getPresupuestoEstimado(),

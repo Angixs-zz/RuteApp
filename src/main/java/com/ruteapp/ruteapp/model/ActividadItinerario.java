@@ -45,6 +45,10 @@ public class ActividadItinerario {
     @Column(nullable = false, length = 30)
     private String estado = "PENDIENTE";
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lugar_id")
+    private Lugar lugarReferencia;
+
     @PrePersist
     public void antesDeGuardar() {
         if (estado == null) {

@@ -1,5 +1,7 @@
 package com.ruteapp.ruteapp.security;
 
+
+import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -35,6 +37,7 @@ public class ConfiguracionDeSeguridad {
 
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(withDefaults()) // <--- ESTO ES LO ÚNICO QUE FALTA AGREGAR AQUÍ
 
                 /*
                  * No usamos sesiones.

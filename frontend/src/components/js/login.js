@@ -32,6 +32,20 @@ export function useLogin() {
     if (!password) {
       setErrorPassword('La contraseña es obligatoria.');
       hayErrores = true;
+    } else {
+      if (password.length < 8) {
+        setErrorPassword('Mínimo 8 caracteres.');
+        hayErrores = true;
+      } else if (!/(?=.*[A-Z])/.test(password)) {
+        setErrorPassword('Debe incluir una mayúscula.');
+        hayErrores = true;
+      } else if (!/(?=.*\d)/.test(password)) {
+        setErrorPassword('Debe incluir un número.');
+        hayErrores = true;
+      } else if (!/(?=.*[^A-Za-z0-9])/.test(password)) {
+        setErrorPassword('Debe incluir un carácter especial.');
+        hayErrores = true;
+      }
     }
 
     if (hayErrores) return;

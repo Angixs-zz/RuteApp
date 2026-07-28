@@ -5,6 +5,11 @@ import Login from './components/jsx/login';
 import Registro from './components/jsx/registro';
 import ProtectedRoute from './components/jsx/ProtectedRoute';
 
+import Dashboard from './components/jsx/Dashboard';
+import MisViajes from './components/jsx/MisViajes';
+import CrearViaje from './components/jsx/CrearViaje';
+import DetalleViaje from './components/jsx/DetalleViaje';
+
 function App() {
   return (
     <AuthProvider>
@@ -17,7 +22,12 @@ function App() {
           
           {/* Rutas Protegidas */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<div style={{padding: '50px', textAlign: 'center'}}><h1>Dashboard Protegido</h1><p>Has iniciado sesión correctamente.</p></div>} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/viajes" element={<MisViajes />} />
+            <Route path="/viajes/:id" element={<DetalleViaje />} />
+            <Route path="/detalle-viaje" element={<DetalleViaje />} />
+            <Route path="/crear-viaje" element={<CrearViaje />} />
+            <Route path="/viajes/crear" element={<CrearViaje />} />
           </Route>
         </Routes>
       </BrowserRouter>

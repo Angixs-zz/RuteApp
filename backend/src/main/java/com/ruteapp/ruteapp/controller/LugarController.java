@@ -3,6 +3,7 @@ package com.ruteapp.ruteapp.controller;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +13,7 @@ import com.ruteapp.ruteapp.service.LugarService;
 
 @RestController
 @RequestMapping("/api/lugares")
+@CrossOrigin(origins = "http://localhost:5173")
 public class LugarController {
 
     private final LugarService lugarService;

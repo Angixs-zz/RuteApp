@@ -98,6 +98,17 @@ p{line-height:1.65}
 .field input:focus,.field select:focus,.field textarea:focus,.filters input:focus,.filters select:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(14,124,123,.10)}
 .field.error input{border-color:var(--red)}
 .field .error-text{color:var(--red);font-size:10px;margin-top:6px}
+.place-autocomplete{position:relative}
+.place-autocomplete>label{display:block;font-size:12px;font-weight:800;margin-bottom:8px}
+.place-input-wrap{position:relative}
+.place-loading{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--muted);background:#fff;padding-left:8px}
+.place-suggestions{position:absolute;top:calc(100% - 14px);left:0;right:0;z-index:100;margin:4px 0 0;padding:4px 0;max-height:240px;overflow-y:auto;list-style:none;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow)}
+.place-suggestions li+li{border-top:1px solid #F3F4F6}
+.place-suggestions button{display:block;width:100%;padding:10px 13px;border:0;background:transparent;text-align:left;color:var(--ink);cursor:pointer}
+.place-suggestions button:hover,.place-suggestions button:focus{background:var(--canvas);outline:none}
+.place-suggestions strong,.place-suggestions span{display:block}
+.place-suggestions span{margin-top:3px;font-size:11px;color:var(--muted)}
+.place-empty{padding:12px 13px;font-size:11px;color:var(--muted)}
 .password-wrap{display:flex;border:1px solid #CADBD8;border-radius:11px;overflow:hidden}
 .password-wrap input{border:0;border-radius:0}
 .password-wrap button{border:0;background:#fff;padding:0 13px}

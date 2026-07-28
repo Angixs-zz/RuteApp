@@ -62,7 +62,7 @@ export function useLogin() {
         password
       });
 
-      loginContext(response.data.token);
+      loginContext(response.data);
       setMensajeExito('¡Bienvenido a RuteApp!');
       
       // Redirigir al dashboard después de un breve delay

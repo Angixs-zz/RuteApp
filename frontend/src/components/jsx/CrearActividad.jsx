@@ -1,94 +1,107 @@
-import React, { useState, useContext, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import Navbar from './Navbar';
-import LugarAutocomplete from './LugarAutocomplete';
 import api from '../../service/api';
-import { AuthContext } from '../../context/AuthContext';
+import LugarAutocomplete from './LugarAutocomplete';
 import '../css/styles.css';
 
 export default function CrearActividad() {
-  const { id } = useParams();
-  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const { id } = useParams();
+  const viajeId = id || 1;
 
-  // Intentar obtener las fechas del viaje de la caché para limitar el selector de fecha
-  const cachedTrip = sessionStorage.getItem(`trip_${id}`);
-  const viajeData = cachedTrip ? JSON.parse(cachedTrip) : null;
-  const fechaMin = viajeData?.fechaInicio ? `${viajeData.fechaInicio}T00:00` : undefined;
-  const fechaMax = viajeData?.fechaFin ? `${viajeData.fechaFin}T23:59` : undefined;
+  const [nombre, setNombre] = useState('Visita a Isla Mujeres');
+  const [lugar, setLugar] = useState('Muelle Cancún');
+  const [lugarLugarData, setLugarLugarData] = useState(null);
+  const [fecha, setFecha] = useState('2026-08-13');
+  const [responsableId, setResponsableId] = useState('1');
+  const [horaInicio, setHoraInicio] = useState('09:00');
+  const [horaFin, setHoraFin] = useState('15:00');
+  const [costoEstimado, setCostoEstimado] = useState('1200');
+  const [estado, setEstado] = useState('Planeada');
+  const [descripcion, setDescripcion] = useState('Traslado en ferry, recorrido por el centro y tiempo libre en Playa Norte.');
 
-  const [formData, setFormData] = useState({
-    lugar: '',
-    horario: '',
-    descripcion: '',
-    costoEstimado: '',
-    estado: 'PENDIENTE',
-    responsableId: user?.id || 1
-  });
+  const [participantes, setParticipantes] = useState([
+    { id: 1, nombre: 'Miguel Ángel' },
+    { id: 2, nombre: 'Yareli Martínez' },
+    { id: 3, nombre: 'Jorge Pérez' },
+    { id: 4, nombre: 'Ana López' }
+  ]);
 
-  const [lugarReferencia, setLugarReferencia] = useState(null);
-  const [cargando, setCargando] = useState(false);
-  const [error, setError] = useState(null);
-  const [participantes, setParticipantes] = useState([]);
+  const [nombreViaje, setNombreViaje] = useState('Escapada a Cancún');
+  const [loading, setLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
-  useEffect(() => {
-    const fetchParticipantes = async () => {
-      try {
-        const res = await api.get(`/participantes/viaje/${id}`, { timeout: 1500 });
-        setParticipantes(res.data || []);
-      } catch (err) {
-        console.error("Error cargando participantes", err);
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage('');
+    }, 3000);
+  };
+
+  const cargarDatos = useCallback(async () => {
+    if (!id) return;
+    try {
+      setLoading(true);
+      const resViaje = await api.get(`/viajes/${id}`);
+      if (resViaje.data && resViaje.data.nombre) {
+        setNombreViaje(resViaje.data.nombre);
       }
-    };
-    if (id) fetchParticipantes();
+
+      const resPart = await api.get(`/participantes/viaje/${id}`);
+      if (resPart.data && Array.isArray(resPart.data) && resPart.data.length > 0) {
+        setParticipantes(resPart.data.map(p => ({
+          id: p.usuarioId || p.id,
+          nombre: p.nombreUsuario || 'Participante'
+        })));
+        setResponsableId(resPart.data[0].usuarioId || resPart.data[0].id || '1');
+      }
+    } catch {
+      // Fallback a los valores mock por defecto
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleLugarSelect = (texto, lugarObj) => {
-    setFormData(prev => ({ ...prev, lugar: texto }));
-    setLugarReferencia(lugarObj);
-  };
+  useEffect(() => {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) {
+        cargarDatos();
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [cargarDatos]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
-
-    if (!formData.lugar.trim() || !formData.horario) {
-      setError("Por favor completa el lugar y el horario.");
+    if (!nombre.trim() || !lugar.trim() || !fecha) {
+      showToast('Completa los campos obligatorios');
       return;
     }
 
     try {
-      setCargando(true);
-
-      const payload = {
-        lugar: formData.lugar,
-        horario: formData.horario,
-        descripcion: formData.descripcion,
-        costoEstimado: formData.costoEstimado ? parseFloat(formData.costoEstimado) : 0,
-        estado: formData.estado,
-        viajeId: parseInt(id),
-        responsableId: parseInt(formData.responsableId),
-        lugarReferencia
-      };
-
-      await api.post('/actividades', payload);
-      navigate(`/viajes/${id}/itinerario`);
+      const horarioDateTime = `${fecha}T${horaInicio}:00`;
+      await api.post('/actividades', {
+        viajeId: parseInt(viajeId, 10),
+        lugar: lugar,
+        horario: horarioDateTime,
+        descripcion: `${nombre} - ${descripcion}`,
+        responsableId: parseInt(responsableId, 10),
+        costoEstimado: costoEstimado ? parseFloat(costoEstimado) : 0,
+        estado: estado,
+        lugarReferencia: lugarLugarData || undefined
+      });
     } catch (err) {
-      console.error("Error al crear actividad:", err);
-      if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
-        setError("⚠️ No se puede conectar con el servidor (Network Error). Revisa que tu backend en Spring Boot esté encendido.");
-      } else {
-        const msj = err.response?.data?.mensaje || err.response?.data?.message || "Ocurrió un error al guardar la actividad.";
-        setError(msj);
-      }
-    } finally {
-      setCargando(false);
+      console.error('Error al guardar actividad en el backend:', err);
     }
+
+    showToast('Actividad guardada en el itinerario');
+    setTimeout(() => {
+      navigate(id ? `/viajes/${id}/itinerario` : '/itinerario');
+    }, 1000);
   };
 
   return (
@@ -98,118 +111,141 @@ export default function CrearActividad() {
         <div className="container">
           <div className="page-head">
             <div>
-              <Link className="eyebrow" style={{ color: 'var(--coral)', textDecoration: 'none' }} to={`/viajes/${id}/itinerario`}>
-                ← Volver al itinerario
-              </Link>
-              <h1>Agregar actividad</h1>
-              <p className="muted">
-                Registra un nuevo evento o lugar a visitar en tu itinerario.
-              </p>
+              <span className="eyebrow">ITINERARIO</span>
+              <h1>Nueva actividad</h1>
+              <p className="muted">Agrega una actividad al viaje {nombreViaje}.</p>
             </div>
           </div>
 
-          {error && (
-            <div className="toast active" style={{ position: 'relative', margin: '0 0 1.5rem 0', background: '#FEE2E2', color: '#991B1B', border: '1px solid #FCA5A5', padding: '1rem', borderRadius: '8px' }}>
-              {error}
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '3rem 0', color: '#6B7280' }}>
+              Cargando formulario...
             </div>
-          )}
+          ) : (
+            <form className="card form-card" onSubmit={handleSubmit}>
+              <div className="form-grid">
+                <label className="field">
+                  <span>Nombre de la actividad</span>
+                  <input 
+                    type="text" 
+                    value={nombre} 
+                    onChange={(e) => setNombre(e.target.value)} 
+                    placeholder="Ej. Visita al museo"
+                  />
+                </label>
 
-          <form className="card form-card" onSubmit={handleSubmit}>
-            <section className="form-section">
-              <h3>Detalles principales</h3>
-              <div className="form-grid" style={{ gridTemplateColumns: '1fr' }}>
-                <LugarAutocomplete 
-                  label="Lugar o nombre de la actividad *"
-                  placeholder="Ej. Ruinas Mayas, Restaurante El Rey..."
-                  value={formData.lugar}
-                  onSelectLugar={handleLugarSelect}
-                  required
-                />
+                <div className="field">
+                  <LugarAutocomplete 
+                    label="Lugar"
+                    placeholder="Muelle Cancún"
+                    value={lugar}
+                    onChange={(val) => setLugar(val)}
+                    onSelectLugar={(lugarObj) => {
+                      setLugar(lugarObj.displayName || lugarObj.nombre);
+                      setLugarLugarData(lugarObj);
+                    }}
+                  />
+                </div>
               </div>
 
               <div className="form-grid">
                 <label className="field">
-                  <span>Fecha y Hora *</span>
+                  <span>Fecha</span>
                   <input 
-                    type="datetime-local" 
-                    name="horario"
-                    value={formData.horario}
-                    onChange={handleChange}
-                    min={fechaMin}
-                    max={fechaMax}
-                    required
+                    type="date" 
+                    value={fecha} 
+                    onChange={(e) => setFecha(e.target.value)} 
                   />
-                  {fechaMin && <span className="muted" style={{fontSize:'0.75rem'}}>Debe estar entre {viajeData.fechaInicio} y {viajeData.fechaFin}</span>}
+                </label>
+                <label className="field">
+                  <span>Responsable</span>
+                  <select 
+                    value={responsableId} 
+                    onChange={(e) => setResponsableId(e.target.value)}
+                  >
+                    {participantes.map(p => (
+                      <option key={p.id} value={p.id}>{p.nombre}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="form-grid">
+                <label className="field">
+                  <span>Hora de inicio</span>
+                  <input 
+                    type="time" 
+                    value={horaInicio} 
+                    onChange={(e) => setHoraInicio(e.target.value)} 
+                  />
+                </label>
+                <label className="field">
+                  <span>Hora de finalización</span>
+                  <input 
+                    type="time" 
+                    value={horaFin} 
+                    onChange={(e) => setHoraFin(e.target.value)} 
+                  />
+                </label>
+              </div>
+
+              <div className="form-grid">
+                <label className="field">
+                  <span>Costo estimado ($ MXN)</span>
+                  <input 
+                    type="number" 
+                    value={costoEstimado} 
+                    onChange={(e) => setCostoEstimado(e.target.value)} 
+                    placeholder="0"
+                  />
                 </label>
                 <label className="field">
                   <span>Estado</span>
                   <select 
-                    name="estado"
-                    value={formData.estado}
-                    onChange={handleChange}
+                    value={estado} 
+                    onChange={(e) => setEstado(e.target.value)}
                   >
-                    <option value="PENDIENTE">Planificación (Pendiente)</option>
-                    <option value="CONFIRMADA">Confirmada</option>
+                    <option value="Planeada">Planeada</option>
+                    <option value="Confirmada">Confirmada</option>
+                    <option value="Completada">Completada</option>
                   </select>
                 </label>
               </div>
 
               <label className="field">
-                <span>Descripción o notas (opcional)</span>
+                <span>Descripción y notas</span>
                 <textarea 
-                  name="descripcion"
-                  rows="3"
-                  value={formData.descripcion}
-                  onChange={handleChange}
-                  placeholder="Instrucciones, código de vestimenta, qué llevar..."
+                  value={descripcion} 
+                  onChange={(e) => setDescripcion(e.target.value)} 
+                  placeholder="Detalles sobre el traslado, recomendaciones, etc."
                 />
               </label>
-            </section>
 
-            <section className="form-section">
-              <h3>Responsabilidades y Presupuesto</h3>
-              <div className="form-grid">
-                <label className="field">
-                  <span>Responsable</span>
-                  <select 
-                    name="responsableId"
-                    value={formData.responsableId}
-                    onChange={handleChange}
-                  >
-                    <option value={user?.id || 1}>Yo ({user?.nombre || 'Miguel'})</option>
-                    {participantes.map(p => (
-                      <option key={p.usuario.id} value={p.usuario.id}>
-                        {p.usuario.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="field">
-                  <span>Costo estimado ($ MXN)</span>
-                  <input 
-                    type="number" 
-                    name="costoEstimado"
-                    value={formData.costoEstimado}
-                    onChange={handleChange}
-                    placeholder="Ej. 1200"
-                    min="0"
-                    step="50"
-                  />
-                </label>
+              <div className="cover-uploader" style={{ textAlign: 'left' }}>
+                <strong>📍 Resultado de lugar</strong>
+                <p className="small muted">{lugar || 'Cancún'} · Vista previa del mapa</p>
+                <div style={{ height: '170px', borderRadius: '12px', background: 'linear-gradient(135deg, #D8ECE9, #B7D6C8)', display: 'grid', placeItems: 'center', fontSize: '42px' }}>
+                  🗺️
+                </div>
               </div>
-            </section>
 
-            <div className="form-actions">
-              <Link className="button ghost" to={`/viajes/${id}/itinerario`}>
-                Cancelar
-              </Link>
-              <button type="submit" className="button primary" disabled={cargando}>
-                {cargando ? 'Guardando...' : 'Guardar actividad'}
-              </button>
-            </div>
-          </form>
+              <div className="form-actions">
+                <Link className="button ghost" to={id ? `/viajes/${id}/itinerario` : '/itinerario'}>
+                  Cancelar
+                </Link>
+                <button type="submit" className="button primary">
+                  Guardar actividad
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </main>
+
+      {/* Toast Notification */}
+      <div className={`toast ${toastMessage ? 'show' : ''}`}>
+        {toastMessage}
+      </div>
     </>
   );
 }

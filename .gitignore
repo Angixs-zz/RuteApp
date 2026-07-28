@@ -44,3 +44,7 @@ frontend/.env
 frontend/.env.local
 frontend/.env.development.local
 frontend/.env.production.local
+
+### Documentos locales (modelo, prompts, scripts auxiliares)
+/docs/modelo-base-datos-workbench.sql
+/docs/descripcion-y-prompt-modelo-base-datos.md

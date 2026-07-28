@@ -1,22 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import '../css/styles.css'; 
 import logoImg from '../../assets/logo.jpeg'; 
 import ConfirmModal from './ConfirmModal';
 import Navbar from './Navbar';
 import TripHeader from './TripHeader';
+import api from '../../service/api';
 
 export default function Participantes() {
   const { id } = useParams();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [deletePersonOpen, setDeletePersonOpen] = useState(false);
+  const [participantes, setParticipantes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
+
+  useEffect(() => {
+    const fetchParticipantes = async () => {
+      try {
+        const res = await api.get(`/participantes/viaje/${id}`, { timeout: 1500 });
+        setParticipantes(res.data || []);
+      } catch (err) {
+        console.error("Error cargando participantes", err);
+        setFetchError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) fetchParticipantes();
+  }, [id]);
 
   const handleDeletePerson = () => {
     // Lógica para eliminar participante
     setDeletePersonOpen(false);
   };
 
-  const getAvatar = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+  const getAvatar = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'User')}&background=random`;
 
   return (
     <>
@@ -39,79 +58,52 @@ export default function Participantes() {
             </div>
             
             <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Participante</th>
-                    <th>Teléfono</th>
-                    <th>Rol en el viaje</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <div className="user-cell">
-                        <img src={getAvatar('Miguel Ángel')} alt="Avatar" />
-                        <div>
-                          <strong>Miguel Ángel</strong><br/>
-                          <span className="muted">miguel@ruteapp.mx</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td>951 000 0000</td>
-                    <td>Organizador</td>
-                    <td><span className="status confirmed">Confirmado</span></td>
-                    <td>—</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div className="user-cell">
-                        <img src={getAvatar('Yareli Martínez')} alt="Avatar" />
-                        <div>
-                          <strong>Yareli Martínez</strong><br/>
-                          <span className="muted">yareli@ruteapp.mx</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td>951 111 1111</td>
-                    <td>Participante</td>
-                    <td><span className="status confirmed">Confirmado</span></td>
-                    <td><button className="button ghost small">Editar</button></td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div className="user-cell">
-                        <img src={getAvatar('Jorge Pérez')} alt="Avatar" />
-                        <div>
-                          <strong>Jorge Pérez</strong><br/>
-                          <span className="muted">jorge@ejemplo.com</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td>951 222 2222</td>
-                    <td>Participante</td>
-                    <td><span className="status pending">Pendiente</span></td>
-                    <td><button className="button ghost small">Reenviar</button></td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div className="user-cell">
-                        <img src={getAvatar('Ana López')} alt="Avatar" />
-                        <div>
-                          <strong>Ana López</strong><br/>
-                          <span className="muted">ana@ejemplo.com</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td>951 333 3333</td>
-                    <td>Participante</td>
-                    <td><span className="status cancelled">Rechazado</span></td>
-                    <td><button className="button danger small" onClick={() => setDeletePersonOpen(true)}>Eliminar</button></td>
-                  </tr>
-                </tbody>
-              </table>
+              {loading ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#6B7280' }}>Cargando participantes...</div>
+              ) : fetchError ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#EF4444' }}>
+                  ⚠️ No se pudo conectar con el servidor. Revisa si el backend está encendido.
+                </div>
+              ) : participantes.length === 0 ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#6B7280' }}>Aún no hay participantes en este viaje.</div>
+              ) : (
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Participante</th>
+                      <th>Teléfono</th>
+                      <th>Estado</th>
+                      <th>Permisos</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {participantes.map((p) => (
+                      <tr key={p.id}>
+                        <td>
+                          <div className="user-cell">
+                            <img src={getAvatar(p.usuario?.nombre)} alt="Avatar" />
+                            <div>
+                              <strong>{p.usuario?.nombre}</strong><br/>
+                              <span className="muted">{p.usuario?.correo}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{p.usuario?.telefono || '-'}</td>
+                        <td>
+                          <span className={`status ${p.estadoInvitacion === 'ACEPTADA' ? 'confirmed' : 'pending'}`}>
+                            {p.estadoInvitacion || 'Pendiente'}
+                          </span>
+                        </td>
+                        <td>{p.permisoColaborar ? 'Colaborador' : 'Lector'}</td>
+                        <td>
+                          <button className="button danger small" onClick={() => setDeletePersonOpen(true)}>Eliminar</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </section>
 

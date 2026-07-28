@@ -1,17 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import '../css/styles.css'; 
 import Navbar from './Navbar';
 import ConfirmModal from './ConfirmModal';
 import TripHeader from './TripHeader';
+import api from '../../service/api';
 
 export default function Itinerario() {
   const { id } = useParams();
   const [deleteActivityOpen, setDeleteActivityOpen] = useState(false);
+  const [actividades, setActividades] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
+
+  useEffect(() => {
+    const fetchActividades = async () => {
+      try {
+        const res = await api.get(`/actividades/viaje/${id}`, { timeout: 1500 });
+        setActividades(res.data || []);
+      } catch (err) {
+        console.error("Error cargando actividades", err);
+        setFetchError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) fetchActividades();
+  }, [id]);
 
   const handleDeleteActivity = () => {
     setDeleteActivityOpen(false);
   };
+
+  const formatearHora = (fechaString) => {
+    if (!fechaString) return '--:--';
+    const date = new Date(fechaString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const formatearDia = (fechaString) => {
+    if (!fechaString) return '';
+    const date = new Date(fechaString);
+    return date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+  };
+
+  // Agrupar actividades por día
+  const actividadesPorDia = actividades.reduce((acc, actividad) => {
+    const dia = formatearDia(actividad.horario);
+    if (!acc[dia]) acc[dia] = [];
+    acc[dia].push(actividad);
+    return acc;
+  }, {});
 
   return (
     <>
@@ -28,59 +67,42 @@ export default function Itinerario() {
                 <h2>Itinerario</h2>
                 <p className="muted small">Actividades organizadas por día.</p>
               </div>
-              <Link className="button primary" to="/crear-actividad">＋ Agregar actividad</Link>
+              <Link className="button primary" to={`/viajes/${id}/crear-actividad`}>＋ Agregar actividad</Link>
             </div>
             
             <div className="timeline">
-              <section className="timeline-day">
-                <h3>Miércoles, 12 de agosto</h3>
-                <div className="timeline-items">
-                  <article className="card timeline-card">
-                    <div className="time-box">08:30</div>
-                    <div>
-                      <span className="status active">Transporte</span>
-                      <h3>Vuelo Oaxaca–Cancún</h3>
-                      <p className="muted small">Aeropuerto Internacional de Oaxaca · Responsable: Miguel</p>
-                    </div>
-                    <button className="button ghost small">Editar</button>
-                  </article>
-                  
-                  <article className="card timeline-card">
-                    <div className="time-box">15:00</div>
-                    <div>
-                      <span className="status confirmed">Hospedaje</span>
-                      <h3>Registro en el hotel</h3>
-                      <p className="muted small">Zona Hotelera · Responsable: Yareli</p>
-                    </div>
-                    <button className="button ghost small">Editar</button>
-                  </article>
+              {loading ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#6B7280' }}>Cargando itinerario...</div>
+              ) : fetchError ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#EF4444' }}>
+                  ⚠️ No se pudo conectar con el servidor. Revisa si el backend está encendido.
                 </div>
-              </section>
-
-              <section className="timeline-day">
-                <h3>Jueves, 13 de agosto</h3>
-                <div className="timeline-items">
-                  <article className="card timeline-card">
-                    <div className="time-box">09:00</div>
-                    <div>
-                      <span className="status planning">Actividad</span>
-                      <h3>Visita a Isla Mujeres</h3>
-                      <p className="muted small">Muelle Cancún · Costo estimado: $1,200</p>
+              ) : actividades.length === 0 ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#6B7280' }}>Aún no hay actividades planificadas.</div>
+              ) : (
+                Object.keys(actividadesPorDia).map((dia) => (
+                  <section className="timeline-day" key={dia}>
+                    <h3 style={{ textTransform: 'capitalize' }}>{dia}</h3>
+                    <div className="timeline-items">
+                      {actividadesPorDia[dia].map(act => (
+                        <article className="card timeline-card" key={act.id}>
+                          <div className="time-box">{formatearHora(act.horario)}</div>
+                          <div>
+                            <span className={`status ${act.estado === 'CONFIRMADA' ? 'confirmed' : 'planning'}`}>
+                              {act.estado || 'Planificación'}
+                            </span>
+                            <h3>{act.lugar}</h3>
+                            <p className="muted small">
+                              {act.descripcion || 'Sin descripción'} · Responsable: {act.responsable?.nombre || '-'}
+                            </p>
+                          </div>
+                          <button className="button danger small" onClick={() => setDeleteActivityOpen(true)}>Eliminar</button>
+                        </article>
+                      ))}
                     </div>
-                    <button className="button ghost small">Editar</button>
-                  </article>
-                  
-                  <article className="card timeline-card">
-                    <div className="time-box">19:30</div>
-                    <div>
-                      <span className="status planning">Alimentos</span>
-                      <h3>Cena grupal</h3>
-                      <p className="muted small">Restaurante La Habichuela · Responsable: Jorge</p>
-                    </div>
-                    <button className="button danger small" onClick={() => setDeleteActivityOpen(true)}>Eliminar</button>
-                  </article>
-                </div>
-              </section>
+                  </section>
+                ))
+              )}
             </div>
           </section>
 

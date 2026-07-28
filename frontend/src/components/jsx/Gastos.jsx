@@ -1,16 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import '../css/styles.css'; 
 import Navbar from './Navbar';
 import ConfirmModal from './ConfirmModal';
 import TripHeader from './TripHeader';
+import api from '../../service/api';
 
 export default function Gastos() {
   const { id } = useParams();
   const [deleteExpenseOpen, setDeleteExpenseOpen] = useState(false);
+  const [gastos, setGastos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
+  const [viajePresupuesto, setViajePresupuesto] = useState(0);
+
+  useEffect(() => {
+    const fetchGastos = async () => {
+      try {
+        const resViaje = await api.get(`/viajes/${id}`, { timeout: 1500 });
+        if (resViaje.data && resViaje.data.presupuestoEstimado) {
+          setViajePresupuesto(resViaje.data.presupuestoEstimado);
+        }
+
+        const res = await api.get(`/gastos/viaje/${id}`, { timeout: 1500 });
+        setGastos(res.data || []);
+      } catch (err) {
+        console.error("Error cargando gastos", err);
+        setFetchError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) fetchGastos();
+  }, [id]);
 
   const handleDeleteExpense = () => {
     setDeleteExpenseOpen(false);
+  };
+
+  const totalGastado = gastos.reduce((sum, g) => sum + (g.monto || 0), 0);
+  const disponible = viajePresupuesto - totalGastado;
+
+  const formatearFecha = (fechaString) => {
+    if (!fechaString) return '';
+    const date = new Date(fechaString + 'T00:00:00');
+    return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   return (
@@ -34,15 +68,17 @@ export default function Gastos() {
             <div className="budget-summary">
               <article className="card budget-card">
                 <span>Presupuesto total</span>
-                <strong>$12,500</strong>
+                <strong>${viajePresupuesto.toLocaleString('es-MX')}</strong>
               </article>
               <article className="card budget-card">
                 <span>Total gastado</span>
-                <strong>$8,450</strong>
+                <strong>${totalGastado.toLocaleString('es-MX')}</strong>
               </article>
               <article className="card budget-card">
                 <span>Disponible</span>
-                <strong style={{ color: 'var(--green)' }}>$4,050</strong>
+                <strong style={{ color: disponible >= 0 ? 'var(--green)' : 'var(--coral)' }}>
+                  ${disponible.toLocaleString('es-MX')}
+                </strong>
               </article>
             </div>
             
@@ -61,53 +97,43 @@ export default function Gastos() {
                 </div>
                 
                 <div className="table-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Concepto</th>
-                        <th>Categoría</th>
-                        <th>Monto</th>
-                        <th>Pagado por</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>
-                          <strong>Boletos de avión</strong><br/>
-                          <span className="muted">10 ago 2026</span>
-                        </td>
-                        <td>Transporte</td>
-                        <td>$4,800</td>
-                        <td>Miguel</td>
-                        <td><span className="status confirmed">Dividido</span></td>
-                        <td><button className="button ghost small">Ver</button></td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <strong>Reserva de hotel</strong><br/>
-                          <span className="muted">11 ago 2026</span>
-                        </td>
-                        <td>Hospedaje</td>
-                        <td>$2,600</td>
-                        <td>Yareli</td>
-                        <td><span className="status pending">Pendiente</span></td>
-                        <td><button className="button ghost small">Ver</button></td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <strong>Cena grupal</strong><br/>
-                          <span className="muted">13 ago 2026</span>
-                        </td>
-                        <td>Alimentos</td>
-                        <td>$1,050</td>
-                        <td>Jorge</td>
-                        <td><span className="status confirmed">Pagado</span></td>
-                        <td><button className="button danger small" onClick={() => setDeleteExpenseOpen(true)}>Eliminar</button></td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  {loading ? (
+                    <div style={{ padding: '2rem', textAlign: 'center', color: '#6B7280' }}>Cargando gastos...</div>
+                  ) : fetchError ? (
+                    <div style={{ padding: '2rem', textAlign: 'center', color: '#EF4444' }}>
+                      ⚠️ No se pudo conectar con el servidor. Revisa si el backend está encendido.
+                    </div>
+                  ) : gastos.length === 0 ? (
+                    <div style={{ padding: '2rem', textAlign: 'center', color: '#6B7280' }}>Aún no hay gastos registrados.</div>
+                  ) : (
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Concepto</th>
+                          <th>Categoría</th>
+                          <th>Monto</th>
+                          <th>Pagado por</th>
+                          <th>Estado</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {gastos.map(g => (
+                          <tr key={g.id}>
+                            <td>
+                              <strong>{g.concepto}</strong><br/>
+                              <span className="muted">{formatearFecha(g.fecha)}</span>
+                            </td>
+                            <td>{g.categoria}</td>
+                            <td>${(g.monto || 0).toLocaleString('es-MX')}</td>
+                            <td>{g.pagador?.nombre || '-'}</td>
+                            <td><span className="status confirmed">Confirmado</span></td>
+                            <td><button className="button danger small" onClick={() => setDeleteExpenseOpen(true)}>Eliminar</button></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
               
@@ -115,18 +141,24 @@ export default function Gastos() {
                 <article className="card chart-card">
                   <span className="eyebrow">POR CATEGORÍA</span>
                   <h3>Distribución de gastos</h3>
-                  <div className="donut"></div>
-                  <div className="legend">
-                    <span>Transporte</span>
-                    <span>Hospedaje</span>
-                    <span>Alimentos</span>
-                    <span>Actividades</span>
-                  </div>
+                  {gastos.length > 0 ? (
+                    <>
+                      <div className="donut"></div>
+                      <div className="legend">
+                        <span>Transporte</span>
+                        <span>Hospedaje</span>
+                        <span>Alimentos</span>
+                        <span>Actividades</span>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="muted small" style={{marginTop: '1rem'}}>Sin datos para mostrar.</p>
+                  )}
                 </article>
                 <article className="card panel" style={{ marginTop: '16px' }}>
                   <span className="eyebrow">TU SALDO</span>
-                  <h2 style={{ color: 'var(--coral)' }}>$1,240 pendiente</h2>
-                  <p className="muted small">Debes a Yareli $720 y a Jorge $520.</p>
+                  <h2 style={{ color: 'var(--coral)' }}>$0 pendiente</h2>
+                  <p className="muted small">No tienes deudas registradas.</p>
                 </article>
               </aside>
             </div>

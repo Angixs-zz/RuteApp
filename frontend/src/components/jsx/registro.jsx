@@ -1,15 +1,13 @@
-import React from 'react';
 import { Link } from 'react-router-dom'; // <--- 1. Importamos Link para navegación fluida
 import '../css/styles.css'; 
 import logoImg from '../../assets/react.svg'; // <--- 2. Apuntando a tu logo real en png
-import { registro as useRegistro } from '../js/registro';
+import { useRegistro } from '../js/registro';
 
 export default function Registro() {
   const {
     nombre, setNombre,
     correo, setCorreo,
     password, setPassword,
-    avatar, setAvatar,
     rolId, setRolId,
     errorNombre,
     errorCorreo,
@@ -98,24 +96,13 @@ export default function Registro() {
             </div>
 
             <label className="field">
-              <span>URL del Avatar (Opcional)</span>
-              <input 
-                type="text" 
-                value={avatar} 
-                onChange={(e) => setAvatar(e.target.value)}
-                placeholder="https://..."
-              />
-            </label>
-
-            <label className="field">
               <span>Tipo de Usuario / Rol</span>
               <select 
                 value={rolId} 
                 onChange={(e) => setRolId(e.target.value)}
               >
-                <option value="1">ORGANIZADOR</option>
-                <option value="3">ADMINISTRADOR</option>
-                <option value="4">AGENCIA</option>
+                <option value="2">USUARIO</option>
+                <option value="3">AGENCIA</option>
               </select>
             </label>
 

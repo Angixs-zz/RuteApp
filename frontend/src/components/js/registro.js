@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../service/api'; // <--- Subimos dos niveles y entramos a service/api
+import api from '../../service/api';
 
-export function registro() {
+export function useRegistro() {
   const navigate = useNavigate();
   
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
-  const [avatar, setAvatar] = useState('');
-  const [rolId, setRolId] = useState('1');
+  const [rolId, setRolId] = useState('2');
   
   const [errorNombre, setErrorNombre] = useState('');
   const [errorCorreo, setErrorCorreo] = useState('');
@@ -69,7 +68,7 @@ export function registro() {
         nombre,
         correo,
         password,
-        avatar: avatar.trim() === '' ? null : avatar,
+        avatar: null,
         rolId: Number(rolId)
       });
 
@@ -77,8 +76,7 @@ export function registro() {
       setNombre('');
       setCorreo('');
       setPassword('');
-      setAvatar('');
-      setRolId('1');
+      setRolId('2');
       
       setTimeout(() => {
         navigate('/login');
@@ -95,7 +93,6 @@ export function registro() {
     nombre, setNombre,
     correo, setCorreo,
     password, setPassword,
-    avatar, setAvatar,
     rolId, setRolId,
     errorNombre,
     errorCorreo,

@@ -7,8 +7,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ruteapp.ruteapp.dto.entrada.LoginEntrada;
+import com.ruteapp.ruteapp.dto.entrada.RestablecerPasswordEntrada;
+import com.ruteapp.ruteapp.dto.entrada.SolicitudRecuperacionEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.LoginRespuesta;
+import com.ruteapp.ruteapp.dto.respuesta.MensajeRespuesta;
 import com.ruteapp.ruteapp.service.AuthService;
+import com.ruteapp.ruteapp.service.RecuperacionPasswordService;
 
 import jakarta.validation.Valid;
 
@@ -17,17 +21,29 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     private final AuthService authService;
+    private final RecuperacionPasswordService recuperacionPasswordService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(
+            AuthService authService,
+            RecuperacionPasswordService recuperacionPasswordService) {
         this.authService = authService;
+        this.recuperacionPasswordService = recuperacionPasswordService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginRespuesta> login(
-            @Valid @RequestBody LoginEntrada entrada) {
+    public ResponseEntity<LoginRespuesta> login(@Valid @RequestBody LoginEntrada entrada) {
+        return ResponseEntity.ok(authService.login(entrada));
+    }
 
-        return ResponseEntity.ok(
-                authService.login(entrada)
-        );
+    @PostMapping("/recuperacion/solicitar")
+    public ResponseEntity<MensajeRespuesta> solicitarRecuperacion(
+            @Valid @RequestBody SolicitudRecuperacionEntrada entrada) {
+        return ResponseEntity.ok(recuperacionPasswordService.solicitar(entrada));
+    }
+
+    @PostMapping("/recuperacion/restablecer")
+    public ResponseEntity<MensajeRespuesta> restablecerPassword(
+            @Valid @RequestBody RestablecerPasswordEntrada entrada) {
+        return ResponseEntity.ok(recuperacionPasswordService.restablecer(entrada));
     }
 }

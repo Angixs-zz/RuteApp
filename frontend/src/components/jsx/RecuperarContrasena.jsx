@@ -1,34 +1,47 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../../service/api';
 import '../css/styles.css';
-import logoImg from '../../assets/react.svg';
+import logoImg from '../../assets/logo.jpeg';
 
 export default function RecuperarContrasena() {
   const [email, setEmail] = useState('');
   const [errorEmail, setErrorEmail] = useState('');
+  const [errorGeneral, setErrorGeneral] = useState('');
   const [enviado, setEnviado] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const triggerToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage('');
-    }, 3000);
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim()) {
+    setErrorGeneral('');
+    setEnviado(false);
+    const correo = email.trim();
+
+    if (!correo) {
       setErrorEmail('Por favor ingresa tu correo electrónico');
       return;
     }
-    if (!email.includes('@')) {
+    if (!/\S+@\S+\.\S+/.test(correo)) {
       setErrorEmail('Ingresa un correo electrónico válido');
       return;
     }
+
     setErrorEmail('');
-    setEnviado(true);
-    triggerToast('Enlace de recuperación enviado al correo');
+    setLoading(true);
+    try {
+      await api.post('/auth/recuperacion/solicitar', {
+        correo,
+      });
+      setEnviado(true);
+    } catch (error) {
+      if (!error.response) {
+        setErrorGeneral('No fue posible conectar con el servidor. Intenta nuevamente.');
+      } else {
+        setErrorGeneral(error.response.data?.mensaje || 'No fue posible procesar la solicitud.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -70,6 +83,12 @@ export default function RecuperarContrasena() {
           <h1>Recuperar contraseña</h1>
           <p className="muted">Escribe el correo asociado a tu cuenta.</p>
 
+          {errorGeneral && (
+            <div className="banner warn" style={{ marginBottom: '15px' }}>
+              <div><strong>Aviso</strong><span>{errorGeneral}</span></div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} noValidate>
             <label className={`field ${errorEmail ? 'error' : ''}`}>
               <span>Correo electrónico</span>
@@ -85,8 +104,8 @@ export default function RecuperarContrasena() {
               {errorEmail && <span className="error-text">{errorEmail}</span>}
             </label>
 
-            <button type="submit" className="button primary full">
-              Enviar enlace de recuperación
+            <button type="submit" className="button primary full" disabled={loading}>
+              {loading ? 'Enviando...' : 'Enviar enlace de recuperación'}
             </button>
 
             {enviado && (
@@ -94,7 +113,7 @@ export default function RecuperarContrasena() {
                 <div className="banner-icon">✉️</div>
                 <div>
                   <strong>Correo preparado</strong>
-                  <span>El enlace será válido durante 30 minutos.</span>
+                  <span>Si la cuenta existe, recibirás un enlace válido durante 30 minutos.</span>
                 </div>
               </div>
             )}
@@ -106,10 +125,6 @@ export default function RecuperarContrasena() {
         </section>
       </main>
 
-      {/* Notification Toast */}
-      <div className={`toast ${toastMessage ? 'show' : ''}`}>
-        {toastMessage}
-      </div>
     </div>
   );
 }

@@ -230,6 +230,22 @@ cp backend/src/main/resources/application-example.properties backend/src/main/re
 
 4. Completar `application.properties` con las credenciales locales de MySQL, una clave JWT segura y la llave de Geoapify. Este archivo está ignorado por Git y no debe subirse al repositorio.
 
+Para habilitar los correos mediante Brevo, crea una clave SMTP en **SMTP & API > SMTP** y configura estas variables:
+
+```bash
+MAIL_HOST=smtp-relay.brevo.com
+MAIL_PORT=587
+MAIL_USERNAME=LOGIN_SMTP_MOSTRADO_POR_BREVO
+MAIL_PASSWORD=CLAVE_SMTP_GENERADA_EN_BREVO
+MAIL_SMTP_AUTH=true
+MAIL_STARTTLS=true
+MAIL_ENABLED=true
+MAIL_FROM=REMITENTE_VERIFICADO_EN_BREVO
+FRONTEND_URL=http://localhost:5173
+```
+
+`MAIL_USERNAME` debe ser el valor **SMTP login** mostrado por Brevo, que puede ser diferente del correo del perfil. `MAIL_FROM` debe estar registrado y verificado en **Senders & IP**. La clave SMTP es secreta y nunca debe agregarse a `application-example.properties` ni al repositorio.
+
 5. Iniciar el backend desde su directorio.
 
 ```bash

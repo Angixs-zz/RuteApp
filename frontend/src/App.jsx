@@ -1,9 +1,9 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Login from './components/jsx/login';
 import Registro from './components/jsx/registro';
 import RecuperarContrasena from './components/jsx/RecuperarContrasena';
+import RestablecerContrasena from './components/jsx/RestablecerContrasena';
 import Inicio from './components/jsx/Inicio';
 import ProtectedRoute from './components/jsx/ProtectedRoute';
 
@@ -29,6 +29,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
+          <Route path="/restablecer-contrasena" element={<RestablecerContrasena />} />
           
           {/* Rutas Protegidas */}
           <Route element={<ProtectedRoute />}>
@@ -47,7 +48,6 @@ function App() {
             <Route path="/viajes/:id/gastos" element={<Gastos />} />
             <Route path="/registrar-gasto" element={<RegistrarGasto />} />
             <Route path="/viajes/:id/registrar-gasto" element={<RegistrarGasto />} />
-            <Route path="/invitaciones" element={<Invitaciones />} />
             <Route path="/crear-viaje" element={<CrearViaje />} />
             <Route path="/viajes/crear" element={<CrearViaje />} />
           </Route>

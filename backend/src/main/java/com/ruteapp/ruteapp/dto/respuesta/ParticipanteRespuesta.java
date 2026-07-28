@@ -1,6 +1,7 @@
 package com.ruteapp.ruteapp.dto.respuesta;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class ParticipanteRespuesta {
 
@@ -10,6 +11,9 @@ public class ParticipanteRespuesta {
     private String correoUsuario;
     private Long viajeId;
     private String nombreViaje;
+    private String nombreOrganizador;
+    private LocalDate fechaInicioViaje;
+    private LocalDate fechaFinViaje;
     private String estadoInvitacion;
     private Boolean permisoColaborar;
     private LocalDateTime fechaIncorporacion;
@@ -32,6 +36,15 @@ public class ParticipanteRespuesta {
 
     public String getNombreViaje() { return nombreViaje; }
     public void setNombreViaje(String nombreViaje) { this.nombreViaje = nombreViaje; }
+
+    public String getNombreOrganizador() { return nombreOrganizador; }
+    public void setNombreOrganizador(String nombreOrganizador) { this.nombreOrganizador = nombreOrganizador; }
+
+    public LocalDate getFechaInicioViaje() { return fechaInicioViaje; }
+    public void setFechaInicioViaje(LocalDate fechaInicioViaje) { this.fechaInicioViaje = fechaInicioViaje; }
+
+    public LocalDate getFechaFinViaje() { return fechaFinViaje; }
+    public void setFechaFinViaje(LocalDate fechaFinViaje) { this.fechaFinViaje = fechaFinViaje; }
 
     public String getEstadoInvitacion() { return estadoInvitacion; }
     public void setEstadoInvitacion(String estadoInvitacion) { this.estadoInvitacion = estadoInvitacion; }

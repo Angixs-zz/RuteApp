@@ -13,6 +13,7 @@ import com.ruteapp.ruteapp.dto.entrada.ViajeEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.PaginaRespuesta;
 import com.ruteapp.ruteapp.dto.respuesta.ViajeRespuesta;
 import com.ruteapp.ruteapp.exception.RecursoNoEncontradoException;
+import com.ruteapp.ruteapp.model.EstadoInvitacion;
 import com.ruteapp.ruteapp.model.EstadoViaje;
 import com.ruteapp.ruteapp.model.Lugar;
 import com.ruteapp.ruteapp.model.Usuario;
@@ -73,8 +74,9 @@ public class ViajeService {
 
         Page<Viaje> resultado;
         if (correoOrganizador != null) {
-            resultado = viajeRepository.buscarPorOrganizador(
+            resultado = viajeRepository.buscarDelUsuario(
                     correoOrganizador,
+                    EstadoInvitacion.ACEPTADA,
                     texto,
                     pageable
             );

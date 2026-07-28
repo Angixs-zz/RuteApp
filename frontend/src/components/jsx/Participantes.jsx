@@ -1,9 +1,20 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import api from '../../service/api';
 import avatarImg from '../../assets/react.svg';
 import '../css/styles.css';
+
+function convertirParticipante(participante) {
+  return {
+    id: participante.id,
+    nombre: participante.nombreUsuario || 'Participante',
+    correo: participante.correoUsuario || 'Sin correo',
+    telefono: 'No registrado',
+    rol: participante.permisoColaborar ? 'Colaborador' : 'Participante',
+    estado: participante.estadoInvitacion || 'PENDIENTE',
+  };
+}
 
 export default function Participantes() {
   const { id } = useParams();
@@ -11,47 +22,14 @@ export default function Participantes() {
 
   const [viaje, setViaje] = useState({
     id: viajeId,
-    nombre: 'Escapada a Cancún',
-    destino: 'Quintana Roo, México',
-    fechaInicio: '2026-08-12',
-    fechaFin: '2026-08-16',
-    estado: 'EN_CURSO'
+    nombre: 'Viaje',
+    destino: '',
+    fechaInicio: '',
+    fechaFin: '',
+    estado: 'PLANIFICACION'
   });
 
-  const [participantes, setParticipantes] = useState([
-    {
-      id: 1,
-      nombre: 'Miguel Ángel',
-      correo: 'miguel@ruteapp.mx',
-      telefono: '951 000 0000',
-      rol: 'Organizador',
-      estado: 'CONFIRMADO'
-    },
-    {
-      id: 2,
-      nombre: 'Yareli Martínez',
-      correo: 'yareli@ruteapp.mx',
-      telefono: '951 111 1111',
-      rol: 'Participante',
-      estado: 'CONFIRMADO'
-    },
-    {
-      id: 3,
-      nombre: 'Jorge Pérez',
-      correo: 'jorge@ejemplo.com',
-      telefono: '951 222 2222',
-      rol: 'Participante',
-      estado: 'PENDIENTE'
-    },
-    {
-      id: 4,
-      nombre: 'Ana López',
-      correo: 'ana@ejemplo.com',
-      telefono: '951 333 3333',
-      rol: 'Participante',
-      estado: 'RECHAZADO'
-    }
-  ]);
+  const [participantes, setParticipantes] = useState([]);
 
   const [loading, setLoading] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -61,7 +39,8 @@ export default function Participantes() {
 
   // Formulario de invitación
   const [invitacionContacto, setInvitacionContacto] = useState('');
-  const [invitacionMensaje, setInvitacionMensaje] = useState('Te invito a formar parte de nuestro viaje a Cancún.');
+  const [errorInvitacion, setErrorInvitacion] = useState('');
+  const [enviandoInvitacion, setEnviandoInvitacion] = useState(false);
 
   const [toastMessage, setToastMessage] = useState('');
 
@@ -72,43 +51,28 @@ export default function Participantes() {
     }, 3000);
   };
 
-  const fetchDatos = useCallback(async () => {
-    if (!id) return;
-    try {
-      setLoading(true);
-      const resViaje = await api.get(`/viajes/${id}`);
-      if (resViaje.data) {
-        setViaje(resViaje.data);
-      }
-      const resPart = await api.get(`/participantes/viaje/${id}`);
-      if (resPart.data && Array.isArray(resPart.data) && resPart.data.length > 0) {
-        setParticipantes(resPart.data.map(p => ({
-          id: p.id,
-          nombre: p.nombreUsuario || 'Participante',
-          correo: p.correoUsuario || 'correo@ejemplo.com',
-          telefono: '951 000 0000',
-          rol: p.permisoColaborar ? 'Colaborador' : 'Participante',
-          estado: p.estadoInvitacion || 'CONFIRMADO'
-        })));
-      }
-    } catch {
-      // Fallback a los datos estáticos si ocurre un error o si se navega sin id en base de datos
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
   useEffect(() => {
-    let active = true;
-    Promise.resolve().then(() => {
-      if (active) {
-        fetchDatos();
+    async function cargarDatos() {
+      if (!id) return;
+      try {
+        setLoading(true);
+        const resViaje = await api.get(`/viajes/${id}`);
+        if (resViaje.data) {
+          setViaje(resViaje.data);
+        }
+        const resPart = await api.get(`/participantes/viaje/${id}`);
+        if (Array.isArray(resPart.data)) {
+          setParticipantes(resPart.data.map(convertirParticipante));
+        }
+      } catch {
+        // Mantiene los datos iniciales si no se puede consultar la API.
+      } finally {
+        setLoading(false);
       }
-    });
-    return () => {
-      active = false;
-    };
-  }, [fetchDatos]);
+    }
+
+    cargarDatos();
+  }, [id]);
 
   const handleCancelarViaje = async () => {
     try {
@@ -125,36 +89,36 @@ export default function Participantes() {
 
   const handleEnviarInvitacion = async (e) => {
     e.preventDefault();
-    if (!invitacionContacto.trim()) {
-      showToast('Ingresa un correo o teléfono válido');
+    const correo = invitacionContacto.trim();
+    setErrorInvitacion('');
+    if (!/\S+@\S+\.\S+/.test(correo)) {
+      setErrorInvitacion('Ingresa un correo electrónico válido');
+      return;
+    }
+    if (!id) {
+      setErrorInvitacion('Abre un viaje antes de enviar una invitación.');
       return;
     }
 
+    setEnviandoInvitacion(true);
     try {
-      if (id) {
-        await api.post('/participantes', {
-          viajeId: id,
-          correoUsuario: invitacionContacto,
-          estadoInvitacion: 'PENDIENTE'
-        });
-      }
-    } catch {
-      // Fallback
+      const response = await api.post('/participantes', {
+        viajeId: Number(id),
+        correoUsuario: correo,
+      });
+
+      setParticipantes(prev => [...prev, convertirParticipante(response.data)]);
+      setInvitacionContacto('');
+      setShowInviteModal(false);
+      showToast('Invitación enviada por correo');
+    } catch (error) {
+      setErrorInvitacion(
+        error.response?.data?.mensaje
+          || 'No fue posible enviar la invitación.'
+      );
+    } finally {
+      setEnviandoInvitacion(false);
     }
-
-    const nuevoPart = {
-      id: Date.now(),
-      nombre: invitacionContacto.split('@')[0] || 'Nuevo Invitado',
-      correo: invitacionContacto,
-      telefono: '951 999 9999',
-      rol: 'Participante',
-      estado: 'PENDIENTE'
-    };
-
-    setParticipantes(prev => [...prev, nuevoPart]);
-    setInvitacionContacto('');
-    setShowInviteModal(false);
-    showToast('Invitación enviada por correo y WhatsApp');
   };
 
   const handleConfirmarEliminar = async () => {
@@ -173,17 +137,13 @@ export default function Participantes() {
     showToast('Participante eliminado');
   };
 
-  const handleReenviar = (p) => {
-    showToast(`Invitación reenviada a ${p.correo}`);
-  };
-
   const formatearEstadoBadge = (estado) => {
     switch (estado?.toUpperCase()) {
-      case 'CONFIRMADO':
+      case 'ACEPTADA':
         return <span className="status confirmed">Confirmado</span>;
       case 'PENDIENTE':
         return <span className="status pending">Pendiente</span>;
-      case 'RECHAZADO':
+      case 'RECHAZADA':
       case 'CANCELADO':
         return <span className="status cancelled">Rechazado</span>;
       default:
@@ -293,13 +253,8 @@ export default function Participantes() {
                             {p.rol === 'Organizador' ? (
                               '—'
                             ) : p.estado === 'PENDIENTE' ? (
-                              <button 
-                                className="button ghost small" 
-                                onClick={() => handleReenviar(p)}
-                              >
-                                Reenviar
-                              </button>
-                            ) : p.estado === 'RECHAZADO' ? (
+                              <span className="muted small">Esperando respuesta</span>
+                            ) : p.estado === 'RECHAZADA' ? (
                               <button 
                                 className="button danger small" 
                                 onClick={() => {
@@ -354,21 +309,18 @@ export default function Participantes() {
           <div className="modal-icon">✉️</div>
           <h3>Invitar participante</h3>
           <form onSubmit={handleEnviarInvitacion}>
-            <label className="field">
-              <span>Correo o teléfono</span>
+            <label className={`field ${errorInvitacion ? 'error' : ''}`}>
+              <span>Correo electrónico</span>
               <input 
-                type="text"
+                type="email"
                 placeholder="persona@ejemplo.com"
                 value={invitacionContacto}
-                onChange={(e) => setInvitacionContacto(e.target.value)}
+                onChange={(e) => {
+                  setInvitacionContacto(e.target.value);
+                  setErrorInvitacion('');
+                }}
               />
-            </label>
-            <label className="field">
-              <span>Mensaje</span>
-              <textarea 
-                value={invitacionMensaje}
-                onChange={(e) => setInvitacionMensaje(e.target.value)}
-              />
+              {errorInvitacion && <span className="error-text">{errorInvitacion}</span>}
             </label>
             <div className="modal-actions">
               <button 
@@ -378,8 +330,8 @@ export default function Participantes() {
               >
                 Cancelar
               </button>
-              <button type="submit" className="button primary">
-                Enviar invitación
+              <button type="submit" className="button primary" disabled={enviandoInvitacion}>
+                {enviandoInvitacion ? 'Enviando...' : 'Enviar invitación'}
               </button>
             </div>
           </form>

@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/gastos")
+@CrossOrigin(origins = "http://localhost:5173")
 public class GastoController {
 
     private final GastoService gastoService;

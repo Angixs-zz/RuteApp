@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../css/styles.css'; 
-import logoImg from '../../assets/react.svg'; // Usamos el logo de React por defecto temporalmente
+import logoImg from '../../assets/logo.png'; 
 import ConfirmModal from './ConfirmModal';
 
 export default function Participantes() {
@@ -20,6 +20,8 @@ export default function Participantes() {
     setDeletePersonOpen(false);
   };
 
+  const getAvatar = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+
   return (
     <>
       <header className="app-nav">
@@ -35,7 +37,7 @@ export default function Participantes() {
           </nav>
           <div className="user-menu">
             <button className="icon-btn">🔔<span className="count">3</span></button>
-            <img className="avatar" src={logoImg} alt="Avatar" />
+            <img className="avatar" src={getAvatar('Miguel Ángel')} alt="Avatar" />
             <div className="user-copy">
               <strong>Miguel Ángel</strong>
               <span>miguel@ruteapp.mx</span>
@@ -118,7 +120,7 @@ export default function Participantes() {
                   <tr>
                     <td>
                       <div className="user-cell">
-                        <img src={logoImg} alt="Avatar" />
+                        <img src={getAvatar('Miguel Ángel')} alt="Avatar" />
                         <div>
                           <strong>Miguel Ángel</strong><br/>
                           <span className="muted">miguel@ruteapp.mx</span>
@@ -133,7 +135,7 @@ export default function Participantes() {
                   <tr>
                     <td>
                       <div className="user-cell">
-                        <img src={logoImg} alt="Avatar" />
+                        <img src={getAvatar('Yareli Martínez')} alt="Avatar" />
                         <div>
                           <strong>Yareli Martínez</strong><br/>
                           <span className="muted">yareli@ruteapp.mx</span>
@@ -148,7 +150,7 @@ export default function Participantes() {
                   <tr>
                     <td>
                       <div className="user-cell">
-                        <img src={logoImg} alt="Avatar" />
+                        <img src={getAvatar('Jorge Pérez')} alt="Avatar" />
                         <div>
                           <strong>Jorge Pérez</strong><br/>
                           <span className="muted">jorge@ejemplo.com</span>
@@ -163,7 +165,7 @@ export default function Participantes() {
                   <tr>
                     <td>
                       <div className="user-cell">
-                        <img src={logoImg} alt="Avatar" />
+                        <img src={getAvatar('Ana López')} alt="Avatar" />
                         <div>
                           <strong>Ana López</strong><br/>
                           <span className="muted">ana@ejemplo.com</span>

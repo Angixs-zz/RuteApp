@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../css/styles.css'; 
-import logoImg from '../../assets/react.svg'; 
+import logoImg from '../../assets/logo.png'; 
 import api from '../../service/api';
 
 export default function Registro() {

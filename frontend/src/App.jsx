@@ -8,6 +8,7 @@ import ProtectedRoute from './components/jsx/ProtectedRoute';
 import Dashboard from './components/jsx/Dashboard';
 import MisViajes from './components/jsx/MisViajes';
 import CrearViaje from './components/jsx/CrearViaje';
+import DetalleViaje from './components/jsx/DetalleViaje';
 
 function App() {
   return (
@@ -23,6 +24,8 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/viajes" element={<MisViajes />} />
+            <Route path="/viajes/:id" element={<DetalleViaje />} />
+            <Route path="/detalle-viaje" element={<DetalleViaje />} />
             <Route path="/crear-viaje" element={<CrearViaje />} />
             <Route path="/viajes/crear" element={<CrearViaje />} />
           </Route>

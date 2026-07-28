@@ -52,7 +52,8 @@ public class ViajeService {
     public PaginaRespuesta<ViajeRespuesta> listarPaginados(
             int pagina,
             int tamanio,
-            String busqueda) {
+            String busqueda,
+            String correoOrganizador) {
 
         if (pagina < 0) {
             throw new IllegalArgumentException("La página no puede ser menor que 0");
@@ -71,7 +72,13 @@ public class ViajeService {
         String texto = busqueda == null ? "" : busqueda.trim();
 
         Page<Viaje> resultado;
-        if (texto.isEmpty()) {
+        if (correoOrganizador != null) {
+            resultado = viajeRepository.buscarPorOrganizador(
+                    correoOrganizador,
+                    texto,
+                    pageable
+            );
+        } else if (texto.isEmpty()) {
             resultado = viajeRepository.findAll(pageable);
         } else {
             resultado = viajeRepository

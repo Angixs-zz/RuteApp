@@ -2,6 +2,8 @@ package com.ruteapp.ruteapp.security;
 
 
 import static org.springframework.security.config.Customizer.withDefaults;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,6 +16,9 @@ import org.springframework.security.config.http
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication
         .UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -31,13 +36,35 @@ public class ConfiguracionDeSeguridad {
     }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuracion = new CorsConfiguration();
+        configuracion.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "https://ruteapp.online",
+                "https://www.ruteapp.online"
+        ));
+        configuracion.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+        ));
+        configuracion.setAllowedHeaders(List.of(
+                "Authorization", "Content-Type"
+        ));
+        configuracion.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", configuracion);
+        return source;
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http
     ) throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(withDefaults()) // <--- ESTO ES LO ÚNICO QUE FALTA AGREGAR AQUÍ
+                .cors(withDefaults())
 
                 /*
                  * No usamos sesiones.

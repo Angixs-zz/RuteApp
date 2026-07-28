@@ -13,7 +13,6 @@ import com.ruteapp.ruteapp.service.LugarService;
 
 @RestController
 @RequestMapping("/api/lugares")
-@CrossOrigin(origins = "http://localhost:5173")
 public class LugarController {
 
     private final LugarService lugarService;

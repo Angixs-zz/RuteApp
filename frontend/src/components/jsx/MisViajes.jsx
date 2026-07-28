@@ -7,6 +7,7 @@ import '../css/styles.css';
 export default function MisViajes() {
   const [viajes, setViajes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorCarga, setErrorCarga] = useState('');
   
   // Filtros
   const [busqueda, setBusqueda] = useState('');
@@ -19,6 +20,7 @@ export default function MisViajes() {
   const fetchViajes = useCallback(async () => {
     try {
       setLoading(true);
+      setErrorCarga('');
       
       const response = await api.get('/viajes', {
         params: {
@@ -36,42 +38,9 @@ export default function MisViajes() {
       }
     } catch (err) {
       console.error("Error al cargar viajes:", err);
-      // Fallback a viajes mock en caso de estar probando localmente sin registros
-      setViajes([
-        {
-          id: 1,
-          nombre: "Escapada a Cancún",
-          destino: "Quintana Roo",
-          fechaInicio: "2026-08-12",
-          fechaFin: "2026-08-16",
-          presupuestoEstimado: 12500,
-          estado: "EN_CURSO",
-          participantesCount: 5,
-          porcentajePlaneado: 68
-        },
-        {
-          id: 2,
-          nombre: "Ruta gastronómica Oaxaca",
-          destino: "Oaxaca de Juárez",
-          fechaInicio: "2026-09-04",
-          fechaFin: "2026-09-07",
-          presupuestoEstimado: 5950,
-          estado: "PLANIFICACION",
-          participantesCount: 4,
-          porcentajePlaneado: 34
-        },
-        {
-          id: 3,
-          nombre: "Fin de semana en Puebla",
-          destino: "Puebla de Zaragoza",
-          fechaInicio: "2026-07-18",
-          fechaFin: "2026-07-20",
-          presupuestoEstimado: 8120,
-          estado: "FINALIZADO",
-          participantesCount: 6,
-          porcentajePlaneado: 100
-        }
-      ]);
+      setViajes([]);
+      setTotalPaginas(1);
+      setErrorCarga('No fue posible cargar tus viajes. Intenta nuevamente.');
     } finally {
       setLoading(false);
     }
@@ -177,6 +146,13 @@ export default function MisViajes() {
           {loading ? (
             <div style={{ textAlign: 'center', padding: '3rem 0', color: '#6B7280' }}>
               Cargando tus viajes...
+            </div>
+          ) : errorCarga ? (
+            <div className="banner warn">
+              <div>
+                <strong>No se pudieron consultar tus viajes</strong>
+                <span>{errorCarga}</span>
+              </div>
             </div>
           ) : viajesFiltrados.length === 0 ? (
             <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>

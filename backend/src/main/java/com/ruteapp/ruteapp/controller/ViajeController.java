@@ -3,6 +3,7 @@ package com.ruteapp.ruteapp.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.ruteapp.ruteapp.dto.entrada.ViajeEntrada;
@@ -14,7 +15,6 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/viajes")
-@CrossOrigin(origins = "http://localhost:5173")
 public class ViajeController {
 
     private final ViajeService viajeService;
@@ -27,10 +27,26 @@ public class ViajeController {
     public ResponseEntity<PaginaRespuesta<ViajeRespuesta>> listarTodos(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String busqueda) {
+            @RequestParam(required = false) String busqueda,
+            Authentication authentication) {
+
+        boolean esAdministrador = authentication.getAuthorities()
+                .stream()
+                .anyMatch(autoridad ->
+                        autoridad.getAuthority().equals("ROLE_ADMINISTRADOR")
+                );
+
+        String correoOrganizador = esAdministrador
+                ? null
+                : authentication.getName();
 
         return ResponseEntity.ok(
-                viajeService.listarPaginados(page, size, busqueda)
+                viajeService.listarPaginados(
+                        page,
+                        size,
+                        busqueda,
+                        correoOrganizador
+                )
         );
     }
 

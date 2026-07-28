@@ -1,4 +1,5 @@
-import React, { useState, useContext } from 'react';
+import { useState, useContext } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 import { Link, useNavigate } from 'react-router-dom';
 import '../css/styles.css'; 
 import logoImg from '../../assets/logo.jpeg'; 
@@ -17,6 +18,13 @@ export default function Login() {
   const [errorGeneral, setErrorGeneral] = useState('');
   const [mensajeExito, setMensajeExito] = useState('');
   const [loading, setLoading] = useState(false);
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  const completarLogin = (respuesta) => {
+    loginContext(respuesta);
+    setMensajeExito('¡Bienvenido a RuteApp!');
+    setTimeout(() => navigate('/dashboard'), 1000);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -64,12 +72,7 @@ export default function Login() {
         password
       });
 
-      loginContext(response.data.token);
-      setMensajeExito('¡Bienvenido a RuteApp!');
-      
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1000);
+      completarLogin(response.data);
       
     } catch (error) {
       console.error(error);
@@ -77,6 +80,32 @@ export default function Login() {
         setErrorGeneral('Error de conexión: El servidor no está respondiendo.');
       } else {
         setErrorGeneral('Credenciales incorrectas. Verifica tu correo y contraseña.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    if (!credentialResponse.credential) {
+      setErrorGeneral('Google no devolvió una credencial válida. Inténtalo de nuevo.');
+      return;
+    }
+
+    setErrorGeneral('');
+    setMensajeExito('');
+    setLoading(true);
+
+    try {
+      const response = await api.post('/auth/google', {
+        credential: credentialResponse.credential
+      });
+      completarLogin(response.data);
+    } catch (error) {
+      if (!error.response) {
+        setErrorGeneral('Error de conexión: El servidor no está respondiendo.');
+      } else {
+        setErrorGeneral(error.response.data?.mensaje || 'No se pudo iniciar sesión con Google.');
       }
     } finally {
       setLoading(false);
@@ -154,9 +183,23 @@ export default function Login() {
             </button>
 
             <div className="separator">o continúa con</div>
-            <button type="button" className="button ghost full" onClick={() => alert('Próximamente disponible')}>
-              Continuar con Google
-            </button>
+            {googleClientId ? (
+              <div className={`google-login ${loading ? 'disabled' : ''}`}>
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => setErrorGeneral('No se pudo iniciar sesión con Google.')}
+                  text="continue_with"
+                  shape="rectangular"
+                  size="large"
+                  width="400"
+                  locale="es"
+                />
+              </div>
+            ) : (
+              <p className="google-config-warning">
+                Configura VITE_GOOGLE_CLIENT_ID para habilitar Google.
+              </p>
+            )}
 
             <p className="small" style={{ textAlign: 'center', marginTop: '18px' }}>
               ¿No tienes una cuenta? <Link to="/registro">Crear cuenta</Link>

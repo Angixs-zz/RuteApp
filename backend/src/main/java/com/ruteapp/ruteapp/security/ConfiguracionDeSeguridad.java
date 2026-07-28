@@ -133,6 +133,7 @@ public class ConfiguracionDeSeguridad {
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/auth/login",
+                                "/api/auth/google",
                                 "/api/auth/recuperacion/solicitar",
                                 "/api/auth/recuperacion/restablecer",
                                 "/api/usuarios"

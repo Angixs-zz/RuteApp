@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import { useContext, useState } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 import { Link, useNavigate } from 'react-router-dom';
 import '../css/styles.css'; 
 import logoImg from '../../assets/logo.jpeg'; 
 import api from '../../service/api';
+import { AuthContext } from '../../context/AuthContext';
 
 export default function Registro() {
+  const { loginContext } = useContext(AuthContext);
   const navigate = useNavigate();
   
   const [nombre, setNombre] = useState('');
@@ -18,6 +21,7 @@ export default function Registro() {
   const [errorGeneral, setErrorGeneral] = useState('');
   const [mensajeExito, setMensajeExito] = useState('');
   const [loading, setLoading] = useState(false);
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -89,6 +93,34 @@ export default function Registro() {
         setErrorGeneral('Error de conexión: El servidor no está respondiendo.');
       } else {
         setErrorGeneral('Error al registrarse. Es posible que el correo ya esté registrado o los datos sean inválidos.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    if (!credentialResponse.credential) {
+      setErrorGeneral('Google no devolvió una credencial válida. Inténtalo de nuevo.');
+      return;
+    }
+
+    setErrorGeneral('');
+    setMensajeExito('');
+    setLoading(true);
+
+    try {
+      const response = await api.post('/auth/google', {
+        credential: credentialResponse.credential
+      });
+      loginContext(response.data);
+      setMensajeExito('¡Cuenta creada correctamente!');
+      setTimeout(() => navigate('/dashboard'), 1000);
+    } catch (error) {
+      if (!error.response) {
+        setErrorGeneral('Error de conexión: El servidor no está respondiendo.');
+      } else {
+        setErrorGeneral(error.response.data?.mensaje || 'No se pudo crear la cuenta con Google.');
       }
     } finally {
       setLoading(false);
@@ -186,6 +218,25 @@ export default function Registro() {
             <button type="submit" className="button primary full" style={{ marginTop: '18px' }} disabled={loading}>
               {loading ? 'Creando cuenta...' : 'Crear cuenta'}
             </button>
+
+            <div className="separator">o continúa con</div>
+            {googleClientId ? (
+              <div className={`google-login ${loading ? 'disabled' : ''}`}>
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => setErrorGeneral('No se pudo crear la cuenta con Google.')}
+                  text="continue_with"
+                  shape="rectangular"
+                  size="large"
+                  width="400"
+                  locale="es"
+                />
+              </div>
+            ) : (
+              <p className="google-config-warning">
+                Configura VITE_GOOGLE_CLIENT_ID para habilitar Google.
+              </p>
+            )}
 
             <p className="small" style={{ textAlign: 'center', marginTop: '18px' }}>
               ¿Ya tienes cuenta? <Link to="/login">Iniciar sesión</Link>

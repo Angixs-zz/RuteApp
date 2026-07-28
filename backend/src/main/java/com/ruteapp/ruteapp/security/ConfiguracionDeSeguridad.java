@@ -44,7 +44,7 @@ public class ConfiguracionDeSeguridad {
                 "https://www.ruteapp.online"
         ));
         configuracion.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
         ));
         configuracion.setAllowedHeaders(List.of(
                 "Authorization", "Content-Type"
@@ -133,6 +133,8 @@ public class ConfiguracionDeSeguridad {
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/auth/login",
+                                "/api/auth/recuperacion/solicitar",
+                                "/api/auth/recuperacion/restablecer",
                                 "/api/usuarios"
                         ).permitAll()
 

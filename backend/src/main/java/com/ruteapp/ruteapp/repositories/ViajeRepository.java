@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.ruteapp.ruteapp.model.Usuario;
 import com.ruteapp.ruteapp.model.Viaje;
+import com.ruteapp.ruteapp.model.EstadoInvitacion;
 
 public interface ViajeRepository extends JpaRepository<Viaje, Long> {
 
@@ -29,7 +30,16 @@ public interface ViajeRepository extends JpaRepository<Viaje, Long> {
     @Query("""
             SELECT v
             FROM Viaje v
-            WHERE v.organizador.correo = :correo
+            WHERE (
+                    v.organizador.correo = :correo
+                    OR EXISTS (
+                        SELECT p.id
+                        FROM ParticipanteViaje p
+                        WHERE p.viaje = v
+                          AND p.usuario.correo = :correo
+                          AND p.estadoInvitacion = :estadoAceptada
+                    )
+              )
               AND (
                     :busqueda = ''
                     OR LOWER(v.nombre) LIKE LOWER(CONCAT('%', :busqueda, '%'))
@@ -37,8 +47,9 @@ public interface ViajeRepository extends JpaRepository<Viaje, Long> {
                     OR LOWER(v.destino) LIKE LOWER(CONCAT('%', :busqueda, '%'))
               )
             """)
-    Page<Viaje> buscarPorOrganizador(
+    Page<Viaje> buscarDelUsuario(
             @Param("correo") String correo,
+            @Param("estadoAceptada") EstadoInvitacion estadoAceptada,
             @Param("busqueda") String busqueda,
             Pageable pageable
     );

@@ -1,11 +1,14 @@
 package com.ruteapp.ruteapp.controller;
 
 import com.ruteapp.ruteapp.dto.entrada.ParticipanteEntrada;
+import com.ruteapp.ruteapp.dto.entrada.RespuestaInvitacionEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.ParticipanteRespuesta;
+import com.ruteapp.ruteapp.model.EstadoInvitacion;
 import com.ruteapp.ruteapp.service.ParticipanteViajeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,8 +24,10 @@ public class ParticipanteViajeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ParticipanteRespuesta>> listarTodos() {
-        return ResponseEntity.ok(participanteViajeService.listarTodos());
+    public ResponseEntity<List<ParticipanteRespuesta>> listarTodos(
+            Authentication authentication) {
+        String correoUsuario = esAdministrador(authentication) ? null : authentication.getName();
+        return ResponseEntity.ok(participanteViajeService.listarTodos(correoUsuario));
     }
 
     @GetMapping("/{id}")
@@ -38,8 +43,15 @@ public class ParticipanteViajeController {
     }
 
     @PostMapping
-    public ResponseEntity<ParticipanteRespuesta> guardar(@Valid @RequestBody ParticipanteEntrada entrada) {
-        ParticipanteRespuesta nuevoParticipante = participanteViajeService.crear(entrada);
+    public ResponseEntity<ParticipanteRespuesta> guardar(
+            @Valid @RequestBody ParticipanteEntrada entrada,
+            Authentication authentication) {
+        ParticipanteRespuesta nuevoParticipante =
+                participanteViajeService.crear(
+                        entrada,
+                        authentication.getName(),
+                        esAdministrador(authentication)
+                );
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoParticipante);
     }
 
@@ -56,5 +68,24 @@ public class ParticipanteViajeController {
             @Valid @RequestBody ParticipanteEntrada entrada) {
         ParticipanteRespuesta actualizado = participanteViajeService.actualizar(id, entrada);
         return ResponseEntity.ok(actualizado);
+    }
+
+    @PatchMapping("/{id}/respuesta")
+    public ResponseEntity<ParticipanteRespuesta> responder(
+            @PathVariable Long id,
+            @Valid @RequestBody RespuestaInvitacionEntrada entrada,
+            Authentication authentication) {
+        return ResponseEntity.ok(
+                participanteViajeService.responderInvitacion(
+                        id,
+                        EstadoInvitacion.valueOf(entrada.getRespuesta()),
+                        authentication.getName()
+                )
+        );
+    }
+
+    private boolean esAdministrador(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(autoridad -> autoridad.getAuthority().equals("ROLE_ADMINISTRADOR"));
     }
 }

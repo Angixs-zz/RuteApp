@@ -21,15 +21,18 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ServicioCorreo servicioCorreo;
 
     public UsuarioService(
             UsuarioRepository usuarioRepository,
             RolRepository rolRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            ServicioCorreo servicioCorreo) {
 
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
         this.passwordEncoder = passwordEncoder;
+        this.servicioCorreo = servicioCorreo;
     }
 
     public List<UsuarioRespuesta> listarTodos() {
@@ -75,6 +78,7 @@ public class UsuarioService {
         usuario.setActivo(true);
 
         Usuario guardado = usuarioRepository.save(usuario);
+        servicioCorreo.enviarBienvenida(guardado);
 
         return convertirARespuesta(guardado);
     }

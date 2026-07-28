@@ -97,6 +97,24 @@ public class GlobalExceptionHandler {
                 .body(respuesta);
     }
 
+    @ExceptionHandler(TokenRecuperacionInvalidoException.class)
+    public ResponseEntity<ErrorRespuesta> manejarTokenRecuperacion(
+            TokenRecuperacionInvalidoException ex,
+            HttpServletRequest request) {
+        ErrorRespuesta respuesta = new ErrorRespuesta(
+                LocalDateTime.now(),
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                null
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(respuesta);
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorRespuesta> manejarAccesoDenegado(
             AccessDeniedException ex,

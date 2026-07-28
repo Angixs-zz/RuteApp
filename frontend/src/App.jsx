@@ -10,6 +10,7 @@ import MisViajes from './components/jsx/MisViajes';
 import CrearViaje from './components/jsx/CrearViaje';
 import DetalleViaje from './components/jsx/DetalleViaje';
 import Participantes from './components/jsx/Participantes';
+import Itinerario from './components/jsx/Itinerario';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
             <Route path="/viajes/:id" element={<DetalleViaje />} />
             <Route path="/detalle-viaje" element={<DetalleViaje />} />
             <Route path="/participantes" element={<Participantes />} />
+            <Route path="/itinerario" element={<Itinerario />} />
             <Route path="/crear-viaje" element={<CrearViaje />} />
             <Route path="/viajes/crear" element={<CrearViaje />} />
           </Route>

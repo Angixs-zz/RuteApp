@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import '../css/styles.css'; 
-import logoImg from '../../assets/logo.png'; 
+import logoImg from '../../assets/logo.jpeg'; 
 import ConfirmModal from './ConfirmModal';
+import Navbar from './Navbar';
+import TripHeader from './TripHeader';
 
 export default function Participantes() {
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [cancelTripOpen, setCancelTripOpen] = useState(false);
+  const { id } = useParams();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [deletePersonOpen, setDeletePersonOpen] = useState(false);
-
-  const handleCancelTrip = () => {
-    // Lógica para cancelar el viaje
-    setCancelTripOpen(false);
-  };
 
   const handleDeletePerson = () => {
     // Lógica para eliminar participante
@@ -24,75 +20,12 @@ export default function Participantes() {
 
   return (
     <>
-      <header className="app-nav">
-        <div className="container">
-          <Link className="brand compact" to="/dashboard">
-            <img src={logoImg} alt="RuteApp" />
-          </Link>
-          <nav className="app-links">
-            <Link className="" to="/dashboard">Inicio</Link>
-            <Link className="active" to="/viajes">Mis viajes</Link>
-            <Link className="" to="/invitaciones">Invitaciones <span className='nav-badge'>2</span></Link>
-            <Link className="" to="/gastos">Gastos</Link>
-          </nav>
-          <div className="user-menu">
-            <button className="icon-btn">🔔<span className="count">3</span></button>
-            <img className="avatar" src={getAvatar('Miguel Ángel')} alt="Avatar" />
-            <div className="user-copy">
-              <strong>Miguel Ángel</strong>
-              <span>miguel@ruteapp.mx</span>
-            </div>
-            <button className="icon-btn" onClick={() => setProfileMenuOpen(!profileMenuOpen)}>⌄</button>
-            <button className="icon-btn mobile-toggle">☰</button>
-          </div>
-        </div>
-      </header>
-
-      {profileMenuOpen && (
-        <div className="modal-backdrop" id="profileMenu" onClick={() => setProfileMenuOpen(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-icon">👤</div>
-            <h3>Cuenta</h3>
-            <p className="muted">Accede a tu perfil o cierra la sesión actual.</p>
-            <div className="modal-actions">
-              <Link className="button ghost" to="/perfil">Mi perfil</Link>
-              <Link className="button danger" to="/login">Cerrar sesión</Link>
-            </div>
-          </div>
-        </div>
-      )}
+      <Navbar />
 
       <main className="page">
         <div className="container">
-          <section className="trip-hero">
-            <div className="trip-hero-content">
-              <div>
-                <span className="status confirmed">Confirmado</span>
-                <h1>Escapada a Cancún</h1>
-                <p>Quintana Roo, México · 12–16 de agosto de 2026</p>
-              </div>
-              <button className="button ghost" onClick={() => setCancelTripOpen(true)}>Cancelar viaje</button>
-            </div>
-          </section>
-
-          {/* Reutilizamos el ConfirmModal que creamos anteriormente para cancelar viaje */}
-          <ConfirmModal 
-            isOpen={cancelTripOpen}
-            title="¿Cancelar este viaje?"
-            message="Los participantes recibirán una notificación y el viaje cambiará al estado cancelado."
-            confirmText="Cancelar viaje"
-            cancelText="Volver"
-            onConfirm={handleCancelTrip}
-            onCancel={() => setCancelTripOpen(false)}
-          />
-
-          <nav className="tabs">
-            <Link className="" to="/detalle-viaje">Resumen</Link>
-            <Link className="active" to="/participantes">Participantes</Link>
-            <Link className="" to="/itinerario">Itinerario</Link>
-            <Link className="" to="/gastos">Gastos</Link>
-            <Link className="" to="/notificaciones">Notificaciones</Link>
-          </nav>
+          
+          <TripHeader id={id} currentTab="participantes" />
 
           <section className="content-card">
             <div className="section-title">

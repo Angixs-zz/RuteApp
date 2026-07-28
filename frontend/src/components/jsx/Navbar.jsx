@@ -2,7 +2,7 @@ import { useState, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import '../css/styles.css';
-import logoImg from '../../assets/logo.png';
+import logoImg from '../../assets/logo.jpeg';
 
 export default function Navbar({ invitacionesCount = 0 }) {
   const { user, logoutContext } = useContext(AuthContext);
@@ -47,7 +47,6 @@ export default function Navbar({ invitacionesCount = 0 }) {
             <Link className={pathname === '/invitaciones' ? 'active' : ''} to="/invitaciones">
               Invitaciones {invitacionesCount > 0 && <span className="nav-badge">{invitacionesCount}</span>}
             </Link>
-            <Link className={pathname === '/gastos' ? 'active' : ''} to="/gastos">Gastos</Link>
           </nav>
 
           <div className="user-menu">

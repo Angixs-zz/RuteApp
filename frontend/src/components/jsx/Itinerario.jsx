@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import '../css/styles.css'; 
 import Navbar from './Navbar';
 import ConfirmModal from './ConfirmModal';
+import TripHeader from './TripHeader';
 
 export default function Itinerario() {
-  const [cancelTripOpen, setCancelTripOpen] = useState(false);
+  const { id } = useParams();
   const [deleteActivityOpen, setDeleteActivityOpen] = useState(false);
-
-  const handleCancelTrip = () => {
-    setCancelTripOpen(false);
-  };
 
   const handleDeleteActivity = () => {
     setDeleteActivityOpen(false);
@@ -22,34 +19,8 @@ export default function Itinerario() {
 
       <main className="page">
         <div className="container">
-          <section className="trip-hero">
-            <div className="trip-hero-content">
-              <div>
-                <span className="status confirmed">Confirmado</span>
-                <h1>Escapada a Cancún</h1>
-                <p>Quintana Roo, México · 12–16 de agosto de 2026</p>
-              </div>
-              <button className="button ghost" onClick={() => setCancelTripOpen(true)}>Cancelar viaje</button>
-            </div>
-          </section>
-
-          <ConfirmModal 
-            isOpen={cancelTripOpen}
-            title="¿Cancelar este viaje?"
-            message="Los participantes recibirán una notificación y el viaje cambiará al estado cancelado."
-            confirmText="Cancelar viaje"
-            cancelText="Volver"
-            onConfirm={handleCancelTrip}
-            onCancel={() => setCancelTripOpen(false)}
-          />
-
-          <nav className="tabs">
-            <Link className="" to="/detalle-viaje">Resumen</Link>
-            <Link className="" to="/participantes">Participantes</Link>
-            <Link className="active" to="/itinerario">Itinerario</Link>
-            <Link className="" to="/gastos">Gastos</Link>
-            <Link className="" to="/notificaciones">Notificaciones</Link>
-          </nav>
+          
+          <TripHeader id={id} currentTab="itinerario" />
 
           <section className="content-card">
             <div className="section-title">

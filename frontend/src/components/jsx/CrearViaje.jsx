@@ -207,7 +207,7 @@ export default function CrearViaje() {
               </div>
               <div className="form-grid">
                 <label className="field">
-                  <span>Presupuesto estimado ($ MXN)</span>
+                  <span>Presupuesto por persona ($ MXN)</span>
                   <input 
                     type="number" 
                     name="presupuestoEstimado"

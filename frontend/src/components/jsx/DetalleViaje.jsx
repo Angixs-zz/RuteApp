@@ -182,7 +182,7 @@ export default function DetalleViaje() {
                         <strong>{viaje.participantesCount} confirmados</strong>
                       </div>
                       <div className="info-item">
-                        <span>Presupuesto</span>
+                        <span>Presupuesto por persona</span>
                         <strong>${(viaje.presupuestoEstimado || 0).toLocaleString('es-MX')} MXN</strong>
                       </div>
                       <div className="info-item">

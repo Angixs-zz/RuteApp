@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import '../css/styles.css'; 
 import Navbar from './Navbar';
 import ConfirmModal from './ConfirmModal';
 import TripHeader from './TripHeader';
 import api from '../../service/api';
+import { AuthContext } from '../../context/AuthContext';
 
 export default function Gastos() {
   const { id } = useParams();
+  const { user } = useContext(AuthContext);
   const [deleteExpenseOpen, setDeleteExpenseOpen] = useState(false);
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,8 +40,10 @@ export default function Gastos() {
     setDeleteExpenseOpen(false);
   };
 
-  const totalGastado = gastos.reduce((sum, g) => sum + (g.monto || 0), 0);
-  const disponible = viajePresupuesto - totalGastado;
+  const miGastoTotal = gastos
+    .filter(g => g.pagador?.id === user?.id)
+    .reduce((sum, g) => sum + (g.monto || 0), 0);
+  const disponible = viajePresupuesto - miGastoTotal;
 
   const formatearFecha = (fechaString) => {
     if (!fechaString) return '';
@@ -67,12 +71,12 @@ export default function Gastos() {
             
             <div className="budget-summary">
               <article className="card budget-card">
-                <span>Presupuesto total</span>
+                <span>Presupuesto por persona</span>
                 <strong>${viajePresupuesto.toLocaleString('es-MX')}</strong>
               </article>
               <article className="card budget-card">
-                <span>Total gastado</span>
-                <strong>${totalGastado.toLocaleString('es-MX')}</strong>
+                <span>Tus gastos</span>
+                <strong>${miGastoTotal.toLocaleString('es-MX')}</strong>
               </article>
               <article className="card budget-card">
                 <span>Disponible</span>
@@ -157,8 +161,10 @@ export default function Gastos() {
                 </article>
                 <article className="card panel" style={{ marginTop: '16px' }}>
                   <span className="eyebrow">TU SALDO</span>
-                  <h2 style={{ color: 'var(--coral)' }}>$0 pendiente</h2>
-                  <p className="muted small">No tienes deudas registradas.</p>
+                  <h2 style={{ color: disponible >= 0 ? 'var(--green)' : 'var(--coral)' }}>
+                    ${disponible.toLocaleString('es-MX')} {disponible >= 0 ? 'restantes' : 'excedidos'}
+                  </h2>
+                  <p className="muted small">Basado en tu presupuesto por persona.</p>
                 </article>
               </aside>
             </div>

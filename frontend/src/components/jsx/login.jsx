@@ -79,7 +79,7 @@ export default function Login() {
               <label className="check">
                 <input type="checkbox" /> Recordar sesión
               </label>
-              <a href="#recuperar" onClick={(e) => e.preventDefault()}>¿Olvidaste tu contraseña?</a>
+              <Link to="/recuperar-contrasena">¿Olvidaste tu contraseña?</Link>
             </div>
 
             <button type="submit" className="button primary full" disabled={loading}>

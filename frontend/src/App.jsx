@@ -13,6 +13,7 @@ import Participantes from './components/jsx/Participantes';
 import Itinerario from './components/jsx/Itinerario';
 import CrearActividad from './components/jsx/CrearActividad';
 import Gastos from './components/jsx/Gastos';
+import RegistrarGasto from './components/jsx/RegistrarGasto';
 import Invitaciones from './components/jsx/Invitaciones';
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
             <Route path="/viajes/:id/itinerario" element={<Itinerario />} />
             <Route path="/viajes/:id/crear-actividad" element={<CrearActividad />} />
             <Route path="/viajes/:id/gastos" element={<Gastos />} />
+            <Route path="/viajes/:id/registrar-gasto" element={<RegistrarGasto />} />
             <Route path="/crear-viaje" element={<CrearViaje />} />
             <Route path="/viajes/crear" element={<CrearViaje />} />
           </Route>

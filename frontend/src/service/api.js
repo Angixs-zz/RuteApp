@@ -10,6 +10,10 @@ const api = axios.create({
 // Interceptor para agregar automáticamente el token JWT en las peticiones protegidas
 api.interceptors.request.use(
   (config) => {
+    // Evitar caché de navegador para que los datos siempre sean frescos
+    if (config.method && config.method.toLowerCase() === 'get') {
+      config.params = { ...config.params, _t: new Date().getTime() };
+    }
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

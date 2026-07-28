@@ -10,16 +10,20 @@ import api from '../../service/api';
 export default function Participantes() {
   const { id } = useParams();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
-  const [deletePersonOpen, setDeletePersonOpen] = useState(false);
-  const [participantes, setParticipantes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [participanteAEliminar, setParticipanteAEliminar] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const cachedParticipantes = sessionStorage.getItem(`participantes_${id}`);
+  const [participantes, setParticipantes] = useState(cachedParticipantes ? JSON.parse(cachedParticipantes) : []);
+  const [loading, setLoading] = useState(!cachedParticipantes);
   const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     const fetchParticipantes = async () => {
       try {
         const res = await api.get(`/participantes/viaje/${id}`, { timeout: 1500 });
-        setParticipantes(res.data || []);
+        const newParticipantes = res.data || [];
+        setParticipantes(newParticipantes);
+        sessionStorage.setItem(`participantes_${id}`, JSON.stringify(newParticipantes));
       } catch (err) {
         console.error("Error cargando participantes", err);
         setFetchError(true);
@@ -30,9 +34,25 @@ export default function Participantes() {
     if (id) fetchParticipantes();
   }, [id]);
 
-  const handleDeletePerson = () => {
-    // Lógica para eliminar participante
-    setDeletePersonOpen(false);
+  const handleDeletePerson = async () => {
+    if (!participanteAEliminar) return;
+
+    setIsDeleting(true);
+    const idToDelete = participanteAEliminar;
+
+    try {
+      await api.delete(`/participantes/${idToDelete}`);
+      
+      const nuevosParticipantes = participantes.filter(p => Number(p.id) !== Number(idToDelete));
+      setParticipantes(nuevosParticipantes);
+      sessionStorage.setItem(`participantes_${id}`, JSON.stringify(nuevosParticipantes));
+    } catch (err) {
+      console.error("Error al eliminar participante:", err);
+      alert("No se pudo eliminar al participante en el servidor.");
+    } finally {
+      setIsDeleting(false);
+      setParticipanteAEliminar(null);
+    }
   };
 
   const getAvatar = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'User')}&background=random`;
@@ -97,7 +117,7 @@ export default function Participantes() {
                         </td>
                         <td>{p.permisoColaborar ? 'Colaborador' : 'Lector'}</td>
                         <td>
-                          <button className="button danger small" onClick={() => setDeletePersonOpen(true)}>Eliminar</button>
+                            <button className="button danger small ghost" onClick={() => setParticipanteAEliminar(p.id)}>Remover</button>
                         </td>
                       </tr>
                     ))}
@@ -131,13 +151,14 @@ export default function Participantes() {
 
           {/* Reutilizamos el ConfirmModal para eliminar participante */}
           <ConfirmModal 
-            isOpen={deletePersonOpen}
-            title="Eliminar participante"
-            message="Esta persona dejará de tener acceso al viaje."
-            confirmText="Eliminar"
+            isOpen={!!participanteAEliminar}
+            title="Remover participante"
+            message="¿Estás seguro de que deseas eliminar a esta persona del viaje?"
+            confirmText="Remover"
             cancelText="Cancelar"
             onConfirm={handleDeletePerson}
-            onCancel={() => setDeletePersonOpen(false)}
+            onCancel={() => setParticipanteAEliminar(null)}
+            isLoading={isDeleting}
           />
 
         </div>

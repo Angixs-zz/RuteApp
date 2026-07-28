@@ -12,7 +12,7 @@ export default function Dashboard() {
   const [proximaActividad, setProximaActividad] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Formatear la fecha actual en español (ej. LUNES, 28 DE JULIO)
+  // Formatear la fecha actual en español 
   const fechaActual = new Date().toLocaleDateString('es-MX', {
     weekday: 'long',
     day: 'numeric',

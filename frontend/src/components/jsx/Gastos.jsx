@@ -10,38 +10,71 @@ import { AuthContext } from '../../context/AuthContext';
 export default function Gastos() {
   const { id } = useParams();
   const { user } = useContext(AuthContext);
-  const [deleteExpenseOpen, setDeleteExpenseOpen] = useState(false);
-  const [gastos, setGastos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [gastoAEliminar, setGastoAEliminar] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const cachedGastos = sessionStorage.getItem(`gastos_${id}`);
+  const [gastos, setGastos] = useState(cachedGastos ? JSON.parse(cachedGastos) : []);
+  const [loading, setLoading] = useState(!cachedGastos);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [fetchError, setFetchError] = useState(false);
-  const [viajePresupuesto, setViajePresupuesto] = useState(0);
+  
+  // Cargar instantáneamente el presupuesto de la caché para evitar que el usuario perciba lag
+  const cachedTrip = sessionStorage.getItem(`trip_${id}`);
+  const viajeData = cachedTrip ? JSON.parse(cachedTrip) : null;
+  const [viajePresupuesto, setViajePresupuesto] = useState(viajeData?.presupuestoEstimado || 0);
+
+  const fetchGastos = async () => {
+    setIsUpdating(true);
+    try {
+      const resGastos = await api.get(`/gastos/viaje/${id}`, { timeout: 1500 });
+      const newGastos = resGastos.data || [];
+      setGastos(newGastos);
+      sessionStorage.setItem(`gastos_${id}`, JSON.stringify(newGastos));
+    } catch (err) {
+      console.error("Error cargando gastos", err);
+      setFetchError(true);
+    } finally {
+      setLoading(false);
+      setIsUpdating(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchGastos = async () => {
-      try {
-        const resViaje = await api.get(`/viajes/${id}`, { timeout: 1500 });
-        if (resViaje.data && resViaje.data.presupuestoEstimado) {
-          setViajePresupuesto(resViaje.data.presupuestoEstimado);
-        }
-
-        const res = await api.get(`/gastos/viaje/${id}`, { timeout: 1500 });
-        setGastos(res.data || []);
-      } catch (err) {
-        console.error("Error cargando gastos", err);
-        setFetchError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
     if (id) fetchGastos();
   }, [id]);
 
-  const handleDeleteExpense = () => {
-    setDeleteExpenseOpen(false);
+  const handleDeleteExpense = async () => {
+    if (!gastoAEliminar) return;
+    
+    setIsDeleting(true);
+    const idToDelete = gastoAEliminar;
+
+    try {
+      // 1. Optimistic update para asegurar que la UI (lista y saldos) se actualice de inmediato
+      const updatedGastos = gastos.filter(g => g.id !== idToDelete);
+      setGastos(updatedGastos);
+      sessionStorage.setItem(`gastos_${id}`, JSON.stringify(updatedGastos));
+
+      // 2. Eliminar en el servidor
+      await api.delete(`/gastos/${idToDelete}`);
+      
+      // 3. Forzar recarga en segundo plano para confirmar consistencia
+      fetchGastos();
+      
+    } catch (err) {
+      console.error("Error al eliminar gasto:", err);
+      alert("No se pudo eliminar el gasto en el servidor.");
+      // Rollback en caso de error
+      fetchGastos();
+    } finally {
+      setIsDeleting(false);
+      setGastoAEliminar(null);
+    }
   };
 
+  const currentUserId = user?.id || 1;
   const miGastoTotal = gastos
-    .filter(g => g.pagador?.id === user?.id)
+    .filter(g => Number(g.pagadorId) === Number(currentUserId))
     .reduce((sum, g) => sum + (g.monto || 0), 0);
   const disponible = viajePresupuesto - miGastoTotal;
 
@@ -50,6 +83,37 @@ export default function Gastos() {
     const date = new Date(fechaString + 'T00:00:00');
     return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
   };
+
+  // --- Lógica para Gráfica de Dona Dinámica ---
+  const gastosPorCategoria = gastos.reduce((acc, g) => {
+    const cat = g.categoria || 'OTRO';
+    acc[cat] = (acc[cat] || 0) + (g.monto || 0);
+    return acc;
+  }, {});
+
+  const totalGastosGenerales = gastos.reduce((sum, g) => sum + (g.monto || 0), 0);
+
+  const colors = {
+    TRANSPORTE: '#3B82F6', 
+    HOSPEDAJE: '#8B5CF6',  
+    COMIDA: '#F59E0B',     
+    ENTRETENIMIENTO: '#EC4899', 
+    OTRO: '#6B7280'        
+  };
+
+  let currentPercentage = 0;
+  const gradientStops = Object.keys(gastosPorCategoria).map(cat => {
+    const percentage = (gastosPorCategoria[cat] / totalGastosGenerales) * 100;
+    const start = currentPercentage;
+    const end = currentPercentage + percentage;
+    currentPercentage = end;
+    return `${colors[cat]} ${start}% ${end}%`;
+  });
+
+  const donutStyle = totalGastosGenerales > 0 
+    ? { background: `conic-gradient(${gradientStops.join(', ')})` }
+    : {};
+  // ---------------------------------------------
 
   return (
     <>
@@ -63,10 +127,13 @@ export default function Gastos() {
           <section className="content-card">
             <div className="section-title">
               <div>
-                <h2>Gastos del viaje</h2>
+                <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  Gastos del viaje
+                  {isUpdating && <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: '#FEF3C7', color: '#92400E', borderRadius: '12px', fontWeight: 'bold' }}>Actualizando...</span>}
+                </h2>
                 <p className="muted small">Consulta el presupuesto y los pagos pendientes.</p>
               </div>
-              <Link className="button primary" to="/registrar-gasto">＋ Registrar gasto</Link>
+              <Link className="button primary" to={`/viajes/${id}/registrar-gasto`}>＋ Registrar gasto</Link>
             </div>
             
             <div className="budget-summary">
@@ -130,9 +197,9 @@ export default function Gastos() {
                             </td>
                             <td>{g.categoria}</td>
                             <td>${(g.monto || 0).toLocaleString('es-MX')}</td>
-                            <td>{g.pagador?.nombre || '-'}</td>
+                            <td>{g.pagadorNombre || '-'}</td>
                             <td><span className="status confirmed">Confirmado</span></td>
-                            <td><button className="button danger small" onClick={() => setDeleteExpenseOpen(true)}>Eliminar</button></td>
+                            <td><button className="button danger small" onClick={() => setGastoAEliminar(g.id)}>Eliminar</button></td>
                           </tr>
                         ))}
                       </tbody>
@@ -147,12 +214,14 @@ export default function Gastos() {
                   <h3>Distribución de gastos</h3>
                   {gastos.length > 0 ? (
                     <>
-                      <div className="donut"></div>
+                      <div className="donut" style={donutStyle}></div>
                       <div className="legend">
-                        <span>Transporte</span>
-                        <span>Hospedaje</span>
-                        <span>Alimentos</span>
-                        <span>Actividades</span>
+                        {Object.keys(gastosPorCategoria).map(cat => (
+                          <span key={cat}>
+                            <span style={{display:'inline-block', width:'10px', height:'10px', backgroundColor:colors[cat], borderRadius:'50%', marginRight:'5px'}}></span>
+                            {cat} <br/><strong style={{fontSize:'0.85rem'}}>${gastosPorCategoria[cat].toLocaleString('es-MX')}</strong>
+                          </span>
+                        ))}
                       </div>
                     </>
                   ) : (
@@ -171,13 +240,14 @@ export default function Gastos() {
           </section>
 
           <ConfirmModal 
-            isOpen={deleteExpenseOpen}
+            isOpen={!!gastoAEliminar}
             title="Eliminar gasto"
-            message="Se eliminarán también las divisiones asociadas."
+            message="¿Estás seguro de que deseas eliminar este gasto de forma permanente?"
             confirmText="Eliminar"
             cancelText="Cancelar"
             onConfirm={handleDeleteExpense}
-            onCancel={() => setDeleteExpenseOpen(false)}
+            onCancel={() => setGastoAEliminar(null)}
+            isLoading={isDeleting}
           />
 
         </div>

@@ -21,7 +21,6 @@ export default function TripHeader({ id, currentTab }) {
   const fetchDetalleViaje = useCallback(async () => {
     if (!id) return;
     try {
-      // Timeout de 2 segundos para no trabar la interfaz si no hay backend
       const response = await api.get(`/viajes/${id}`, { timeout: 2000 });
       if (response.data) {
         setViaje(response.data);
@@ -29,7 +28,6 @@ export default function TripHeader({ id, currentTab }) {
       }
     } catch (err) {
       console.error('Error al cargar detalle del viaje:', err);
-      // Fallback a texto por defecto
       const fallbackViaje = {
         nombre: 'Escapada a Cancún',
         destino: 'Quintana Roo, México',

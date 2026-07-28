@@ -8,28 +8,52 @@ import api from '../../service/api';
 
 export default function Itinerario() {
   const { id } = useParams();
-  const [deleteActivityOpen, setDeleteActivityOpen] = useState(false);
-  const [actividades, setActividades] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [actividadAEliminar, setActividadAEliminar] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const cachedActividades = sessionStorage.getItem(`actividades_${id}`);
+  const [actividades, setActividades] = useState(cachedActividades ? JSON.parse(cachedActividades) : []);
+  const [loading, setLoading] = useState(!cachedActividades);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     const fetchActividades = async () => {
+      setIsUpdating(true);
       try {
         const res = await api.get(`/actividades/viaje/${id}`, { timeout: 1500 });
-        setActividades(res.data || []);
+        const newActividades = res.data || [];
+        setActividades(newActividades);
+        sessionStorage.setItem(`actividades_${id}`, JSON.stringify(newActividades));
       } catch (err) {
         console.error("Error cargando actividades", err);
         setFetchError(true);
       } finally {
         setLoading(false);
+        setIsUpdating(false);
       }
     };
     if (id) fetchActividades();
   }, [id]);
 
-  const handleDeleteActivity = () => {
-    setDeleteActivityOpen(false);
+  const handleDeleteActivity = async () => {
+    if (!actividadAEliminar) return;
+    
+    setIsDeleting(true);
+    const idToDelete = actividadAEliminar;
+
+    try {
+      await api.delete(`/actividades/${idToDelete}`);
+      
+      const nuevasActividades = actividades.filter(a => Number(a.id) !== Number(idToDelete));
+      setActividades(nuevasActividades);
+      sessionStorage.setItem(`actividades_${id}`, JSON.stringify(nuevasActividades));
+    } catch (err) {
+      console.error("Error al eliminar actividad:", err);
+      alert("No se pudo eliminar la actividad en el servidor.");
+    } finally {
+      setIsDeleting(false);
+      setActividadAEliminar(null);
+    }
   };
 
   const formatearHora = (fechaString) => {
@@ -44,7 +68,6 @@ export default function Itinerario() {
     return date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
   };
 
-  // Agrupar actividades por día
   const actividadesPorDia = actividades.reduce((acc, actividad) => {
     const dia = formatearDia(actividad.horario);
     if (!acc[dia]) acc[dia] = [];
@@ -64,8 +87,11 @@ export default function Itinerario() {
           <section className="content-card">
             <div className="section-title">
               <div>
-                <h2>Itinerario</h2>
-                <p className="muted small">Actividades organizadas por día.</p>
+                <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  Cronograma de actividades
+                  {isUpdating && <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: '#FEF3C7', color: '#92400E', borderRadius: '12px', fontWeight: 'bold' }}>Actualizando...</span>}
+                </h2>
+                <p className="muted small">Organiza día por día todo lo que harán en el viaje.</p>
               </div>
               <Link className="button primary" to={`/viajes/${id}/crear-actividad`}>＋ Agregar actividad</Link>
             </div>
@@ -96,7 +122,7 @@ export default function Itinerario() {
                               {act.descripcion || 'Sin descripción'} · Responsable: {act.responsable?.nombre || '-'}
                             </p>
                           </div>
-                          <button className="button danger small" onClick={() => setDeleteActivityOpen(true)}>Eliminar</button>
+                          <button className="button danger small" onClick={() => setActividadAEliminar(act.id)}>Eliminar</button>
                         </article>
                       ))}
                     </div>
@@ -107,13 +133,14 @@ export default function Itinerario() {
           </section>
 
           <ConfirmModal 
-            isOpen={deleteActivityOpen}
+            isOpen={!!actividadAEliminar}
             title="Eliminar actividad"
-            message="La actividad desaparecerá del itinerario de todos los participantes."
+            message="¿Estás seguro de que deseas eliminar esta actividad del itinerario?"
             confirmText="Eliminar"
             cancelText="Cancelar"
             onConfirm={handleDeleteActivity}
-            onCancel={() => setDeleteActivityOpen(false)}
+            onCancel={() => setActividadAEliminar(null)}
+            isLoading={isDeleting}
           />
 
         </div>

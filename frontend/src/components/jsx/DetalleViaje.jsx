@@ -50,7 +50,6 @@ export default function DetalleViaje() {
             partCount = resPart.data.length;
           }
         } catch {
-          // Fallback silencioso en caso de error o sin backend
         }
 
         setViaje({

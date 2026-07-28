@@ -1,32 +1,29 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import Navbar from './Navbar';
-import LugarAutocomplete from './LugarAutocomplete';
 import api from '../../service/api';
 import { AuthContext } from '../../context/AuthContext';
 import '../css/styles.css';
 
-export default function CrearActividad() {
+export default function RegistrarGasto() {
   const { id } = useParams();
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Intentar obtener las fechas del viaje de la caché para limitar el selector de fecha
+  // Fechas del viaje para validar
   const cachedTrip = sessionStorage.getItem(`trip_${id}`);
   const viajeData = cachedTrip ? JSON.parse(cachedTrip) : null;
-  const fechaMin = viajeData?.fechaInicio ? `${viajeData.fechaInicio}T00:00` : undefined;
-  const fechaMax = viajeData?.fechaFin ? `${viajeData.fechaFin}T23:59` : undefined;
+  const fechaMin = viajeData?.fechaInicio || undefined;
+  const fechaMax = viajeData?.fechaFin || undefined;
 
   const [formData, setFormData] = useState({
-    lugar: '',
-    horario: '',
-    descripcion: '',
-    costoEstimado: '',
-    estado: 'PENDIENTE',
-    responsableId: user?.id || 1
+    concepto: '',
+    monto: '',
+    categoria: 'OTRO',
+    fecha: new Date().toISOString().split('T')[0],
+    pagadorId: user?.id || 1
   });
 
-  const [lugarReferencia, setLugarReferencia] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(null);
   const [participantes, setParticipantes] = useState([]);
@@ -48,17 +45,12 @@ export default function CrearActividad() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleLugarSelect = (texto, lugarObj) => {
-    setFormData(prev => ({ ...prev, lugar: texto }));
-    setLugarReferencia(lugarObj);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
-    if (!formData.lugar.trim() || !formData.horario) {
-      setError("Por favor completa el lugar y el horario.");
+    if (!formData.concepto.trim() || !formData.monto || formData.monto <= 0) {
+      setError("Por favor ingresa un concepto válido y un monto mayor a 0.");
       return;
     }
 
@@ -66,33 +58,31 @@ export default function CrearActividad() {
       setCargando(true);
 
       const payload = {
-        lugar: formData.lugar,
-        horario: formData.horario,
-        descripcion: formData.descripcion,
-        costoEstimado: formData.costoEstimado ? parseFloat(formData.costoEstimado) : 0,
-        estado: formData.estado,
         viajeId: parseInt(id),
-        responsableId: parseInt(formData.responsableId),
-        lugarReferencia
+        pagadorId: parseInt(formData.pagadorId),
+        concepto: formData.concepto.trim(),
+        monto: parseFloat(formData.monto),
+        categoria: formData.categoria,
+        fecha: formData.fecha
       };
 
-      const response = await api.post('/actividades', payload);
-
+      const response = await api.post('/gastos', payload);
+      
       // Actualizar la caché inmediatamente para que no haya tiempo de carga al redirigir
-      const cached = sessionStorage.getItem(`actividades_${id}`);
+      const cached = sessionStorage.getItem(`gastos_${id}`);
       if (cached) {
         const parsed = JSON.parse(cached);
         parsed.push(response.data);
-        sessionStorage.setItem(`actividades_${id}`, JSON.stringify(parsed));
+        sessionStorage.setItem(`gastos_${id}`, JSON.stringify(parsed));
       }
 
-      navigate(`/viajes/${id}/itinerario`);
+      navigate(`/viajes/${id}/gastos`);
     } catch (err) {
-      console.error("Error al crear actividad:", err);
+      console.error("Error al registrar gasto:", err);
       if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
         setError("⚠️ No se puede conectar con el servidor (Network Error). Revisa que tu backend en Spring Boot esté encendido.");
       } else {
-        const msj = err.response?.data?.mensaje || err.response?.data?.message || "Ocurrió un error al guardar la actividad.";
+        const msj = err.response?.data?.mensaje || err.response?.data?.message || "Ocurrió un error al guardar el gasto.";
         setError(msj);
       }
     } finally {
@@ -107,12 +97,12 @@ export default function CrearActividad() {
         <div className="container">
           <div className="page-head">
             <div>
-              <Link className="eyebrow" style={{ color: 'var(--coral)', textDecoration: 'none' }} to={`/viajes/${id}/itinerario`}>
-                ← Volver al itinerario
+              <Link className="eyebrow" style={{ color: 'var(--coral)', textDecoration: 'none' }} to={`/viajes/${id}/gastos`}>
+                ← Volver a gastos
               </Link>
-              <h1>Agregar actividad</h1>
+              <h1>Registrar gasto</h1>
               <p className="muted">
-                Registra un nuevo evento o lugar a visitar en tu itinerario.
+                Añade un nuevo gasto al viaje para llevar el control del presupuesto.
               </p>
             </div>
           </div>
@@ -125,64 +115,57 @@ export default function CrearActividad() {
 
           <form className="card form-card" onSubmit={handleSubmit}>
             <section className="form-section">
-              <h3>Detalles principales</h3>
+              <h3>Detalles del gasto</h3>
               <div className="form-grid" style={{ gridTemplateColumns: '1fr' }}>
-                <LugarAutocomplete 
-                  label="Lugar o nombre de la actividad *"
-                  placeholder="Ej. Ruinas Mayas, Restaurante El Rey..."
-                  value={formData.lugar}
-                  onSelectLugar={handleLugarSelect}
-                  required
-                />
+                <label className="field">
+                  <span>Concepto *</span>
+                  <input 
+                    type="text" 
+                    name="concepto"
+                    value={formData.concepto}
+                    onChange={handleChange}
+                    placeholder="Ej. Cenas en el centro, Boletos de museo..."
+                    required
+                  />
+                </label>
               </div>
 
               <div className="form-grid">
                 <label className="field">
-                  <span>Fecha y Hora *</span>
+                  <span>Monto ($ MXN) *</span>
                   <input 
-                    type="datetime-local" 
-                    name="horario"
-                    value={formData.horario}
+                    type="number" 
+                    name="monto"
+                    value={formData.monto}
                     onChange={handleChange}
-                    min={fechaMin}
-                    max={fechaMax}
+                    placeholder="Ej. 450"
+                    min="0.01"
+                    step="0.01"
                     required
                   />
-                  {fechaMin && <span className="muted" style={{fontSize:'0.75rem'}}>Debe estar entre {viajeData.fechaInicio} y {viajeData.fechaFin}</span>}
                 </label>
                 <label className="field">
-                  <span>Estado</span>
+                  <span>Categoría</span>
                   <select 
-                    name="estado"
-                    value={formData.estado}
+                    name="categoria"
+                    value={formData.categoria}
                     onChange={handleChange}
                   >
-                    <option value="PENDIENTE">Planificación (Pendiente)</option>
-                    <option value="CONFIRMADA">Confirmada</option>
+                    <option value="TRANSPORTE">Transporte</option>
+                    <option value="HOSPEDAJE">Hospedaje</option>
+                    <option value="COMIDA">Comida</option>
+                    <option value="ENTRETENIMIENTO">Entretenimiento</option>
+                    <option value="OTRO">Otro</option>
                   </select>
                 </label>
               </div>
 
-              <label className="field">
-                <span>Descripción o notas (opcional)</span>
-                <textarea 
-                  name="descripcion"
-                  rows="3"
-                  value={formData.descripcion}
-                  onChange={handleChange}
-                  placeholder="Instrucciones, código de vestimenta, qué llevar..."
-                />
-              </label>
-            </section>
-
-            <section className="form-section">
-              <h3>Responsabilidades y Presupuesto</h3>
               <div className="form-grid">
                 <label className="field">
-                  <span>Responsable</span>
+                  <span>Pagado por</span>
                   <select 
-                    name="responsableId"
-                    value={formData.responsableId}
+                    name="pagadorId"
+                    value={formData.pagadorId}
                     onChange={handleChange}
                   >
                     <option value={user?.id || 1}>Yo ({user?.nombre || 'Miguel'})</option>
@@ -194,26 +177,27 @@ export default function CrearActividad() {
                   </select>
                 </label>
                 <label className="field">
-                  <span>Costo estimado ($ MXN)</span>
+                  <span>Fecha</span>
                   <input 
-                    type="number" 
-                    name="costoEstimado"
-                    value={formData.costoEstimado}
+                    type="date" 
+                    name="fecha"
+                    value={formData.fecha}
                     onChange={handleChange}
-                    placeholder="Ej. 1200"
-                    min="0"
-                    step="50"
+                    min={fechaMin}
+                    max={fechaMax}
+                    required
                   />
+                  {fechaMin && <span className="muted" style={{fontSize:'0.75rem'}}>Debe estar entre {viajeData.fechaInicio} y {viajeData.fechaFin}</span>}
                 </label>
               </div>
             </section>
 
             <div className="form-actions">
-              <Link className="button ghost" to={`/viajes/${id}/itinerario`}>
+              <Link className="button ghost" to={`/viajes/${id}/gastos`}>
                 Cancelar
               </Link>
               <button type="submit" className="button primary" disabled={cargando}>
-                {cargando ? 'Guardando...' : 'Guardar actividad'}
+                {cargando ? 'Guardando...' : 'Guardar gasto'}
               </button>
             </div>
           </form>

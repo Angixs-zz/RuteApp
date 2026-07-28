@@ -37,12 +37,8 @@ public class ConfiguracionDeSeguridad {
 
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(withDefaults()) // <--- ESTO ES LO ÚNICO QUE FALTA AGREGAR AQUÍ
+                .cors(withDefaults()) 
 
-                /*
-                 * No usamos sesiones.
-                 * Cada petición debe traer su JWT.
-                 */
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS

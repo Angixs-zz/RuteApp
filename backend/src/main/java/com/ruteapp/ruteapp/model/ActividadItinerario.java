@@ -34,7 +34,6 @@ public class ActividadItinerario {
     @Column(columnDefinition = "TEXT")
     private String descripcion;
 
-    // Relación ManyToOne directa con el Usuario que funge como responsable
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "responsable_id", nullable = false)
     private Usuario responsable;

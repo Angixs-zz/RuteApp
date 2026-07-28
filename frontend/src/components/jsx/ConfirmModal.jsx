@@ -1,7 +1,7 @@
 import React from 'react';
-import '../css/styles.css'; // Asumimos que aquí o en un CSS global agregaremos estilos para el modal
+import '../css/styles.css';
 
-export default function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, confirmText = 'Confirmar', cancelText = 'Cancelar' }) {
+export default function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, confirmText = 'Confirmar', cancelText = 'Cancelar', isLoading = false }) {
   if (!isOpen) return null;
 
   return (
@@ -10,11 +10,11 @@ export default function ConfirmModal({ isOpen, title, message, onConfirm, onCanc
         <h2 style={{ marginTop: 0 }}>{title}</h2>
         <p>{message}</p>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-          <button className="button ghost" onClick={onCancel}>
+          <button className="button ghost" onClick={onCancel} disabled={isLoading}>
             {cancelText}
           </button>
-          <button className="button primary" onClick={onConfirm} style={{ backgroundColor: '#FF735C' }}>
-            {confirmText}
+          <button className="button primary" onClick={onConfirm} style={{ backgroundColor: '#FF735C' }} disabled={isLoading}>
+            {isLoading ? 'Cargando...' : confirmText}
           </button>
         </div>
       </div>

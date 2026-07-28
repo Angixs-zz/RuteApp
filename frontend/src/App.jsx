@@ -34,6 +34,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/viajes" element={<MisViajes />} />
+            <Route path="/invitaciones" element={<Invitaciones />} />
             <Route path="/viajes/:id" element={<DetalleViaje />} />
             <Route path="/detalle-viaje" element={<DetalleViaje />} />
             <Route path="/participantes" element={<Participantes />} />

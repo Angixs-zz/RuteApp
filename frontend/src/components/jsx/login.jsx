@@ -1,20 +1,87 @@
-import React from 'react';
-import { Link } from 'react-router-dom'; // <--- 1. Importamos Link para la navegación fluida
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import '../css/styles.css'; 
-import logoImg from '../../assets/react.svg'; // <--- 2. Apuntamos a tu logo real .png
-import { useLogin } from '../js/login';
+import logoImg from '../../assets/logo.jpeg'; 
+import api from '../../service/api';
+import { AuthContext } from '../../context/AuthContext';
 
 export default function Login() {
-  const {
-    email, setEmail,
-    password, setPassword,
-    errorEmail,
-    errorPassword,
-    errorGeneral,
-    mensajeExito,
-    loading,
-    handleSubmit
-  } = useLogin();
+  const { loginContext } = useContext(AuthContext);
+  const navigate = useNavigate();
+  
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  
+  const [errorEmail, setErrorEmail] = useState('');
+  const [errorPassword, setErrorPassword] = useState('');
+  const [errorGeneral, setErrorGeneral] = useState('');
+  const [mensajeExito, setMensajeExito] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    setErrorEmail('');
+    setErrorPassword('');
+    setErrorGeneral('');
+    setMensajeExito('');
+
+    let hayErrores = false;
+
+    if (!email.trim()) {
+      setErrorEmail('El correo electrónico es obligatorio.');
+      hayErrores = true;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      setErrorEmail('El formato del correo no es válido.');
+      hayErrores = true;
+    }
+
+    if (!password) {
+      setErrorPassword('La contraseña es obligatoria.');
+      hayErrores = true;
+    } else {
+      if (password.length < 8) {
+        setErrorPassword('Mínimo 8 caracteres.');
+        hayErrores = true;
+      } else if (!/(?=.*[A-Z])/.test(password)) {
+        setErrorPassword('Debe incluir una mayúscula.');
+        hayErrores = true;
+      } else if (!/(?=.*\d)/.test(password)) {
+        setErrorPassword('Debe incluir un número.');
+        hayErrores = true;
+      } else if (!/(?=.*[^A-Za-z0-9])/.test(password)) {
+        setErrorPassword('Debe incluir un carácter especial.');
+        hayErrores = true;
+      }
+    }
+
+    if (hayErrores) return;
+
+    setLoading(true);
+    try {
+      const response = await api.post('/auth/login', {
+        correo: email,
+        password
+      });
+
+      loginContext(response.data.token);
+      setMensajeExito('¡Bienvenido a RuteApp!');
+      
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
+      
+    } catch (error) {
+      console.error(error);
+      if (!error.response) {
+        setErrorGeneral('Error de conexión: El servidor no está respondiendo.');
+      } else {
+        setErrorGeneral('Credenciales incorrectas. Verifica tu correo y contraseña.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="auth-shell">
@@ -91,7 +158,6 @@ export default function Login() {
               Continuar con Google
             </button>
 
-            {/* 3. Reemplazamos <a> por <Link> de react-router-dom */}
             <p className="small" style={{ textAlign: 'center', marginTop: '18px' }}>
               ¿No tienes una cuenta? <Link to="/registro">Crear cuenta</Link>
             </p>

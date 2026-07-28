@@ -58,6 +58,16 @@ export default function CrearViaje() {
       return;
     }
 
+    const hoy = new Date().toISOString().split('T')[0];
+    if (formData.fechaInicio < hoy) {
+      setError("La fecha de inicio no puede ser una fecha pasada.");
+      return;
+    }
+    if (formData.fechaFin < formData.fechaInicio) {
+      setError("La fecha de finalización no puede ser anterior a la fecha de inicio.");
+      return;
+    }
+
     if (!origenLugar || !destinoLugar) {
       setErroresLugar({
         origen: origenLugar ? '' : 'Selecciona un origen de las sugerencias.',
@@ -178,6 +188,7 @@ export default function CrearViaje() {
                     type="date" 
                     name="fechaInicio"
                     value={formData.fechaInicio}
+                    min={new Date().toISOString().split('T')[0]}
                     onChange={handleChange}
                     required
                   />
@@ -188,6 +199,7 @@ export default function CrearViaje() {
                     type="date" 
                     name="fechaFin"
                     value={formData.fechaFin}
+                    min={formData.fechaInicio || new Date().toISOString().split('T')[0]}
                     onChange={handleChange}
                     required
                   />
@@ -195,7 +207,7 @@ export default function CrearViaje() {
               </div>
               <div className="form-grid">
                 <label className="field">
-                  <span>Presupuesto estimado ($ MXN)</span>
+                  <span>Presupuesto por persona ($ MXN)</span>
                   <input 
                     type="number" 
                     name="presupuestoEstimado"

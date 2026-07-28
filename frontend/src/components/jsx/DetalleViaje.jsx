@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import TripHeader from './TripHeader';
 import api from '../../service/api';
 import '../css/styles.css';
 
@@ -155,33 +156,7 @@ export default function DetalleViaje() {
             </div>
           ) : (
             <>
-              {/* Trip Hero Header */}
-              <section className="trip-hero">
-                <div className="trip-hero-content">
-                  <div>
-                    <span className={estadoBadge.className}>{estadoBadge.label}</span>
-                    <h1>{viaje.nombre}</h1>
-                    <p>{viaje.destino} · {formatearFechas(viaje.fechaInicio, viaje.fechaFin)}</p>
-                  </div>
-                  {viaje.estado !== 'CANCELADO' && (
-                    <button 
-                      className="button ghost" 
-                      onClick={() => setShowCancelModal(true)}
-                    >
-                      Cancelar viaje
-                    </button>
-                  )}
-                </div>
-              </section>
-
-              {/* Tabs Nav */}
-              <nav className="tabs">
-                <Link className="active" to={`/viajes/${viaje.id}`}>Resumen</Link>
-                <Link to="/participantes">Participantes</Link>
-                <Link to="/itinerario">Itinerario</Link>
-                <Link to="/gastos">Gastos</Link>
-                <Link to="/notificaciones">Notificaciones</Link>
-              </nav>
+              <TripHeader id={viaje.id} currentTab="resumen" />
 
               {/* Main Content Card */}
               <section className="content-card">
@@ -207,7 +182,7 @@ export default function DetalleViaje() {
                         <strong>{viaje.participantesCount} confirmados</strong>
                       </div>
                       <div className="info-item">
-                        <span>Presupuesto</span>
+                        <span>Presupuesto por persona</span>
                         <strong>${(viaje.presupuestoEstimado || 0).toLocaleString('es-MX')} MXN</strong>
                       </div>
                       <div className="info-item">
@@ -239,30 +214,6 @@ export default function DetalleViaje() {
         </div>
       </main>
 
-      {/* Modal Backdrop de Cancelación */}
-      <div className={`modal-backdrop ${showCancelModal ? 'open' : ''}`} id="cancelTrip">
-        <div className="modal">
-          <div className="modal-icon">⚠️</div>
-          <h3>¿Cancelar este viaje?</h3>
-          <p className="muted">
-            Los participantes recibirán una notificación y el viaje cambiará al estado cancelado.
-          </p>
-          <div className="modal-actions">
-            <button 
-              className="button ghost" 
-              onClick={() => setShowCancelModal(false)}
-            >
-              Volver
-            </button>
-            <button 
-              className="button danger" 
-              onClick={handleCancelarViaje}
-            >
-              Cancelar viaje
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* Toast Notification */}
       <div className={`toast ${toastMessage ? 'show' : ''}`}>

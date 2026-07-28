@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ruteapp.ruteapp.dto.entrada.GoogleLoginEntrada;
 import com.ruteapp.ruteapp.dto.entrada.LoginEntrada;
 import com.ruteapp.ruteapp.dto.entrada.RestablecerPasswordEntrada;
 import com.ruteapp.ruteapp.dto.entrada.SolicitudRecuperacionEntrada;
@@ -33,6 +34,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginRespuesta> login(@Valid @RequestBody LoginEntrada entrada) {
         return ResponseEntity.ok(authService.login(entrada));
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<LoginRespuesta> loginGoogle(
+            @Valid @RequestBody GoogleLoginEntrada entrada) {
+        return ResponseEntity.ok(authService.loginGoogle(entrada.getCredential()));
     }
 
     @PostMapping("/recuperacion/solicitar")

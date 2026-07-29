@@ -70,10 +70,19 @@ export default function MisViajes() {
     setPaginaActual(0);
   };
 
+  const calcularEstadoVisual = (inicio, fin, estadoDb) => {
+    if (estadoDb === 'CANCELADO') return 'CANCELADO';
+    if (!inicio || !fin) return 'PLANIFICACION';
+    const hoy = new Date().toISOString().split('T')[0];
+    if (hoy < inicio) return 'PLANIFICACION';
+    if (hoy > fin) return 'FINALIZADO';
+    return 'EN_CURSO';
+  };
+
   const formatearEstado = (estado) => {
     switch (estado) {
       case 'PLANIFICACION':
-        return { label: 'Planeación', className: 'status planning' };
+        return { label: 'En Planeación', className: 'status planning' };
       case 'EN_CURSO':
         return { label: 'Confirmado / En Curso', className: 'status confirmed' };
       case 'FINALIZADO':
@@ -81,7 +90,7 @@ export default function MisViajes() {
       case 'CANCELADO':
         return { label: 'Cancelado', className: 'status danger' };
       default:
-        return { label: estado || 'Planeación', className: 'status planning' };
+        return { label: estado || 'En Planeación', className: 'status planning' };
     }
   };
 
@@ -94,7 +103,8 @@ export default function MisViajes() {
   };
 
   const viajesFiltrados = viajes.filter(v => {
-    if (estadoFiltro !== 'TODOS' && v.estado !== estadoFiltro) return false;
+    const estadoReal = calcularEstadoVisual(v.fechaInicio, v.fechaFin, v.estado);
+    if (estadoFiltro !== 'TODOS' && estadoReal !== estadoFiltro) return false;
     if (busqueda.trim() !== '') {
       const q = busqueda.toLowerCase();
       const matchNombre = v.nombre?.toLowerCase().includes(q);
@@ -165,7 +175,14 @@ export default function MisViajes() {
           ) : (
             <section className="list-card">
               {viajesFiltrados.map((viaje) => {
-                const est = formatearEstado(viaje.estado);
+                const estadoReal = calcularEstadoVisual(viaje.fechaInicio, viaje.fechaFin, viaje.estado);
+                const est = formatearEstado(estadoReal);
+                
+                // Formatear solo el día y mes de inicio para el recuadro
+                const fechaCorta = viaje.fechaInicio 
+                  ? new Date(viaje.fechaInicio + 'T12:00:00').toLocaleDateString('es-MX', {day: 'numeric', month: 'short'})
+                  : '--';
+
                 return (
                   <article key={viaje.id} className="trip-row">
                     <div className="row-thumb" style={{ background: viaje.gradiente || 'linear-gradient(135deg, #0E7C7B, #17BEBB)' }}></div>
@@ -183,8 +200,8 @@ export default function MisViajes() {
                       <span>Presupuesto</span>
                     </div>
                     <div className="metric">
-                      <strong>{viaje.porcentajePlaneado || 0}%</strong>
-                      <span>{viaje.estado === 'FINALIZADO' ? 'Completado' : 'Planeado'}</span>
+                      <strong>{fechaCorta}</strong>
+                      <span>Salida</span>
                     </div>
                     <Link className="button ghost small" to={`/viajes/${viaje.id}`}>
                       Ver detalle

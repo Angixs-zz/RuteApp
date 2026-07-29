@@ -235,14 +235,6 @@ export default function CrearViaje() {
               </div>
             </section>
 
-            <section className="form-section">
-              <h3>Imagen de portada</h3>
-              <div className="cover-uploader">
-                <div className="upload-placeholder"><ImagePlus size={32} color="#9CA3AF" /></div>
-                <p><strong>Arrastra una imagen o selecciónala</strong></p>
-                <span className="small muted">JPG o PNG, máximo 5 MB.</span>
-              </div>
-            </section>
 
             <div className="form-actions">
               <Link className="button ghost" to="/viajes">

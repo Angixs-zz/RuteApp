@@ -17,6 +17,15 @@ import CrearActividad from './components/jsx/CrearActividad';
 import Gastos from './components/jsx/Gastos';
 import Invitaciones from './components/jsx/Invitaciones';
 import Perfil from './components/jsx/Perfil';
+import AdminDashboard from './components/jsx/AdminDashboard';
+import AdminUsuarios from './components/jsx/AdminUsuarios';
+import AdminUsuarioDetalle from './components/jsx/AdminUsuarioDetalle';
+import AdminViajes from './components/jsx/AdminViajes';
+import AdminViajeDetalle from './components/jsx/AdminViajeDetalle';
+import AdminUsuarioForm from './components/jsx/AdminUsuarioForm';
+import AdminViajeForm from './components/jsx/AdminViajeForm';
+import AdminActividades from './components/jsx/AdminActividades';
+import AdminGastos from './components/jsx/AdminGastos';
 
 function App() {
   return (
@@ -47,8 +56,22 @@ function App() {
             <Route path="/viajes/:id/crear-actividad" element={<CrearActividad />} />
             <Route path="/gastos" element={<Gastos />} />
             <Route path="/viajes/:id/gastos" element={<Gastos />} />
+          </Route>
+          <Route element={<ProtectedRoute rolesPermitidos={['USUARIO', 'AGENCIA']} />}>
             <Route path="/crear-viaje" element={<CrearViaje />} />
             <Route path="/viajes/crear" element={<CrearViaje />} />
+          </Route>
+          <Route element={<ProtectedRoute rolesPermitidos={['ADMINISTRADOR']} />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/usuarios" element={<AdminUsuarios />} />
+            <Route path="/admin/usuarios/:id" element={<AdminUsuarioDetalle />} />
+            <Route path="/admin/usuarios/nuevo" element={<AdminUsuarioForm />} />
+            <Route path="/admin/usuarios/:id/editar" element={<AdminUsuarioForm />} />
+            <Route path="/admin/viajes" element={<AdminViajes />} />
+            <Route path="/admin/viajes/:id" element={<AdminViajeDetalle />} />
+            <Route path="/admin/viajes/:id/editar" element={<AdminViajeForm />} />
+            <Route path="/admin/actividades" element={<AdminActividades />} />
+            <Route path="/admin/gastos" element={<AdminGastos />} />
           </Route>
         </Routes>
       </BrowserRouter>

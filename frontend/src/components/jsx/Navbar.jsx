@@ -59,21 +59,34 @@ export default function Navbar({ invitacionesCount }) {
   const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(nombreUsuario)}&background=random`;
 
   const pathname = location.pathname;
+  const esAdministrador = user?.rol === 'ADMINISTRADOR';
 
   return (
     <>
       <header className="app-nav">
         <div className="container">
-          <Link className="brand compact" to="/dashboard">
+          <Link className="brand compact" to={esAdministrador ? '/admin' : '/dashboard'}>
             <img src={logoImg} alt="RuteApp" style={{ height: '36px', width: 'auto' }} />
           </Link>
           
           <nav className={`app-links ${isMobileMenuOpen ? 'mobile-active' : ''}`}>
-            <Link className={pathname === '/dashboard' ? 'active' : ''} to="/dashboard">Inicio</Link>
-            <Link className={pathname.startsWith('/viajes') ? 'active' : ''} to="/viajes">Mis viajes</Link>
-            <Link className={pathname === '/invitaciones' ? 'active' : ''} to="/invitaciones">
-              Invitaciones {cantidadInvitaciones > 0 && <span className="nav-badge">{cantidadInvitaciones}</span>}
-            </Link>
+            {esAdministrador ? (
+              <>
+                <Link className={pathname === '/admin' ? 'active' : ''} to="/admin">Dashboard</Link>
+                <Link className={pathname.startsWith('/admin/usuarios') ? 'active' : ''} to="/admin/usuarios">Usuarios</Link>
+                <Link className={pathname.startsWith('/admin/viajes') ? 'active' : ''} to="/admin/viajes">Viajes</Link>
+                <Link className={pathname.startsWith('/admin/actividades') ? 'active' : ''} to="/admin/actividades">Actividades</Link>
+                <Link className={pathname.startsWith('/admin/gastos') ? 'active' : ''} to="/admin/gastos">Gastos</Link>
+              </>
+            ) : (
+              <>
+                <Link className={pathname === '/dashboard' ? 'active' : ''} to="/dashboard">Inicio</Link>
+                <Link className={pathname.startsWith('/viajes') ? 'active' : ''} to="/viajes">Mis viajes</Link>
+                <Link className={pathname === '/invitaciones' ? 'active' : ''} to="/invitaciones">
+                  Invitaciones {cantidadInvitaciones > 0 && <span className="nav-badge">{cantidadInvitaciones}</span>}
+                </Link>
+              </>
+            )}
           </nav>
 
           <div className="user-menu">

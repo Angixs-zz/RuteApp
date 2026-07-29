@@ -2,10 +2,12 @@ package com.ruteapp.ruteapp.controller;
 
 import com.ruteapp.ruteapp.dto.entrada.ActividadEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.ActividadRespuesta;
+import com.ruteapp.ruteapp.dto.respuesta.PaginaRespuesta;
 import com.ruteapp.ruteapp.service.ActividadItinerarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +27,12 @@ public class ActividadItinerarioController {
     @GetMapping
     public ResponseEntity<List<ActividadRespuesta>> listarTodas() {
         return ResponseEntity.ok(actividadService.listarTodos());
+    }
+
+    @GetMapping("/paginadas")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public PaginaRespuesta<ActividadRespuesta> listarPaginadas(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(required = false) String busqueda, @RequestParam(required = false) String estado) {
+        return actividadService.listarPaginados(page, size, busqueda, estado);
     }
 
     // GET: Buscar actividad por ID

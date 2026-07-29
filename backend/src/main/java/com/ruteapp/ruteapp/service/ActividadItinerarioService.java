@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import com.ruteapp.ruteapp.dto.entrada.ActividadEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.ActividadRespuesta;
+import com.ruteapp.ruteapp.dto.respuesta.PaginaRespuesta;
 import com.ruteapp.ruteapp.exception.RecursoNoEncontradoException;
 import com.ruteapp.ruteapp.model.ActividadItinerario;
 import com.ruteapp.ruteapp.model.Lugar;
@@ -46,6 +50,11 @@ public class ActividadItinerarioService {
             respuestas.add(convertirARespuesta(a));
         }
         return respuestas;
+    }
+
+    public PaginaRespuesta<ActividadRespuesta> listarPaginados(int pagina, int tamanio, String busqueda, String estado) {
+        Page<ActividadRespuesta> resultado = actividadRepository.buscar(busqueda == null ? "" : busqueda.trim(), estado == null ? "" : estado, PageRequest.of(pagina, tamanio, Sort.by("horario").descending())).map(this::convertirARespuesta);
+        return new PaginaRespuesta<>(resultado.getContent(), resultado.getNumber(), resultado.getSize(), resultado.getTotalElements(), resultado.getTotalPages(), resultado.isLast());
     }
 
     public ActividadRespuesta buscarPorId(Long id) {

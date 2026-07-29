@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import com.ruteapp.ruteapp.dto.entrada.GastoEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.GastoRespuesta;
+import com.ruteapp.ruteapp.dto.respuesta.PaginaRespuesta;
 import com.ruteapp.ruteapp.exception.RecursoNoEncontradoException;
 import com.ruteapp.ruteapp.model.CategoriaGasto;
 import com.ruteapp.ruteapp.model.Gasto;
@@ -43,6 +47,11 @@ public class GastoService {
         }
 
         return respuestas;
+    }
+
+    public PaginaRespuesta<GastoRespuesta> listarPaginados(int pagina, int tamanio, String busqueda, CategoriaGasto categoria) {
+        Page<GastoRespuesta> resultado = gastoRepository.buscar(busqueda == null ? "" : busqueda.trim(), categoria, PageRequest.of(pagina, tamanio, Sort.by("fecha").descending())).map(this::convertirARespuesta);
+        return new PaginaRespuesta<>(resultado.getContent(), resultado.getNumber(), resultado.getSize(), resultado.getTotalElements(), resultado.getTotalPages(), resultado.isLast());
     }
 
     public GastoRespuesta buscarPorId(Long id) {

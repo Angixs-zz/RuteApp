@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import com.ruteapp.ruteapp.model.Usuario;
 import com.ruteapp.ruteapp.model.Viaje;
 import com.ruteapp.ruteapp.model.EstadoInvitacion;
+import com.ruteapp.ruteapp.model.EstadoViaje;
 
 public interface ViajeRepository extends JpaRepository<Viaje, Long> {
 
@@ -53,4 +54,12 @@ public interface ViajeRepository extends JpaRepository<Viaje, Long> {
             @Param("busqueda") String busqueda,
             Pageable pageable
     );
+
+    @EntityGraph(attributePaths = {"organizador", "origenLugar", "destinoLugar"})
+    @Query("""
+            SELECT v FROM Viaje v WHERE
+            (:busqueda = '' OR LOWER(v.nombre) LIKE LOWER(CONCAT('%', :busqueda, '%')) OR LOWER(v.origen) LIKE LOWER(CONCAT('%', :busqueda, '%')) OR LOWER(v.destino) LIKE LOWER(CONCAT('%', :busqueda, '%')) OR LOWER(v.organizador.nombre) LIKE LOWER(CONCAT('%', :busqueda, '%')))
+            AND (:estado IS NULL OR v.estado = :estado)
+            """)
+    Page<Viaje> buscarTodos(@Param("busqueda") String busqueda, @Param("estado") EstadoViaje estado, Pageable pageable);
 }

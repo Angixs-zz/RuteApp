@@ -252,6 +252,11 @@ th{background:#F7FAF9;font-size:9px;text-transform:uppercase;letter-spacing:.07e
 .modal{width:min(440px,100%);background:#fff;border-radius:20px;padding:25px;box-shadow:var(--shadow)}
 .modal-icon{width:50px;height:50px;border-radius:15px;background:var(--coral-soft);display:grid;place-items:center;font-size:24px;margin-bottom:15px}
 .modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}
+.invite-channels{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0}
+.invite-channel{display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--muted);padding:11px;cursor:pointer;font:inherit;font-size:12px;font-weight:700}
+.invite-channel:hover{border-color:var(--primary);color:var(--primary)}
+.invite-channel.active{border-color:var(--primary);background:var(--primary);color:#fff}
+.invite-channel.whatsapp.active{border-color:#25D366;background:#25D366;color:#fff}
 .toast{position:fixed;right:24px;bottom:24px;background:#173232;color:#fff;border-radius:12px;padding:13px 16px;box-shadow:var(--shadow);display:none;z-index:120;font-size:12px}
 .toast.show{display:block}
 .footer{background:#173232;color:#fff;padding:45px 0}.footer-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px}.footer p{color:#B8C9C7}

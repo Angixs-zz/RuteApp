@@ -1,0 +1,24 @@
+info:
+  name: Enviar WhatsApp
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/comunicaciones/whatsapp"
+  body:
+    type: json
+    data: |-
+      {
+        "telefono": "+5210000000000",
+        "mensaje": "Tu invitación al viaje fue confirmada correctamente."
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

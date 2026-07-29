@@ -246,6 +246,16 @@ FRONTEND_URL=http://localhost:5173
 
 `MAIL_USERNAME` debe ser el valor **SMTP login** mostrado por Brevo, que puede ser diferente del correo del perfil. `MAIL_FROM` debe estar registrado y verificado en **Senders & IP**. La clave SMTP es secreta y nunca debe agregarse a `application-example.properties` ni al repositorio.
 
+Para habilitar mensajes de WhatsApp mediante el Sandbox de Twilio, configura:
+
+```bash
+TWILIO_ACCOUNT_SID=SID_DE_LA_CUENTA
+TWILIO_AUTH_TOKEN=TOKEN_SECRETO
+TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
+```
+
+El SID y el token deben mantenerse fuera del repositorio. En el Sandbox, el destinatario debe haberse unido previamente con el código `join` asignado por Twilio. Los mensajes libres solo funcionan durante las 24 horas posteriores al último mensaje del usuario; fuera de esa ventana se requiere una plantilla aprobada.
+
 5. Iniciar el backend desde su directorio.
 
 ```bash
@@ -318,10 +328,13 @@ Algunas rutas principales son:
 | GET | `/api/actividades/viaje/{id}` | Consultar el itinerario de un viaje |
 | GET | `/api/gastos/viaje/{id}` | Consultar gastos de un viaje |
 | GET | `/api/lugares/autocompletar` | Buscar sugerencias de lugares |
+| POST | `/api/comunicaciones/whatsapp` | Enviar un mensaje por WhatsApp mediante Twilio |
 
 ## Pruebas con Bruno
 
 La colección se encuentra en `bruno/RuteApp/`. Incluye peticiones para iniciar sesión, utilizar el token JWT, probar los módulos principales y comprobar respuestas de error intencionales.
+
+La petición `Comunicaciones/Enviar WhatsApp.yml` requiere un JWT en la variable `token`, un teléfono real en formato internacional y las credenciales de Twilio configuradas en el backend.
 
 El entorno local de Bruno utiliza como base `http://localhost:8080`. Los identificadores y tokens guardados en la colección son valores de prueba y pueden cambiar al reiniciar la base de datos.
 

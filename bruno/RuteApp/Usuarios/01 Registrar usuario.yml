@@ -1,0 +1,19 @@
+info:
+  name: Registrar usuario publicamente
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/usuarios"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Usuario de prueba",
+        "correo": "nuevo.usuario@ruteapp.com",
+        "password": "Prueba123!",
+        "telefono": "{{telefono}}",
+        "rolId": {{usuarioRolId}}
+      }
+  auth: inherit

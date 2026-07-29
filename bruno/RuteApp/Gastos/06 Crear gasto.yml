@@ -1,0 +1,22 @@
+info:
+  name: Registrar gasto de un viaje
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/gastos"
+  body:
+    type: json
+    data: |-
+      {
+        "viajeId": {{viajeId}},
+        "pagadorId": {{pagadorId}},
+        "concepto": "Boletos de autobus",
+        "monto": 850.00,
+        "categoria": "TRANSPORTE",
+        "fecha": "2026-09-01"
+      }
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

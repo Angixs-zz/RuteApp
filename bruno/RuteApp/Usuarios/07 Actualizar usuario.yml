@@ -1,0 +1,21 @@
+info:
+  name: Actualizar todos los datos de un usuario
+  type: http
+  seq: 7
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/usuarios/{{usuarioId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Usuario actualizado",
+        "correo": "{{usuarioCorreo}}",
+        "password": "Prueba123!",
+        "telefono": "{{telefono}}",
+        "rolId": {{usuarioRolId}}
+      }
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

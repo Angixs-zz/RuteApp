@@ -1,0 +1,22 @@
+info:
+  name: Actualizar gasto por ID
+  type: http
+  seq: 7
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/gastos/{{gastoId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "viajeId": {{viajeId}},
+        "pagadorId": {{pagadorId}},
+        "concepto": "Boletos de autobus actualizados",
+        "monto": 900.00,
+        "categoria": "TRANSPORTE",
+        "fecha": "2026-09-01"
+      }
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

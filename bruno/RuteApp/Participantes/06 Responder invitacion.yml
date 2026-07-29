@@ -1,0 +1,17 @@
+info:
+  name: Aceptar invitacion a un viaje
+  type: http
+  seq: 6
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/api/participantes/{{participanteId}}/respuesta"
+  body:
+    type: json
+    data: |-
+      {
+        "respuesta": "ACEPTADA"
+      }
+  auth:
+    type: bearer
+    token: "{{invitadoToken}}"

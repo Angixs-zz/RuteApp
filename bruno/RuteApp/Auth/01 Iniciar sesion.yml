@@ -1,0 +1,16 @@
+info:
+  name: Iniciar sesion con correo y contrasena
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/auth/login"
+  body:
+    type: json
+    data: |-
+      {
+        "correo": "{{authCorreo}}",
+        "password": "{{authPassword}}"
+      }
+  auth: inherit

@@ -1,14 +1,14 @@
-name: local
+name: vps
 variables:
   - name: baseUrl
-    value: http://localhost:8080
-    description: API local de RuteApp
+    value: https://ruteapp.online
+    description: API desplegada en el VPS
   - name: authCorreo
-    value: admin@ruteapp.com
-    description: Correo utilizado para iniciar sesion
+    value: ""
+    description: Correo de una cuenta del VPS
   - name: authPassword
-    value: Prueba123!
-    description: Contrasena de los datos semilla locales
+    value: ""
+    description: Contrasena de la cuenta del VPS
   - name: googleCredential
     value: ""
     description: Google ID token valido
@@ -25,25 +25,25 @@ variables:
     value: ""
     description: JWT de un usuario AGENCIA
   - name: usuarioId
-    value: "2"
+    value: "1"
     description: ID del usuario usado en las solicitudes
   - name: usuarioCorreo
-    value: usuario1@ruteapp.com
+    value: ""
     description: Correo del usuario usado en busquedas e invitaciones
   - name: usuarioRolId
-    value: "2"
-    description: ID del rol USUARIO para altas y actualizaciones
+    value: "1"
+    description: ID de un rol no administrador para altas y actualizaciones
   - name: invitadoId
-    value: "3"
+    value: "1"
     description: ID del usuario que recibe una invitacion
   - name: invitadoCorreo
-    value: usuario2@ruteapp.com
+    value: ""
     description: Correo del usuario que recibe una invitacion
   - name: invitadoToken
     value: ""
     description: JWT del usuario invitado para responder la invitacion
   - name: organizadorId
-    value: "2"
+    value: "1"
     description: ID del organizador del viaje
   - name: viajeId
     value: "1"
@@ -58,14 +58,14 @@ variables:
     value: "1"
     description: ID del gasto usado en las solicitudes
   - name: pagadorId
-    value: "2"
+    value: "1"
     description: ID del usuario que paga un gasto
   - name: responsableId
-    value: "2"
+    value: "1"
     description: ID del responsable de una actividad
   - name: rolId
     value: "1"
-    description: ID del rol consultado o eliminado
+    description: ID del rol usado en las solicitudes
   - name: telefono
-    value: "+5219510000000"
+    value: ""
     description: Telefono de prueba en formato internacional

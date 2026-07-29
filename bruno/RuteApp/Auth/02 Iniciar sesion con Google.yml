@@ -1,0 +1,15 @@
+info:
+  name: Iniciar sesion con Google
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/auth/google"
+  body:
+    type: json
+    data: |-
+      {
+        "credential": "{{googleCredential}}"
+      }
+  auth: inherit

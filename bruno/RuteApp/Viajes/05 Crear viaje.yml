@@ -1,0 +1,47 @@
+info:
+  name: Crear viaje con lugares estructurados
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/viajes"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Fin de semana en Oaxaca",
+        "descripcion": "Escapada cultural y gastronomica",
+        "origen": "Ciudad de Mexico",
+        "destino": "Oaxaca de Juarez",
+        "fechaInicio": "2026-09-04",
+        "fechaFin": "2026-09-06",
+        "presupuestoEstimado": 8000.00,
+        "transporte": "Autobus",
+        "estado": "PLANIFICACION",
+        "organizadorId": {{organizadorId}},
+        "publico": true,
+        "origenLugar": {
+          "placeId": "seed-cdmx",
+          "nombre": "Ciudad de Mexico",
+          "direccionFormateada": "Ciudad de Mexico, Mexico",
+          "ciudad": "Ciudad de Mexico",
+          "estado": "Ciudad de Mexico",
+          "pais": "Mexico",
+          "latitud": 19.4326077,
+          "longitud": -99.1332080
+        },
+        "destinoLugar": {
+          "placeId": "seed-oaxaca",
+          "nombre": "Oaxaca de Juarez",
+          "direccionFormateada": "Oaxaca de Juarez, Oaxaca, Mexico",
+          "ciudad": "Oaxaca de Juarez",
+          "estado": "Oaxaca",
+          "pais": "Mexico",
+          "latitud": 17.0731842,
+          "longitud": -96.7266483
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

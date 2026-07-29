@@ -1,0 +1,11 @@
+info:
+  name: Obtener usuario por correo
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/usuarios/correo/{{usuarioCorreo}}"
+  auth:
+    type: bearer
+    token: "{{adminToken}}"

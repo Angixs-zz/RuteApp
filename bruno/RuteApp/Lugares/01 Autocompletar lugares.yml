@@ -1,0 +1,15 @@
+info:
+  name: Autocompletar ciudades de Mexico
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/lugares/autocompletar"
+  params:
+    - name: texto
+      value: Oaxaca
+      type: query
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

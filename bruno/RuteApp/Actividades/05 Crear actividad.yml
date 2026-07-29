@@ -1,0 +1,33 @@
+info:
+  name: Crear actividad con lugar de referencia
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/actividades"
+  body:
+    type: json
+    data: |-
+      {
+        "viajeId": {{viajeId}},
+        "lugar": "Centro historico de Oaxaca",
+        "horario": "2026-09-05T10:00:00",
+        "descripcion": "Recorrido guiado por el centro",
+        "responsableId": {{responsableId}},
+        "costoEstimado": 300.00,
+        "estado": "PENDIENTE",
+        "lugarReferencia": {
+          "placeId": "seed-oaxaca",
+          "nombre": "Oaxaca de Juarez",
+          "direccionFormateada": "Oaxaca de Juarez, Oaxaca, Mexico",
+          "ciudad": "Oaxaca de Juarez",
+          "estado": "Oaxaca",
+          "pais": "Mexico",
+          "latitud": 17.0731842,
+          "longitud": -96.7266483
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

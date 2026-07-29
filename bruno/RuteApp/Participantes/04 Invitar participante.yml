@@ -1,0 +1,20 @@
+info:
+  name: Invitar participante por correo
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/participantes"
+  body:
+    type: json
+    data: |-
+      {
+        "correoUsuario": "{{invitadoCorreo}}",
+        "viajeId": {{viajeId}},
+        "estadoInvitacion": "PENDIENTE",
+        "permisoColaborar": false
+      }
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

@@ -21,24 +21,16 @@ export default function TripHeader({ id, currentTab }) {
   const fetchDetalleViaje = useCallback(async () => {
     if (!id) return;
     try {
-      // Timeout de 2 segundos para no trabar la interfaz si no hay backend
-      const response = await api.get(`/viajes/${id}`, { timeout: 2000 });
+      // Timeout aumentado a 5 segundos por si el backend tarda en responder
+      const response = await api.get(`/viajes/${id}`, { timeout: 5000 });
       if (response.data) {
         setViaje(response.data);
         sessionStorage.setItem(`trip_${id}`, JSON.stringify(response.data));
       }
     } catch (err) {
-      console.error('Error al cargar detalle del viaje:', err);
-      // Fallback a texto por defecto
-      const fallbackViaje = {
-        nombre: 'Escapada a Cancún',
-        destino: 'Quintana Roo, México',
-        fechaInicio: '2026-08-12',
-        fechaFin: '2026-08-16',
-        estado: 'EN_CURSO'
-      };
-      setViaje(fallbackViaje);
-      sessionStorage.setItem(`trip_${id}`, JSON.stringify(fallbackViaje));
+      console.error('Error al cargar detalle del viaje en TripHeader:', err);
+      // Si falla la petición (CORS, Timeout, etc.), simplemente nos quedamos con lo que
+      // ya tenemos en caché o en memoria. NO SOBREESCRIBIMOS con datos falsos.
     }
   }, [id]);
 

@@ -8,24 +8,9 @@ import '../css/styles.css';
 export default function DetalleViaje() {
   const { id } = useParams();
   
-  const [viaje, setViaje] = useState({
-    id: id || 1,
-    nombre: 'Escapada a Cancún',
-    descripcion: 'Viaje grupal para descansar, conocer Isla Mujeres y disfrutar de las principales actividades de Cancún.',
-    origen: 'Ciudad de México',
-    destino: 'Quintana Roo, México',
-    fechaInicio: '2026-08-12',
-    fechaFin: '2026-08-16',
-    presupuestoEstimado: 12500,
-    transporte: 'Avión',
-    estado: 'EN_CURSO',
-    organizadorId: 1,
-    organizadorNombre: 'Miguel Ángel',
-    participantesCount: 5,
-    porcentajePlaneado: 68
-  });
-
-  const [loading, setLoading] = useState(false);
+  const [viaje, setViaje] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [errorCarga, setErrorCarga] = useState('');
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
@@ -56,22 +41,23 @@ export default function DetalleViaje() {
         setViaje({
           id: data.id,
           nombre: data.nombre,
-          descripcion: data.descripcion || 'Viaje grupal para descansar, conocer la zona y disfrutar de las principales actividades.',
-          origen: data.origen,
+          descripcion: data.descripcion || 'Sin descripción',
+          origen: data.origen || 'No especificado',
           destino: data.destino,
           fechaInicio: data.fechaInicio,
           fechaFin: data.fechaFin,
           presupuestoEstimado: data.presupuestoEstimado || 0,
-          transporte: data.transporte || 'Avión',
+          transporte: data.transporte || 'No especificado',
           estado: data.estado || 'EN_CURSO',
           organizadorId: data.organizadorId,
-          organizadorNombre: data.organizadorNombre || 'Miguel Ángel',
+          organizadorNombre: data.organizadorNombre || 'Organizador',
           participantesCount: partCount,
           porcentajePlaneado: data.estado === 'FINALIZADO' ? 100 : 68
         });
       }
     } catch (err) {
       console.error('Error al cargar detalle del viaje:', err);
+      setErrorCarga('No se pudo cargar la información del viaje. Es posible que debas reiniciar tu servidor Spring Boot para aplicar los cambios de red.');
     } finally {
       setLoading(false);
     }
@@ -95,14 +81,14 @@ export default function DetalleViaje() {
         await api.put(`/viajes/${id}`, {
           nombre: viaje.nombre,
           descripcion: viaje.descripcion,
-          origen: viaje.origen || 'Ciudad de México',
+          origen: viaje.origen,
           destino: viaje.destino,
           fechaInicio: viaje.fechaInicio,
           fechaFin: viaje.fechaFin,
           presupuestoEstimado: viaje.presupuestoEstimado,
           transporte: viaje.transporte,
           estado: 'CANCELADO',
-          organizadorId: viaje.organizadorId || 1
+          organizadorId: viaje.organizadorId
         });
       }
     } catch (err) {
@@ -113,51 +99,30 @@ export default function DetalleViaje() {
     showToast('El viaje fue cancelado');
   };
 
-  const formatearEstado = (estado) => {
-    switch (estado) {
-      case 'PLANIFICACION':
-        return { label: 'Planeación', className: 'status planning' };
-      case 'EN_CURSO':
-        return { label: 'Confirmado', className: 'status confirmed' };
-      case 'FINALIZADO':
-        return { label: 'Finalizado', className: 'status finished' };
-      case 'CANCELADO':
-        return { label: 'Cancelado', className: 'status cancelled' };
-      default:
-        return { label: 'Confirmado', className: 'status confirmed' };
-    }
-  };
-
-  const formatearFechas = (inicio, fin) => {
-    if (!inicio || !fin) return '12–16 de agosto de 2026';
-    try {
-      const fIni = new Date(inicio + 'T00:00:00');
-      const fFin = new Date(fin + 'T00:00:00');
-      const mesAñoOptions = { month: 'long', year: 'numeric' };
-      if (fIni.getMonth() === fFin.getMonth() && fIni.getFullYear() === fFin.getFullYear()) {
-        return `${fIni.getDate()}–${fFin.getDate()} de ${fFin.toLocaleDateString('es-MX', mesAñoOptions)}`;
-      }
-      return `${fIni.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })} – ${fFin.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}`;
-    } catch {
-      return `${inicio} – ${fin}`;
-    }
-  };
-
-  const estadoBadge = formatearEstado(viaje.estado);
-
   return (
     <>
       <Navbar />
       <main className="page">
         <div className="container">
+          <TripHeader id={id} currentTab="resumen" />
+          
           {loading ? (
             <div style={{ textAlign: 'center', padding: '4rem 0', color: '#6B7280' }}>
               Cargando detalle del viaje...
             </div>
+          ) : errorCarga ? (
+            <div className="banner warn" style={{ marginTop: '2rem' }}>
+              <div>
+                <strong>Error de conexión al servidor</strong>
+                <span>{errorCarga}</span>
+              </div>
+            </div>
+          ) : !viaje ? (
+            <div style={{ textAlign: 'center', padding: '4rem 0', color: '#6B7280' }}>
+              No se encontró la información de este viaje.
+            </div>
           ) : (
             <>
-              <TripHeader id={viaje.id} currentTab="resumen" />
-
               {/* Main Content Card */}
               <section className="content-card">
                 <div className="detail-grid">
@@ -169,17 +134,17 @@ export default function DetalleViaje() {
                       </Link>
                     </div>
                     <p className="muted">
-                      {viaje.descripcion || 'Viaje grupal para descansar, conocer la zona y disfrutar de las principales actividades.'}
+                      {viaje.descripcion || 'Sin descripción'}
                     </p>
                     
                     <div className="info-grid">
                       <div className="info-item">
                         <span>Organizador</span>
-                        <strong>{viaje.organizadorNombre || 'Miguel Ángel'}</strong>
+                        <strong>{viaje.organizadorNombre}</strong>
                       </div>
                       <div className="info-item">
                         <span>Participantes</span>
-                        <strong>{viaje.participantesCount} confirmados</strong>
+                        <strong>{viaje.participantesCount} confirmado(s)</strong>
                       </div>
                       <div className="info-item">
                         <span>Presupuesto por persona</span>
@@ -187,7 +152,7 @@ export default function DetalleViaje() {
                       </div>
                       <div className="info-item">
                         <span>Transporte</span>
-                        <strong>{viaje.transporte || 'Avión'}</strong>
+                        <strong>{viaje.transporte || 'No especificado'}</strong>
                       </div>
                     </div>
                   </div>

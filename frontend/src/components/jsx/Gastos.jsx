@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import TripHeader from './TripHeader';
+import ConfirmModal from './ConfirmModal';
 import api from '../../service/api';
 import '../css/styles.css';
 
@@ -8,55 +10,15 @@ export default function Gastos() {
   const { id } = useParams();
   const viajeId = id || 1;
 
-  const [viaje, setViaje] = useState({
-    id: viajeId,
-    nombre: 'Escapada a Cancún',
-    destino: 'Quintana Roo, México',
-    fechaInicio: '2026-08-12',
-    fechaFin: '2026-08-16',
-    presupuestoEstimado: 12500,
-    estado: 'EN_CURSO'
-  });
-
-  const [gastos, setGastos] = useState([
-    {
-      id: 1,
-      concepto: 'Boletos de avión',
-      fecha: '10 ago 2026',
-      categoria: 'Transporte',
-      monto: 4800,
-      pagador: 'Miguel',
-      estado: 'Dividido',
-      estadoClass: 'status confirmed'
-    },
-    {
-      id: 2,
-      concepto: 'Reserva de hotel',
-      fecha: '11 ago 2026',
-      categoria: 'Hospedaje',
-      monto: 2600,
-      pagador: 'Yareli',
-      estado: 'Pendiente',
-      estadoClass: 'status pending'
-    },
-    {
-      id: 3,
-      concepto: 'Cena grupal',
-      fecha: '13 ago 2026',
-      categoria: 'Alimentos',
-      monto: 1050,
-      pagador: 'Jorge',
-      estado: 'Pagado',
-      estadoClass: 'status confirmed'
-    }
-  ]);
+  const [viaje, setViaje] = useState(null);
+  const [gastos, setGastos] = useState([]);
+  const [errorCarga, setErrorCarga] = useState('');
 
   const [busqueda, setBusqueda] = useState('');
   const [categoriaFiltro, setCategoriaFiltro] = useState('TODAS');
 
-  const [loading, setLoading] = useState(false);
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [gastoAEliminar, setGastoAEliminar] = useState(null);
 
   const [toastMessage, setToastMessage] = useState('');
@@ -77,7 +39,7 @@ export default function Gastos() {
         setViaje(resViaje.data);
       }
       const resGastos = await api.get(`/gastos/viaje/${id}`);
-      if (resGastos.data && Array.isArray(resGastos.data) && resGastos.data.length > 0) {
+      if (resGastos.data) {
         setGastos(resGastos.data.map(g => ({
           id: g.id,
           concepto: g.concepto,
@@ -89,8 +51,9 @@ export default function Gastos() {
           estadoClass: 'status confirmed'
         })));
       }
-    } catch {
-      // Fallback a los datos mock
+    } catch (err) {
+      console.error('Error al cargar gastos:', err);
+      setErrorCarga('No se pudo cargar la información del viaje. Es posible que debas reiniciar tu servidor Spring Boot.');
     } finally {
       setLoading(false);
     }
@@ -108,37 +71,24 @@ export default function Gastos() {
     };
   }, [fetchDatos]);
 
-  const handleCancelarViaje = async () => {
-    try {
-      if (id) {
-        await api.put(`/viajes/${id}`, { ...viaje, estado: 'CANCELADO' });
-      }
-    } catch {
-      // Fallback
-    }
-    setViaje(prev => ({ ...prev, estado: 'CANCELADO' }));
-    setShowCancelModal(false);
-    showToast('El viaje fue cancelado');
-  };
-
   const handleConfirmarEliminarGasto = async () => {
     if (!gastoAEliminar) return;
+    setIsDeleting(true);
     try {
-      if (gastoAEliminar.id) {
-        await api.delete(`/gastos/${gastoAEliminar.id}`);
-      }
-    } catch {
-      // Fallback
+      await api.delete(`/gastos/${gastoAEliminar.id}`);
+      await fetchDatos();
+      showToast('Gasto eliminado');
+    } catch (err) {
+      console.error("Error eliminando gasto", err);
+      showToast('Error al eliminar el gasto');
+    } finally {
+      setIsDeleting(false);
+      setGastoAEliminar(null);
     }
-
-    setGastos(prev => prev.filter(g => g.id !== gastoAEliminar.id));
-    setShowDeleteModal(false);
-    setGastoAEliminar(null);
-    showToast('Gasto eliminado');
   };
 
   // Cálculo de totales
-  const totalPresupuesto = viaje.presupuestoEstimado || 12500;
+  const totalPresupuesto = viaje?.presupuestoEstimado || 0;
   const totalGastado = gastos.reduce((sum, g) => sum + g.monto, 0);
   const disponible = totalPresupuesto - totalGastado;
 
@@ -172,42 +122,25 @@ export default function Gastos() {
       <Navbar />
       <main className="page">
         <div className="container">
+          <TripHeader id={id} currentTab="gastos" />
+
           {loading ? (
             <div style={{ textAlign: 'center', padding: '4rem 0', color: '#6B7280' }}>
               Cargando gastos...
             </div>
+          ) : errorCarga ? (
+            <div className="banner warn" style={{ marginTop: '2rem' }}>
+              <div>
+                <strong>Error de conexión al servidor</strong>
+                <span>{errorCarga}</span>
+              </div>
+            </div>
+          ) : !viaje ? (
+            <div style={{ textAlign: 'center', padding: '4rem 0', color: '#6B7280' }}>
+              No se encontró la información de este viaje.
+            </div>
           ) : (
             <>
-              {/* Trip Hero Header */}
-              <section className="trip-hero">
-                <div className="trip-hero-content">
-                  <div>
-                    <span className={viaje.estado === 'CANCELADO' ? 'status cancelled' : 'status confirmed'}>
-                      {viaje.estado === 'CANCELADO' ? 'Cancelado' : 'Confirmado'}
-                    </span>
-                    <h1>{viaje.nombre}</h1>
-                    <p>{viaje.destino} · {formatearFechas(viaje.fechaInicio, viaje.fechaFin)}</p>
-                  </div>
-                  {viaje.estado !== 'CANCELADO' && (
-                    <button 
-                      className="button ghost" 
-                      onClick={() => setShowCancelModal(true)}
-                    >
-                      Cancelar viaje
-                    </button>
-                  )}
-                </div>
-              </section>
-
-              {/* Tabs Nav */}
-              <nav className="tabs">
-                <Link to={`/viajes/${viajeId}`}>Resumen</Link>
-                <Link to={`/viajes/${viajeId}/participantes`}>Participantes</Link>
-                <Link to={`/viajes/${viajeId}/itinerario`}>Itinerario</Link>
-                <Link className="active" to={`/viajes/${viajeId}/gastos`}>Gastos</Link>
-                <Link to="/notificaciones">Notificaciones</Link>
-              </nav>
-
               {/* Content Card */}
               <section className="content-card">
                 <div className="section-title">
@@ -293,24 +226,12 @@ export default function Gastos() {
                                 <span className={g.estadoClass}>{g.estado}</span>
                               </td>
                               <td>
-                                {g.concepto === 'Cena grupal' || g.id > 3 ? (
-                                  <button 
-                                    className="button danger small"
-                                    onClick={() => {
-                                      setGastoAEliminar(g);
-                                      setShowDeleteModal(true);
-                                    }}
-                                  >
-                                    Eliminar
-                                  </button>
-                                ) : (
-                                  <button 
-                                    className="button ghost small"
-                                    onClick={() => showToast(`Detalles de ${g.concepto}`)}
-                                  >
-                                    Ver
-                                  </button>
-                                )}
+                                <button 
+                                  className="button danger small"
+                                  onClick={() => setGastoAEliminar(g)}
+                                >
+                                  Eliminar
+                                </button>
                               </td>
                             </tr>
                           ))}
@@ -345,43 +266,16 @@ export default function Gastos() {
         </div>
       </main>
 
-      {/* Modal Cancelar Viaje */}
-      <div className={`modal-backdrop ${showCancelModal ? 'open' : ''}`}>
-        <div className="modal">
-          <div className="modal-icon">⚠️</div>
-          <h3>¿Cancelar este viaje?</h3>
-          <p className="muted">
-            Los participantes recibirán una notificación y el viaje cambiará al estado cancelado.
-          </p>
-          <div className="modal-actions">
-            <button className="button ghost" onClick={() => setShowCancelModal(false)}>
-              Volver
-            </button>
-            <button className="button danger" onClick={handleCancelarViaje}>
-              Cancelar viaje
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Modal Eliminar Gasto */}
-      <div className={`modal-backdrop ${showDeleteModal ? 'open' : ''}`}>
-        <div className="modal">
-          <div className="modal-icon">🗑️</div>
-          <h3>Eliminar gasto</h3>
-          <p className="muted">
-            Se eliminarán también las divisiones asociadas.
-          </p>
-          <div className="modal-actions">
-            <button className="button ghost" onClick={() => setShowDeleteModal(false)}>
-              Cancelar
-            </button>
-            <button className="button danger" onClick={handleConfirmarEliminarGasto}>
-              Eliminar
-            </button>
-          </div>
-        </div>
-      </div>
+      <ConfirmModal 
+        isOpen={!!gastoAEliminar}
+        title="Eliminar gasto"
+        message="Se eliminarán también las divisiones asociadas a este gasto. Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirmarEliminarGasto}
+        onCancel={() => setGastoAEliminar(null)}
+        isLoading={isDeleting}
+      />
 
       {/* Toast Notification */}
       <div className={`toast ${toastMessage ? 'show' : ''}`}>

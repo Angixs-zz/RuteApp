@@ -9,7 +9,7 @@ public class UsuarioAdminEntrada {
     @NotBlank(message = "El nombre es obligatorio") private String nombre;
     @NotBlank(message = "El correo es obligatorio") @Email(message = "El correo no es válido") private String correo;
     @Pattern(regexp = "^$|^(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$", message = "La contraseña debe tener 8 caracteres, una mayúscula, un número y un carácter especial") private String password;
-    @Pattern(regexp = "^$|^\\+[1-9]\\d{7,14}$", message = "El teléfono debe usar formato internacional") private String telefono;
+    @Pattern(regexp = "^$|^(?:\\+?52)?\\d{10}$|^\\+[1-9]\\d{7,14}$", message = "El teléfono debe tener 10 dígitos mexicanos o usar formato internacional") private String telefono;
     @NotNull(message = "El rol es obligatorio") private Long rolId;
     @NotNull(message = "El estado es obligatorio") private Boolean activo;
 

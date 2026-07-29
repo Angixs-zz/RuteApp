@@ -21,6 +21,7 @@ import com.ruteapp.ruteapp.model.Rol;
 import com.ruteapp.ruteapp.model.Usuario;
 import com.ruteapp.ruteapp.repositories.RolRepository;
 import com.ruteapp.ruteapp.repositories.UsuarioRepository;
+import com.ruteapp.ruteapp.util.TelefonoUtil;
 
 @Service
 public class UsuarioService {
@@ -186,10 +187,7 @@ public class UsuarioService {
     }
 
     private String normalizarTelefono(String telefono) {
-        if (telefono == null || telefono.isBlank()) {
-            return null;
-        }
-        return telefono.trim();
+        return TelefonoUtil.normalizar(telefono);
     }
 
     private void validarCorreoActualizacion(

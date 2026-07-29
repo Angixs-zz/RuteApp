@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import Navbar from './Navbar';
 import api from '../../service/api';
 import '../css/styles.css';
+import { esTelefonoValido, normalizarTelefono } from '../../utils/telefono';
 
 export default function AdminUsuarioForm() {
   const { id } = useParams();
@@ -34,7 +35,7 @@ export default function AdminUsuarioForm() {
     if (!form.nombre.trim()) nuevos.nombre = 'El nombre es obligatorio.';
     if (!/^\S+@\S+\.\S+$/.test(form.correo)) nuevos.correo = 'Ingresa un correo válido.';
     if ((!editando || form.password) && !/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(form.password)) nuevos.password = 'Usa 8 caracteres, una mayúscula, un número y un carácter especial.';
-    if (form.telefono && !/^\+[1-9]\d{7,14}$/.test(form.telefono)) nuevos.telefono = 'Usa formato internacional, por ejemplo +5219511168398.';
+    if (!esTelefonoValido(normalizarTelefono(form.telefono))) nuevos.telefono = 'Usa 10 dígitos mexicanos o formato internacional.';
     if (!form.rolId) nuevos.rolId = 'Selecciona un rol.';
     setErrores(nuevos);
     return Object.keys(nuevos).length === 0;
@@ -43,7 +44,7 @@ export default function AdminUsuarioForm() {
     event.preventDefault();
     if (!validar()) return;
     setGuardando(true); setError('');
-    const payload = { ...form, rolId: Number(form.rolId), password: form.password || undefined };
+    const payload = { ...form, telefono: normalizarTelefono(form.telefono), rolId: Number(form.rolId), password: form.password || undefined };
     try { if (editando) await api.put(`/usuarios/${id}/admin`, payload); else await api.post('/usuarios/admin', payload); navigate('/admin/usuarios'); }
     catch (err) { setError(err.response?.data?.mensaje || 'No fue posible guardar el usuario.'); }
     finally { setGuardando(false); }

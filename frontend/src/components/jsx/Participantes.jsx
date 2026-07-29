@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from './Navbar';
 import TripHeader from './TripHeader';
 import { AlertTriangle, Mail, MessageCircle, Trash2 } from 'lucide-react';
 import api from '../../service/api';
+import { AuthContext } from '../../context/AuthContext';
 import avatarImg from '../../assets/react.svg';
 import '../css/styles.css';
 
@@ -20,6 +21,7 @@ function convertirParticipante(participante) {
 
 export default function Participantes() {
   const { id } = useParams();
+  const { user } = useContext(AuthContext);
   const [viaje, setViaje] = useState(null);
   const [errorCarga, setErrorCarga] = useState('');
 
@@ -193,12 +195,14 @@ export default function Participantes() {
                     <h2>Participantes e invitaciones</h2>
                     <p className="muted small">Administra quién forma parte del viaje.</p>
                   </div>
-                  <button 
-                    className="button primary" 
-                    onClick={() => setShowInviteModal(true)}
-                  >
-                    ＋ Invitar participante
-                  </button>
+                  {user?.id === viaje.organizadorId && (
+                    <button 
+                      className="button primary" 
+                      onClick={() => setShowInviteModal(true)}
+                    >
+                      ＋ Invitar participante
+                    </button>
+                  )}
                 </div>
 
                 <div className="table-wrap">
@@ -233,28 +237,32 @@ export default function Participantes() {
                               {p.estado === 'PENDIENTE' && (
                                 <span className="muted small">Esperando respuesta</span>
                               )}
-                              {p.estado === 'RECHAZADA' ? (
-                                <button
-                                  className="button danger small"
-                                  onClick={() => {
-                                    setSelectedParticipante(p);
-                                    setShowDeleteModal(true);
-                                  }}
-                                >
-                                  Eliminar
-                                </button>
-                              ) : (
-                                <button
-                                  className="button whatsapp small"
-                                  onClick={() => handleNotificarWhatsApp(p)}
-                                  disabled={p.telefono === 'No registrado' || notificandoId === p.id}
-                                  title={p.telefono === 'No registrado'
-                                    ? 'El participante debe registrar su teléfono en Perfil'
-                                    : 'Enviar recordatorio por WhatsApp'}
-                                >
-                                  <MessageCircle size={16} />
-                                  {notificandoId === p.id ? 'Enviando...' : 'WhatsApp'}
-                                </button>
+                              {user?.id === viaje.organizadorId && (
+                                <>
+                                  {p.estado === 'RECHAZADA' ? (
+                                    <button
+                                      className="button danger small"
+                                      onClick={() => {
+                                        setSelectedParticipante(p);
+                                        setShowDeleteModal(true);
+                                      }}
+                                    >
+                                      Eliminar
+                                    </button>
+                                  ) : (
+                                    <button
+                                      className="button whatsapp small"
+                                      onClick={() => handleNotificarWhatsApp(p)}
+                                      disabled={p.telefono === 'No registrado' || notificandoId === p.id}
+                                      title={p.telefono === 'No registrado'
+                                        ? 'El participante debe registrar su teléfono en Perfil'
+                                        : 'Enviar recordatorio por WhatsApp'}
+                                    >
+                                      <MessageCircle size={16} />
+                                      {notificandoId === p.id ? 'Enviando...' : 'WhatsApp'}
+                                    </button>
+                                  )}
+                                </>
                               )}
                             </div>
                           </td>

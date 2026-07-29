@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import TripHeader from './TripHeader';
@@ -6,10 +6,12 @@ import ConfirmModal from './ConfirmModal';
 import SuccessModal from './SuccessModal';
 import EditarViajeModal from './EditarViajeModal';
 import api from '../../service/api';
+import { AuthContext } from '../../context/AuthContext';
 import '../css/styles.css';
 
 export default function DetalleViaje() {
   const { id } = useParams();
+  const { user } = useContext(AuthContext);
   
   const [viaje, setViaje] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -139,9 +141,11 @@ export default function DetalleViaje() {
                     <div className="section-title">
                       <h2>Resumen del viaje</h2>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button className="button ghost small" onClick={() => setShowEditModal(true)}>
-                          Editar información
-                        </button>
+                        {user?.id === viaje.organizadorId && (
+                          <button className="button ghost small" onClick={() => setShowEditModal(true)}>
+                            Editar información
+                          </button>
+                        )}
                       </div>
                     </div>
                     <p className="muted">
@@ -180,15 +184,17 @@ export default function DetalleViaje() {
                         <li><span>✓</span><span>Gastos Compartidos</span></li>
                       </ul>
 
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <button 
-                          className="button ghost small" 
-                          style={{ color: '#EF4444', borderColor: '#EF4444' }}
-                          onClick={() => setShowDeleteModal(true)}
-                        >
-                          Eliminar viaje permanentemente
-                        </button>
-                      </div>
+                      {user?.id === viaje.organizadorId && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          <button 
+                            className="button ghost small" 
+                            style={{ color: '#EF4444', borderColor: '#EF4444' }}
+                            onClick={() => setShowDeleteModal(true)}
+                          >
+                            Eliminar viaje permanentemente
+                          </button>
+                        </div>
+                      )}
                     </article>
                   </aside>
                 </div>

@@ -271,6 +271,9 @@ public class ViajeService {
     }
 
     private ViajeRespuesta convertirARespuesta(Viaje viaje) {
+        
+        long countConfirmados = participanteViajeRepository.countByViajeAndEstadoInvitacion(viaje, EstadoInvitacion.ACEPTADA);
+        long totalParticipantes = countConfirmados + 1; // +1 del organizador
 
         return new ViajeRespuesta(
                 viaje.getId(),
@@ -288,7 +291,8 @@ public class ViajeService {
                 viaje.getPublico(),
                 viaje.getOrganizador().getId(),
                 viaje.getOrganizador().getNombre(),
-                viaje.getFechaCreacion()
+                viaje.getFechaCreacion(),
+                totalParticipantes
         );
     }
 }

@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../service/api';
 import ConfirmModal from './ConfirmModal';
 import SuccessModal from './SuccessModal';
+import { AuthContext } from '../../context/AuthContext';
 
 export default function TripHeader({ id, currentTab }) {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const [viaje, setViaje] = useState(() => {
     const cached = sessionStorage.getItem(`trip_${id}`);
     if (cached) return JSON.parse(cached);
@@ -123,14 +125,16 @@ export default function TripHeader({ id, currentTab }) {
             <h1>{viaje.nombre}</h1>
             <p>{viaje.destino} · {formatearFechas(viaje.fechaInicio, viaje.fechaFin)}</p>
           </div>
-          {viaje.estado !== 'CANCELADO' ? (
-            <button className="button ghost" onClick={() => setShowCancelModal(true)}>
-              Cancelar viaje
-            </button>
-          ) : (
-            <button className="button ghost" onClick={() => setShowResumeModal(true)}>
-              Reanudar viaje
-            </button>
+          {user?.id === viaje.organizadorId && (
+            viaje.estado !== 'CANCELADO' ? (
+              <button className="button ghost" onClick={() => setShowCancelModal(true)}>
+                Cancelar viaje
+              </button>
+            ) : (
+              <button className="button ghost" onClick={() => setShowResumeModal(true)}>
+                Reanudar viaje
+              </button>
+            )
           )}
         </div>
       </section>

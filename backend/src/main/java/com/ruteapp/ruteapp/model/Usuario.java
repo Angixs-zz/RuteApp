@@ -41,8 +41,8 @@ public class Usuario {
     @Column(name = "google_subject", unique = true, length = 255)
     private String googleSubject;
 
-    @Column(length = 255)
-    private String avatar;
+    @Column(length = 20)
+    private String telefono;
 
     @Column(nullable = false)
     private Boolean activo = true;

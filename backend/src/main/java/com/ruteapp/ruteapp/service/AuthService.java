@@ -102,9 +102,6 @@ public class AuthService {
             }
 
             existente.setGoogleSubject(identity.subject());
-            if (existente.getAvatar() == null && identity.avatar() != null) {
-                existente.setAvatar(identity.avatar());
-            }
             return usuarioRepository.save(existente);
         }
 
@@ -117,7 +114,6 @@ public class AuthService {
         nuevo.setNombre(nombreGoogle(identity));
         nuevo.setCorreo(identity.correo().trim().toLowerCase(Locale.ROOT));
         nuevo.setGoogleSubject(identity.subject());
-        nuevo.setAvatar(identity.avatar());
         nuevo.setActivo(true);
         nuevo.setRol(rolUsuario);
         Usuario guardado = usuarioRepository.save(nuevo);

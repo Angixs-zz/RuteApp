@@ -1,0 +1,2 @@
+ALTER TABLE usuarios DROP COLUMN avatar;
+ALTER TABLE usuarios ADD COLUMN telefono VARCHAR(20);

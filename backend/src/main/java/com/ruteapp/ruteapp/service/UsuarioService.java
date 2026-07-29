@@ -129,7 +129,7 @@ public class UsuarioService {
         usuario.setNombre(entrada.getNombre());
         usuario.setCorreo(entrada.getCorreo());
         usuario.setPassword(passwordEncoder.encode(entrada.getPassword()));
-        usuario.setAvatar(entrada.getAvatar());
+        usuario.setTelefono(entrada.getTelefono());
         usuario.setRol(rol);
     }
 
@@ -156,7 +156,7 @@ public class UsuarioService {
                 usuario.getId(),
                 usuario.getNombre(),
                 usuario.getCorreo(),
-                usuario.getAvatar(),
+                usuario.getTelefono(),
                 usuario.getActivo(),
                 usuario.getRol().getNombre(),
                 usuario.getFechaCreacion()

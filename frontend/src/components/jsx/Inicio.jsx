@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Calendar, Users, CreditCard } from 'lucide-react';
 import '../css/styles.css';
 import logoImg from '../../assets/react.svg';
 import heroImg from '../../assets/hero.png';
@@ -75,17 +76,17 @@ export default function Inicio() {
           </div>
           <div className="cards-3">
             <article className="card feature-card">
-              <div className="feature-icon">🗓️</div>
+              <div className="feature-icon"><Calendar size={32} color="#10B981" /></div>
               <h3>Itinerario compartido</h3>
               <p className="muted">Actividades, horarios, responsables y ubicaciones organizados por día.</p>
             </article>
             <article className="card feature-card">
-              <div className="feature-icon">👥</div>
+              <div className="feature-icon"><Users size={32} color="#6366F1" /></div>
               <h3>Participantes confirmados</h3>
               <p className="muted">Invita al grupo y consulta quién aceptó, rechazó o sigue pendiente.</p>
             </article>
             <article className="card feature-card">
-              <div className="feature-icon">💳</div>
+              <div className="feature-icon"><CreditCard size={32} color="#F59E0B" /></div>
               <h3>Gastos transparentes</h3>
               <p className="muted">Registra pagos, divide cantidades y conoce quién tiene saldos pendientes.</p>
             </article>

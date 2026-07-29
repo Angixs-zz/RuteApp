@@ -1,5 +1,6 @@
 import { useState, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Bell, User } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import '../css/styles.css';
 import logoImg from '../../assets/logo.jpeg';
@@ -52,7 +53,7 @@ export default function Navbar({ invitacionesCount = 0 }) {
           <div className="user-menu">
             {invitacionesCount > 0 && (
               <button className="icon-btn" aria-label="Notificaciones">
-                🔔<span className="count">{invitacionesCount}</span>
+                <Bell size={20} style={{ display: 'inline', verticalAlign: 'middle' }} /><span className="count">{invitacionesCount}</span>
               </button>
             )}
             
@@ -95,7 +96,7 @@ export default function Navbar({ invitacionesCount = 0 }) {
         onClick={closeProfileMenu}
       >
         <div className="modal" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-icon">👤</div>
+          <div className="modal-icon"><User size={28} /></div>
           <h3>Cuenta</h3>
           <p className="muted">Accede a tu perfil o cierra la sesión actual.</p>
           <div className="modal-actions">

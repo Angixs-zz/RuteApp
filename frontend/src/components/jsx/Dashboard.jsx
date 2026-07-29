@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import { Plane, Luggage, Users, CreditCard, MapPin, Hand, CircleDollarSign } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../service/api';
 import '../css/styles.css';
@@ -128,7 +129,7 @@ export default function Dashboard() {
           <div className="page-head">
             <div>
               <span className="eyebrow">{fechaActual}</span>
-              <h1>¡Hola, {primerNombre}! 👋</h1>
+              <h1>¡Hola, {primerNombre}! <Hand size={32} color="#FBBF24" style={{ display: 'inline', verticalAlign: 'text-bottom' }} /></h1>
               <p className="muted">
                 {viajesProximosCount > 0
                   ? `Tienes ${viajesProximosCount} ${viajesProximosCount === 1 ? 'viaje registrado' : 'viajes registrados'}${
@@ -145,7 +146,7 @@ export default function Dashboard() {
           {/* Banner dinámico: Se muestra solo si existen invitaciones reales pendientes */}
           {invitaciones.length > 0 && (
             <section className="banner info">
-              <div className="banner-icon">✈️</div>
+              <div className="banner-icon"><Plane size={24} color="white" /></div>
               <div>
                 <strong>Te invitaron a “{invitaciones[0].nombreViaje || 'un nuevo viaje'}”</strong>
                 <span>Revisa tus invitaciones pendientes para unirte.</span>
@@ -161,28 +162,28 @@ export default function Dashboard() {
           {/* Métricas dinámicas */}
           <section className="stats-grid">
             <article className="card stat-card">
-              <div className="stat-icon">🧳</div>
+              <div className="stat-icon"><Luggage size={24} color="#10B981" /></div>
               <div>
                 <strong>{viajesProximosCount}</strong>
                 <span>{viajesProximosCount === 1 ? 'Viaje próximo' : 'Viajes próximos'}</span>
               </div>
             </article>
             <article className="card stat-card">
-              <div className="stat-icon">👥</div>
+              <div className="stat-icon"><Users size={24} color="#6366F1" /></div>
               <div>
                 <strong>{viajesProximosCount * 2}</strong>
                 <span>Participantes</span>
               </div>
             </article>
             <article className="card stat-card">
-              <div className="stat-icon">💳</div>
+              <div className="stat-icon"><CreditCard size={24} color="#F59E0B" /></div>
               <div>
                 <strong>${presupuestoTotal.toLocaleString('es-MX')}</strong>
                 <span>Presupuesto total</span>
               </div>
             </article>
             <article className="card stat-card">
-              <div className="stat-icon">📍</div>
+              <div className="stat-icon"><MapPin size={24} color="#EF4444" /></div>
               <div>
                 <strong>{proximaActividad ? 1 : 0}</strong>
                 <span>Actividades planeadas</span>
@@ -221,9 +222,9 @@ export default function Dashboard() {
                           <h3>{viaje.nombre}</h3>
                           <p>{viaje.destino || 'Destino no especificado'}</p>
                           <div className="meta">
-                            <span>👥 Participantes</span>
+                            <span><Users size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> Participantes</span>
                             <span>
-                              💰 ${Number(viaje.presupuestoEstimado || 0).toLocaleString('es-MX')}
+                              <CircleDollarSign size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> ${Number(viaje.presupuestoEstimado || 0).toLocaleString('es-MX')}
                             </span>
                           </div>
                           <div className="progress">
@@ -243,7 +244,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="card panel" style={{ textAlign: 'center', padding: '40px' }}>
-                  <span style={{ fontSize: '32px', display: 'block', marginBottom: '10px' }}>🧳</span>
+                  <span style={{ display: 'block', marginBottom: '10px' }}><Luggage size={48} color="#9CA3AF" style={{ margin: '0 auto' }} /></span>
                   <h3>No tienes viajes próximos</h3>
                   <p className="muted" style={{ marginBottom: '20px' }}>
                     Comienza a planear tu siguiente experiencia creando un nuevo viaje.

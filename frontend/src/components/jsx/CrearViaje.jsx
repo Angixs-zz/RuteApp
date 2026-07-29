@@ -1,5 +1,6 @@
 import { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { ImagePlus } from 'lucide-react';
 import Navbar from './Navbar';
 import LugarAutocomplete from './LugarAutocomplete';
 import api from '../../service/api';
@@ -237,7 +238,7 @@ export default function CrearViaje() {
             <section className="form-section">
               <h3>Imagen de portada</h3>
               <div className="cover-uploader">
-                🖼️
+                <div className="upload-placeholder"><ImagePlus size={32} color="#9CA3AF" /></div>
                 <p><strong>Arrastra una imagen o selecciónala</strong></p>
                 <span className="small muted">JPG o PNG, máximo 5 MB.</span>
               </div>

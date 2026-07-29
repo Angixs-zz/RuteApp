@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Mail } from 'lucide-react';
 import api from '../../service/api';
 import '../css/styles.css';
 import logoImg from '../../assets/logo.jpeg';
@@ -110,7 +111,7 @@ export default function RecuperarContrasena() {
 
             {enviado && (
               <div className="banner success" style={{ marginTop: '18px' }}>
-                <div className="banner-icon">✉️</div>
+                <div className="banner-icon"><Mail size={24} color="#059669" /></div>
                 <div>
                   <strong>Correo preparado</strong>
                   <span>Si la cuenta existe, recibirás un enlace válido durante 30 minutos.</span>

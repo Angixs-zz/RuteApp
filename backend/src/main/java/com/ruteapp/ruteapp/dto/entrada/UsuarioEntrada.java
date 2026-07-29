@@ -23,8 +23,8 @@ public class UsuarioEntrada {
     private String password;
 
     @Pattern(
-        regexp = "^$|^\\+[1-9]\\d{7,14}$",
-        message = "El teléfono debe usar formato internacional, por ejemplo +5219511168398"
+        regexp = "^$|^(?:\\+?52)?\\d{10}$|^\\+[1-9]\\d{7,14}$",
+        message = "El teléfono debe tener 10 dígitos mexicanos o usar formato internacional"
     )
     private String telefono;
 

@@ -263,6 +263,11 @@ export default function Itinerario() {
     return acc;
   }, {});
 
+
+
+
+
+  //-------------------------------------------
   return (
     <>
       <Navbar />

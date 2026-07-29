@@ -105,11 +105,20 @@ export default function Dashboard() {
   };
 
   // Helper para mapa de etiquetas de estado
+  const calcularEstadoVisual = (inicio, fin, estadoDb) => {
+    if (estadoDb === 'CANCELADO') return 'CANCELADO';
+    if (!inicio || !fin) return 'PLANIFICACION';
+    const hoy = new Date().toISOString().split('T')[0];
+    if (hoy < inicio) return 'PLANIFICACION';
+    if (hoy > fin) return 'FINALIZADO';
+    return 'EN_CURSO';
+  };
+
   const getEstadoBadge = (estado) => {
     switch (estado) {
       case 'PLANIFICACION':
       case 'PLANEACION':
-        return { label: 'Planeación', className: 'planning' };
+        return { label: 'En Planeación', className: 'planning' };
       case 'EN_CURSO':
         return { label: 'En Curso', className: 'active' };
       case 'FINALIZADO':
@@ -117,7 +126,7 @@ export default function Dashboard() {
       case 'CANCELADO':
         return { label: 'Cancelado', className: 'cancelled' };
       default:
-        return { label: 'Confirmado', className: 'confirmed' };
+        return { label: 'En Planeación', className: 'planning' };
     }
   };
 
@@ -209,7 +218,8 @@ export default function Dashboard() {
               ) : viajes.length > 0 ? (
                 <div className="trip-grid">
                   {viajes.map((viaje) => {
-                    const badge = getEstadoBadge(viaje.estado);
+                    const estadoReal = calcularEstadoVisual(viaje.fechaInicio, viaje.fechaFin, viaje.estado);
+                    const badge = getEstadoBadge(estadoReal);
                     return (
                       <article key={viaje.id} className="card trip-card">
                         <div className="trip-cover">
@@ -226,9 +236,6 @@ export default function Dashboard() {
                             <span>
                               <CircleDollarSign size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> ${Number(viaje.presupuestoEstimado || 0).toLocaleString('es-MX')}
                             </span>
-                          </div>
-                          <div className="progress">
-                            <span style={{ width: '50%' }}></span>
                           </div>
                           <div className="trip-footer">
                             <div className="mini-avatars">

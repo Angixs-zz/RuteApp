@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import TripHeader from './TripHeader';
 import api from '../../service/api';
 import avatarImg from '../../assets/react.svg';
 import '../css/styles.css';
@@ -20,14 +21,8 @@ export default function Participantes() {
   const { id } = useParams();
   const viajeId = id || 1;
 
-  const [viaje, setViaje] = useState({
-    id: viajeId,
-    nombre: 'Viaje',
-    destino: '',
-    fechaInicio: '',
-    fechaFin: '',
-    estado: 'PLANIFICACION'
-  });
+  const [viaje, setViaje] = useState(null);
+  const [errorCarga, setErrorCarga] = useState('');
 
   const [participantes, setParticipantes] = useState([]);
 
@@ -64,8 +59,9 @@ export default function Participantes() {
         if (Array.isArray(resPart.data)) {
           setParticipantes(resPart.data.map(convertirParticipante));
         }
-      } catch {
-        // Mantiene los datos iniciales si no se puede consultar la API.
+      } catch (err) {
+        console.error('Error al cargar participantes:', err);
+        setErrorCarga('No se pudo cargar la información del viaje. Es posible que debas reiniciar tu servidor Spring Boot.');
       } finally {
         setLoading(false);
       }
@@ -171,42 +167,25 @@ export default function Participantes() {
       <Navbar />
       <main className="page">
         <div className="container">
+          <TripHeader id={id} currentTab="participantes" />
+
           {loading ? (
             <div style={{ textAlign: 'center', padding: '4rem 0', color: '#6B7280' }}>
               Cargando participantes...
             </div>
+          ) : errorCarga ? (
+            <div className="banner warn" style={{ marginTop: '2rem' }}>
+              <div>
+                <strong>Error de conexión al servidor</strong>
+                <span>{errorCarga}</span>
+              </div>
+            </div>
+          ) : !viaje ? (
+            <div style={{ textAlign: 'center', padding: '4rem 0', color: '#6B7280' }}>
+              No se encontró la información de este viaje.
+            </div>
           ) : (
             <>
-              {/* Trip Hero Header */}
-              <section className="trip-hero">
-                <div className="trip-hero-content">
-                  <div>
-                    <span className={viaje.estado === 'CANCELADO' ? 'status cancelled' : 'status confirmed'}>
-                      {viaje.estado === 'CANCELADO' ? 'Cancelado' : 'Confirmado'}
-                    </span>
-                    <h1>{viaje.nombre}</h1>
-                    <p>{viaje.destino} · {formatearFechas(viaje.fechaInicio, viaje.fechaFin)}</p>
-                  </div>
-                  {viaje.estado !== 'CANCELADO' && (
-                    <button 
-                      className="button ghost" 
-                      onClick={() => setShowCancelModal(true)}
-                    >
-                      Cancelar viaje
-                    </button>
-                  )}
-                </div>
-              </section>
-
-              {/* Tabs Nav */}
-              <nav className="tabs">
-                <Link to={`/viajes/${viajeId}`}>Resumen</Link>
-                <Link className="active" to={`/viajes/${viajeId}/participantes`}>Participantes</Link>
-                <Link to="/itinerario">Itinerario</Link>
-                <Link to="/gastos">Gastos</Link>
-                <Link to="/notificaciones">Notificaciones</Link>
-              </nav>
-
               {/* Content Card con Tabla de Participantes */}
               <section className="content-card">
                 <div className="section-title">
@@ -283,25 +262,6 @@ export default function Participantes() {
           )}
         </div>
       </main>
-
-      {/* Modal Cancelar Viaje */}
-      <div className={`modal-backdrop ${showCancelModal ? 'open' : ''}`}>
-        <div className="modal">
-          <div className="modal-icon">⚠️</div>
-          <h3>¿Cancelar este viaje?</h3>
-          <p className="muted">
-            Los participantes recibirán una notificación y el viaje cambiará al estado cancelado.
-          </p>
-          <div className="modal-actions">
-            <button className="button ghost" onClick={() => setShowCancelModal(false)}>
-              Volver
-            </button>
-            <button className="button danger" onClick={handleCancelarViaje}>
-              Cancelar viaje
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* Modal Invitar Participante */}
       <div className={`modal-backdrop ${showInviteModal ? 'open' : ''}`}>

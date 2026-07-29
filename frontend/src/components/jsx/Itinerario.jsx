@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import TripHeader from './TripHeader';
+import ConfirmModal from './ConfirmModal';
+import SuccessModal from './SuccessModal';
 import api from '../../service/api';
 import '../css/styles.css';
 
@@ -8,76 +11,24 @@ export default function Itinerario() {
   const { id } = useParams();
   const viajeId = id || 1;
 
-  const [viaje, setViaje] = useState({
-    id: viajeId,
-    nombre: 'Escapada a Cancún',
-    destino: 'Quintana Roo, México',
-    fechaInicio: '2026-08-12',
-    fechaFin: '2026-08-16',
-    estado: 'EN_CURSO'
-  });
-
-  const [actividades, setActividades] = useState([
-    {
-      id: 1,
-      fechaGrupo: 'Miércoles, 12 de agosto',
-      hora: '08:30',
-      tipo: 'Transporte',
-      tipoClass: 'status active',
-      titulo: 'Vuelo Oaxaca–Cancún',
-      lugar: 'Aeropuerto Internacional de Oaxaca',
-      responsable: 'Miguel',
-      costo: null
-    },
-    {
-      id: 2,
-      fechaGrupo: 'Miércoles, 12 de agosto',
-      hora: '15:00',
-      tipo: 'Hospedaje',
-      tipoClass: 'status confirmed',
-      titulo: 'Registro en el hotel',
-      lugar: 'Zona Hotelera',
-      responsable: 'Yareli',
-      costo: null
-    },
-    {
-      id: 3,
-      fechaGrupo: 'Jueves, 13 de agosto',
-      hora: '09:00',
-      tipo: 'Actividad',
-      tipoClass: 'status planning',
-      titulo: 'Visita a Isla Mujeres',
-      lugar: 'Muelle Cancún',
-      responsable: null,
-      costo: 1200
-    },
-    {
-      id: 4,
-      fechaGrupo: 'Jueves, 13 de agosto',
-      hora: '19:30',
-      tipo: 'Alimentos',
-      tipoClass: 'status planning',
-      titulo: 'Cena grupal',
-      lugar: 'Restaurante La Habichuela',
-      responsable: 'Jorge',
-      costo: null
-    }
-  ]);
-
-  const [loading, setLoading] = useState(false);
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [actividades, setActividades] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [actividadAEliminar, setActividadAEliminar] = useState(null);
+  
+  const [successModalConfig, setSuccessModalConfig] = useState({ isOpen: false, title: '', message: '' });
 
-  // Formulario nueva actividad
   const [nuevaTitulo, setNuevaTitulo] = useState('');
-  const [nuevaFecha, setNuevaFecha] = useState('Miércoles, 12 de agosto');
-  const [nuevaHora, setNuevaHora] = useState('10:00');
-  const [nuevaTipo, setNuevaTipo] = useState('Actividad');
+  const [nuevaHorario, setNuevaHorario] = useState('');
   const [nuevaLugar, setNuevaLugar] = useState('');
   const [nuevaResponsable, setNuevaResponsable] = useState('');
   const [nuevaCosto, setNuevaCosto] = useState('');
+  const [actividadAEditar, setActividadAEditar] = useState(null);
+  
+  const [participantes, setParticipantes] = useState([]);
+  const [viajeDates, setViajeDates] = useState({ inicio: null, fin: null });
+  const [errors, setErrors] = useState({});
 
   const [toastMessage, setToastMessage] = useState('');
 
@@ -93,15 +44,19 @@ export default function Itinerario() {
     try {
       setLoading(true);
       const resViaje = await api.get(`/viajes/${id}`);
+      let orgId = null;
+      let orgNombre = '';
       if (resViaje.data) {
-        setViaje(resViaje.data);
+        setViajeDates({ inicio: resViaje.data.fechaInicio, fin: resViaje.data.fechaFin });
+        orgId = resViaje.data.organizadorId;
+        orgNombre = resViaje.data.organizadorNombre;
       }
+
       const resAct = await api.get(`/actividades/viaje/${id}`);
-      if (resAct.data && Array.isArray(resAct.data) && resAct.data.length > 0) {
+      if (resAct.data) {
         setActividades(resAct.data.map(a => {
-          let tipoClass = 'status planning';
-          if (a.estado === 'Transporte') tipoClass = 'status active';
-          else if (a.estado === 'Hospedaje') tipoClass = 'status confirmed';
+          const isRealizado = a.estado === 'REALIZADO';
+          let tipoClass = isRealizado ? 'status finished' : 'status planning';
 
           const dt = a.horario ? new Date(a.horario) : new Date();
           const horaStr = dt.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -111,17 +66,37 @@ export default function Itinerario() {
             id: a.id,
             fechaGrupo: fechaGrupoStr.charAt(0).toUpperCase() + fechaGrupoStr.slice(1),
             hora: horaStr,
-            tipo: a.estado || 'Actividad',
+            rawHorario: a.horario, // Formato original YYYY-MM-DDTHH:mm
+            tipo: a.estado || 'PENDIENTE',
             tipoClass: tipoClass,
             titulo: a.descripcion || 'Nueva Actividad',
-            lugar: a.lugar || 'Cancún',
+            lugar: a.lugar || 'Ubicación',
             responsable: a.nombreResponsable || null,
+            responsableId: a.responsableId || null,
             costo: a.costoEstimado || null
           };
         }));
       }
-    } catch {
-      // Fallback a los datos iniciales mock
+      
+      const resPart = await api.get(`/participantes/viaje/${id}`);
+      let partList = [];
+      if (resPart.data) {
+        partList = resPart.data.map(p => ({
+          id: p.usuarioId || p.id,
+          nombre: p.nombreUsuario || 'Participante'
+        }));
+      }
+
+      if (orgId && !partList.some(p => p.id === orgId)) {
+        partList.unshift({ id: orgId, nombre: orgNombre + ' (Organizador)' });
+      }
+
+      setParticipantes(partList);
+      if (partList.length > 0) {
+        setNuevaResponsable(partList[0].id);
+      }
+    } catch (err) {
+      console.error("Error cargando actividades", err);
     } finally {
       setLoading(false);
     }
@@ -139,79 +114,126 @@ export default function Itinerario() {
     };
   }, [fetchDatos]);
 
-  const handleCancelarViaje = async () => {
-    try {
-      if (id) {
-        await api.put(`/viajes/${id}`, { ...viaje, estado: 'CANCELADO' });
-      }
-    } catch {
-      // Fallback
-    }
-    setViaje(prev => ({ ...prev, estado: 'CANCELADO' }));
-    setShowCancelModal(false);
-    showToast('El viaje fue cancelado');
-  };
-
   const handleConfirmarEliminar = async () => {
     if (!actividadAEliminar) return;
+    setIsDeleting(true);
     try {
-      if (id && actividadAEliminar.id) {
-        await api.delete(`/actividades/${actividadAEliminar.id}`);
-      }
-    } catch {
-      // Fallback
+      await api.delete(`/actividades/${actividadAEliminar.id}`);
+      await fetchDatos();
+      showToast('Actividad eliminada');
+    } catch (err) {
+      console.error("Error eliminando actividad", err);
+      showToast('Error al eliminar la actividad');
+    } finally {
+      setIsDeleting(false);
+      setActividadAEliminar(null);
     }
-
-    setActividades(prev => prev.filter(a => a.id !== actividadAEliminar.id));
-    setShowDeleteModal(false);
-    setActividadAEliminar(null);
-    showToast('Actividad eliminada');
   };
 
   const handleCrearActividad = async (e) => {
     e.preventDefault();
-    if (!nuevaTitulo.trim()) {
-      showToast('Por favor escribe un título para la actividad');
+    let newErrors = {};
+
+    if (!nuevaTitulo.trim()) newErrors.titulo = 'El título es obligatorio.';
+    if (!nuevaLugar.trim()) newErrors.lugar = 'El lugar es obligatorio.';
+    if (!nuevaHorario) newErrors.horario = 'El horario es obligatorio.';
+    else {
+      if (viajeDates.inicio && viajeDates.fin) {
+        const dateAct = new Date(nuevaHorario);
+        const dateIni = new Date(viajeDates.inicio + 'T00:00:00');
+        const dateFin = new Date(viajeDates.fin + 'T23:59:59');
+        if (dateAct < dateIni || dateAct > dateFin) {
+          newErrors.horario = `Debe estar entre ${viajeDates.inicio} y ${viajeDates.fin}.`;
+        }
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
+    setErrors({});
 
     try {
-      if (id) {
-        await api.post('/actividades', {
-          viajeId: id,
-          descripcion: nuevaTitulo,
-          lugar: nuevaLugar,
-          costoEstimado: nuevaCosto ? parseFloat(nuevaCosto) : null,
-          estado: nuevaTipo
+      const payload = {
+        viajeId: parseInt(id, 10),
+        lugar: nuevaLugar,
+        horario: nuevaHorario,
+        descripcion: nuevaTitulo,
+        responsableId: parseInt(nuevaResponsable, 10),
+        costoEstimado: nuevaCosto ? parseFloat(nuevaCosto) : null,
+        estado: actividadAEditar ? actividadAEditar.tipo : 'PENDIENTE'
+      };
+
+      if (actividadAEditar) {
+        await api.put(`/actividades/${actividadAEditar.id}`, payload);
+        cerrarModal();
+        setSuccessModalConfig({
+          isOpen: true,
+          title: '¡Cambios guardados!',
+          message: 'La actividad se ha editado exitosamente en tu itinerario.'
+        });
+      } else {
+        await api.post('/actividades', payload);
+        cerrarModal();
+        setSuccessModalConfig({
+          isOpen: true,
+          title: '¡Actividad creada!',
+          message: 'La actividad se ha guardado exitosamente en tu itinerario.'
         });
       }
-    } catch {
-      // Fallback
+      
+      await fetchDatos();
+    } catch (err) {
+      console.error("Error guardando actividad", err);
+      showToast('Error al guardar actividad');
     }
+  };
 
-    let tipoClass = 'status planning';
-    if (nuevaTipo === 'Transporte') tipoClass = 'status active';
-    else if (nuevaTipo === 'Hospedaje') tipoClass = 'status confirmed';
+  const handleMarcarRealizado = async (act) => {
+    try {
+      await api.put(`/actividades/${act.id}`, {
+        viajeId: parseInt(id, 10),
+        lugar: act.lugar,
+        horario: act.rawHorario,
+        descripcion: act.titulo,
+        responsableId: parseInt(act.responsableId, 10),
+        costoEstimado: act.costo ? parseFloat(act.costo) : null,
+        estado: 'REALIZADO'
+      });
+      await fetchDatos();
+      showToast('Actividad marcada como realizada');
+    } catch (err) {
+      console.error("Error al actualizar estado", err);
+      showToast('Error al actualizar estado');
+    }
+  };
 
-    const nuevaAct = {
-      id: Date.now(),
-      fechaGrupo: nuevaFecha,
-      hora: nuevaHora,
-      tipo: nuevaTipo,
-      tipoClass: tipoClass,
-      titulo: nuevaTitulo,
-      lugar: nuevaLugar || 'Cancún',
-      responsable: nuevaResponsable || null,
-      costo: nuevaCosto ? parseFloat(nuevaCosto) : null
-    };
-
-    setActividades(prev => [...prev, nuevaAct]);
+  const abrirModalCrear = () => {
+    setActividadAEditar(null);
     setNuevaTitulo('');
     setNuevaLugar('');
-    setNuevaResponsable('');
+    setNuevaHorario('');
     setNuevaCosto('');
+    if (participantes.length > 0) setNuevaResponsable(participantes[0].id);
+    setErrors({});
+    setShowCreateModal(true);
+  };
+
+  const abrirModalEditar = (act) => {
+    setActividadAEditar(act);
+    setNuevaTitulo(act.titulo);
+    setNuevaLugar(act.lugar);
+    setNuevaHorario(act.rawHorario);
+    setNuevaCosto(act.costo || '');
+    setNuevaResponsable(act.responsableId || (participantes.length > 0 ? participantes[0].id : ''));
+    setErrors({});
+    setShowCreateModal(true);
+  };
+
+  const cerrarModal = () => {
     setShowCreateModal(false);
-    showToast('Actividad agregada al itinerario');
+    setActividadAEditar(null);
   };
 
   const formatearFechas = (inicio, fin) => {
@@ -242,42 +264,14 @@ export default function Itinerario() {
       <Navbar />
       <main className="page">
         <div className="container">
+          <TripHeader id={id} currentTab="itinerario" />
+          
           {loading ? (
             <div style={{ textAlign: 'center', padding: '4rem 0', color: '#6B7280' }}>
               Cargando itinerario...
             </div>
           ) : (
             <>
-              {/* Trip Hero Header */}
-              <section className="trip-hero">
-                <div className="trip-hero-content">
-                  <div>
-                    <span className={viaje.estado === 'CANCELADO' ? 'status cancelled' : 'status confirmed'}>
-                      {viaje.estado === 'CANCELADO' ? 'Cancelado' : 'Confirmado'}
-                    </span>
-                    <h1>{viaje.nombre}</h1>
-                    <p>{viaje.destino} · {formatearFechas(viaje.fechaInicio, viaje.fechaFin)}</p>
-                  </div>
-                  {viaje.estado !== 'CANCELADO' && (
-                    <button 
-                      className="button ghost" 
-                      onClick={() => setShowCancelModal(true)}
-                    >
-                      Cancelar viaje
-                    </button>
-                  )}
-                </div>
-              </section>
-
-              {/* Tabs Nav */}
-              <nav className="tabs">
-                <Link to={`/viajes/${viajeId}`}>Resumen</Link>
-                <Link to={`/viajes/${viajeId}/participantes`}>Participantes</Link>
-                <Link className="active" to={`/viajes/${viajeId}/itinerario`}>Itinerario</Link>
-                <Link to="/gastos">Gastos</Link>
-                <Link to="/notificaciones">Notificaciones</Link>
-              </nav>
-
               {/* Content Card */}
               <section className="content-card">
                 <div className="section-title">
@@ -287,52 +281,65 @@ export default function Itinerario() {
                   </div>
                   <button 
                     className="button primary"
-                    onClick={() => setShowCreateModal(true)}
+                    onClick={abrirModalCrear}
                   >
                     ＋ Agregar actividad
                   </button>
                 </div>
 
                 <div className="timeline">
-                  {Object.keys(actividadesAgrupadas).map((fechaGrupo) => (
-                    <section key={fechaGrupo} className="timeline-day">
-                      <h3>{fechaGrupo}</h3>
-                      <div className="timeline-items">
-                        {actividadesAgrupadas[fechaGrupo].map((act) => (
-                          <article key={act.id} className="card timeline-card">
-                            <div className="time-box">{act.hora}</div>
-                            <div>
-                              <span className={act.tipoClass}>{act.tipo}</span>
-                              <h3>{act.titulo}</h3>
-                              <p className="muted small">
-                                {act.lugar}
-                                {act.responsable ? ` · Responsable: ${act.responsable}` : ''}
-                                {act.costo ? ` · Costo estimado: $${act.costo.toLocaleString('es-MX')}` : ''}
-                              </p>
-                            </div>
-                            {act.titulo === 'Cena grupal' || act.id > 4 ? (
-                              <button 
-                                className="button danger small"
-                                onClick={() => {
-                                  setActividadAEliminar(act);
-                                  setShowDeleteModal(true);
-                                }}
-                              >
-                                Eliminar
-                              </button>
-                            ) : (
-                              <button 
-                                className="button ghost small"
-                                onClick={() => showToast(`Editando ${act.titulo}`)}
-                              >
-                                Editar
-                              </button>
-                            )}
-                          </article>
-                        ))}
-                      </div>
-                    </section>
-                  ))}
+                  {actividades.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '4rem 0', color: '#6B7280' }}>
+                      <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>📭</span>
+                      Aún no hay actividades registradas en este itinerario.
+                    </div>
+                  ) : (
+                    Object.keys(actividadesAgrupadas).map((fechaGrupo) => (
+                      <section key={fechaGrupo} className="timeline-day">
+                        <h3>{fechaGrupo}</h3>
+                        <div className="timeline-items">
+                          {actividadesAgrupadas[fechaGrupo].map((act) => (
+                            <article key={act.id} className="card timeline-card">
+                              <div className="time-box">{act.hora}</div>
+                              <div style={{ flex: 1 }}>
+                                <span className={act.tipoClass}>{act.tipo}</span>
+                                <h3>{act.titulo}</h3>
+                                <p className="muted small">
+                                  {act.lugar}
+                                  {act.responsable ? ` · Responsable: ${act.responsable}` : ''}
+                                  {act.costo ? ` · Costo estimado: $${act.costo.toLocaleString('es-MX')}` : ''}
+                                </p>
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+                                {act.tipo !== 'REALIZADO' && new Date() > new Date(act.rawHorario) && (
+                                  <button 
+                                    className="button success small"
+                                    onClick={() => handleMarcarRealizado(act)}
+                                  >
+                                    Realizado
+                                  </button>
+                                )}
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                  <button 
+                                    className="button ghost small"
+                                    onClick={() => abrirModalEditar(act)}
+                                  >
+                                    Editar
+                                  </button>
+                                  <button 
+                                    className="button danger small"
+                                    onClick={() => setActividadAEliminar(act)}
+                                  >
+                                    Eliminar
+                                  </button>
+                                </div>
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      </section>
+                    ))
+                  )}
                 </div>
               </section>
             </>
@@ -340,49 +347,29 @@ export default function Itinerario() {
         </div>
       </main>
 
-      {/* Modal Cancelar Viaje */}
-      <div className={`modal-backdrop ${showCancelModal ? 'open' : ''}`}>
-        <div className="modal">
-          <div className="modal-icon">⚠️</div>
-          <h3>¿Cancelar este viaje?</h3>
-          <p className="muted">
-            Los participantes recibirán una notificación y el viaje cambiará al estado cancelado.
-          </p>
-          <div className="modal-actions">
-            <button className="button ghost" onClick={() => setShowCancelModal(false)}>
-              Volver
-            </button>
-            <button className="button danger" onClick={handleCancelarViaje}>
-              Cancelar viaje
-            </button>
-          </div>
-        </div>
-      </div>
+      <ConfirmModal 
+        isOpen={!!actividadAEliminar}
+        title="Eliminar actividad"
+        message="La actividad desaparecerá del itinerario de todos los participantes de forma permanente."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirmarEliminar}
+        onCancel={() => setActividadAEliminar(null)}
+        isLoading={isDeleting}
+      />
 
-      {/* Modal Eliminar Actividad */}
-      <div className={`modal-backdrop ${showDeleteModal ? 'open' : ''}`}>
-        <div className="modal">
-          <div className="modal-icon">🗑️</div>
-          <h3>Eliminar actividad</h3>
-          <p className="muted">
-            La actividad desaparece del itinerario de todos los participantes.
-          </p>
-          <div className="modal-actions">
-            <button className="button ghost" onClick={() => setShowDeleteModal(false)}>
-              Cancelar
-            </button>
-            <button className="button danger" onClick={handleConfirmarEliminar}>
-              Eliminar
-            </button>
-          </div>
-        </div>
-      </div>
+      <SuccessModal 
+        isOpen={successModalConfig.isOpen}
+        title={successModalConfig.title}
+        message={successModalConfig.message}
+        onAccept={() => setSuccessModalConfig({ isOpen: false, title: '', message: '' })}
+      />
 
       {/* Modal Agregar Actividad */}
       <div className={`modal-backdrop ${showCreateModal ? 'open' : ''}`}>
         <div className="modal">
-          <div className="modal-icon">📅</div>
-          <h3>Agregar actividad</h3>
+          <div className="modal-icon">{actividadAEditar ? '✏️' : '📅'}</div>
+          <h3>{actividadAEditar ? 'Editar actividad' : 'Agregar actividad'}</h3>
           <form onSubmit={handleCrearActividad}>
             <label className="field">
               <span>Título de la actividad</span>
@@ -392,59 +379,49 @@ export default function Itinerario() {
                 value={nuevaTitulo}
                 onChange={(e) => setNuevaTitulo(e.target.value)}
               />
+              {errors.titulo && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.2rem', display: 'block' }}>{errors.titulo}</span>}
             </label>
             <div className="form-grid">
-              <label className="field">
-                <span>Día</span>
+              <label className="field" style={{ gridColumn: 'span 2' }}>
+                <span>Horario de la actividad</span>
                 <input 
-                  type="text" 
-                  value={nuevaFecha}
-                  onChange={(e) => setNuevaFecha(e.target.value)}
+                  type="datetime-local" 
+                  value={nuevaHorario}
+                  min={viajeDates.inicio ? `${viajeDates.inicio}T00:00` : undefined}
+                  max={viajeDates.fin ? `${viajeDates.fin}T23:59` : undefined}
+                  onChange={(e) => setNuevaHorario(e.target.value)}
                 />
-              </label>
-              <label className="field">
-                <span>Hora</span>
-                <input 
-                  type="text" 
-                  placeholder="09:00"
-                  value={nuevaHora}
-                  onChange={(e) => setNuevaHora(e.target.value)}
-                />
+                {errors.horario && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.2rem', display: 'block' }}>{errors.horario}</span>}
               </label>
             </div>
+
             <div className="form-grid">
-              <label className="field">
-                <span>Tipo</span>
-                <select 
-                  value={nuevaTipo} 
-                  onChange={(e) => setNuevaTipo(e.target.value)}
-                >
-                  <option value="Actividad">Actividad</option>
-                  <option value="Transporte">Transporte</option>
-                  <option value="Hospedaje">Hospedaje</option>
-                  <option value="Alimentos">Alimentos</option>
-                </select>
-              </label>
               <label className="field">
                 <span>Lugar</span>
                 <input 
-                  type="text" 
-                  placeholder="Ubicación"
-                  value={nuevaLugar}
-                  onChange={(e) => setNuevaLugar(e.target.value)}
-                />
+                type="text" 
+                placeholder="Ej. Cancún, Hotel Xcaret"
+                value={nuevaLugar}
+                onChange={(e) => setNuevaLugar(e.target.value)}
+              />
+              {errors.lugar && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.2rem', display: 'block' }}>{errors.lugar}</span>}
+              </label>
+              <label className="field">
+                <span>Responsable</span>
+                <select 
+                  value={nuevaResponsable} 
+                  onChange={(e) => setNuevaResponsable(e.target.value)}
+                >
+                  {participantes.map(p => (
+                    <option key={p.id} value={p.id}>{p.nombre}</option>
+                  ))}
+                  {participantes.length === 0 && (
+                    <option value="">No hay participantes</option>
+                  )}
+                </select>
               </label>
             </div>
             <div className="form-grid">
-              <label className="field">
-                <span>Responsable (opcional)</span>
-                <input 
-                  type="text" 
-                  placeholder="Nombre"
-                  value={nuevaResponsable}
-                  onChange={(e) => setNuevaResponsable(e.target.value)}
-                />
-              </label>
               <label className="field">
                 <span>Costo estimado (opcional)</span>
                 <input 
@@ -459,12 +436,12 @@ export default function Itinerario() {
               <button 
                 type="button" 
                 className="button ghost" 
-                onClick={() => setShowCreateModal(false)}
+                onClick={cerrarModal}
               >
                 Cancelar
               </button>
               <button type="submit" className="button primary">
-                Guardar actividad
+                {actividadAEditar ? 'Guardar cambios' : 'Guardar actividad'}
               </button>
             </div>
           </form>

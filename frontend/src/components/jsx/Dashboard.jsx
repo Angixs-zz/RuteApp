@@ -180,8 +180,8 @@ export default function Dashboard() {
             <article className="card stat-card">
               <div className="stat-icon"><Users size={24} color="#6366F1" /></div>
               <div>
-                <strong>{viajesProximosCount * 2}</strong>
-                <span>Participantes</span>
+                <strong>{viajes.reduce((acc, v) => acc + (v.participantesCount || 1), 0)}</strong>
+                <span>Participantes Totales</span>
               </div>
             </article>
             <article className="card stat-card">
@@ -232,7 +232,7 @@ export default function Dashboard() {
                           <h3>{viaje.nombre}</h3>
                           <p>{viaje.destino || 'Destino no especificado'}</p>
                           <div className="meta">
-                            <span><Users size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> Participantes</span>
+                            <span><Users size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> {viaje.participantesCount || 1} Participantes</span>
                             <span>
                               <CircleDollarSign size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> ${Number(viaje.presupuestoEstimado || 0).toLocaleString('es-MX')}
                             </span>

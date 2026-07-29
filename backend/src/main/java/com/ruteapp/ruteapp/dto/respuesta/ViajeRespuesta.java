@@ -24,6 +24,7 @@ public class ViajeRespuesta {
     private Long organizadorId;
     private String organizadorNombre;
     private LocalDateTime fechaCreacion;
+    private Long participantesCount;
 
     public ViajeRespuesta() {
     }
@@ -44,7 +45,8 @@ public class ViajeRespuesta {
             Boolean publico,
             Long organizadorId,
             String organizadorNombre,
-            LocalDateTime fechaCreacion) {
+            LocalDateTime fechaCreacion,
+            Long participantesCount) {
 
         this.id = id;
         this.nombre = nombre;
@@ -62,6 +64,7 @@ public class ViajeRespuesta {
         this.organizadorId = organizadorId;
         this.organizadorNombre = organizadorNombre;
         this.fechaCreacion = fechaCreacion;
+        this.participantesCount = participantesCount;
     }
 
     public Long getId() {
@@ -126,5 +129,9 @@ public class ViajeRespuesta {
 
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
+    }
+
+    public Long getParticipantesCount() {
+        return participantesCount;
     }
 }

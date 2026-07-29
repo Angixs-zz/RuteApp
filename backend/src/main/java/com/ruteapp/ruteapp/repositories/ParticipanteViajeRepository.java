@@ -22,6 +22,7 @@ public interface ParticipanteViajeRepository
     );
 
 
- 
     boolean existsByViajeAndUsuario(Viaje viaje, Usuario usuario);
+
+    long countByViajeAndEstadoInvitacion(Viaje viaje, com.ruteapp.ruteapp.model.EstadoInvitacion estadoInvitacion);
 }

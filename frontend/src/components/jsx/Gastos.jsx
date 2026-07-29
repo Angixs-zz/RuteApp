@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from './Navbar';
 import TripHeader from './TripHeader';
@@ -7,13 +7,16 @@ import SuccessModal from './SuccessModal';
 import RegistrarGasto from './RegistrarGasto';
 import { Calendar, Edit2 } from 'lucide-react';
 import api from '../../service/api';
+import { AuthContext } from '../../context/AuthContext';
 import '../css/styles.css';
 
 export default function Gastos() {
   const { id } = useParams();
+  const { user } = useContext(AuthContext);
 
   const [viaje, setViaje] = useState(null);
   const [viajeDates, setViajeDates] = useState({ inicio: null, fin: null });
+  const [viajeOrgId, setViajeOrgId] = useState(null);
   const [gastos, setGastos] = useState([]);
   const [participantes, setParticipantes] = useState([]);
   const [errorCarga, setErrorCarga] = useState('');
@@ -52,6 +55,7 @@ export default function Gastos() {
       if (resViaje.data) {
         setViaje(resViaje.data);
         setViajeDates({ inicio: resViaje.data.fechaInicio, fin: resViaje.data.fechaFin });
+        setViajeOrgId(resViaje.data.organizadorId);
         orgId = resViaje.data.organizadorId;
         orgNombre = resViaje.data.organizadorNombre;
       }
@@ -299,20 +303,22 @@ export default function Gastos() {
                                 <td><strong>${g.monto.toLocaleString('es-MX')}</strong></td>
                                 <td>{g.pagadorNombre}</td>
                                 <td>
-                                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <button
-                                      className="button ghost small"
-                                      onClick={() => abrirModalEditar(g)}
-                                    >
-                                      Editar
-                                    </button>
-                                    <button
-                                      className="button danger small"
-                                      onClick={() => setGastoAEliminar(g)}
-                                    >
-                                      Eliminar
-                                    </button>
-                                  </div>
+                                  {(user?.id === viajeOrgId || user?.id === g.pagadorId) && (
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                      <button
+                                        className="button ghost small"
+                                        onClick={() => abrirModalEditar(g)}
+                                      >
+                                        Editar
+                                      </button>
+                                      <button
+                                        className="button danger small"
+                                        onClick={() => setGastoAEliminar(g)}
+                                      >
+                                        Eliminar
+                                      </button>
+                                    </div>
+                                  )}
                                 </td>
                               </tr>
                             ))

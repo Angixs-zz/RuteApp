@@ -1,4 +1,3 @@
-import React from 'react';
 import '../css/styles.css'; // Asumimos que aquí o en un CSS global agregaremos estilos para el modal
 
 export default function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, confirmText = 'Confirmar', cancelText = 'Cancelar' }) {

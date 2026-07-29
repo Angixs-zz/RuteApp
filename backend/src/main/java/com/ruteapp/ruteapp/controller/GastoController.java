@@ -3,10 +3,13 @@ package com.ruteapp.ruteapp.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.ruteapp.ruteapp.dto.entrada.GastoEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.GastoRespuesta;
+import com.ruteapp.ruteapp.dto.respuesta.PaginaRespuesta;
+import com.ruteapp.ruteapp.model.CategoriaGasto;
 import com.ruteapp.ruteapp.service.GastoService;
 
 import jakarta.validation.Valid;
@@ -24,6 +27,12 @@ public class GastoController {
     @GetMapping
     public List<GastoRespuesta> listarTodos() {
         return gastoService.listarTodos();
+    }
+
+    @GetMapping("/paginados")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public PaginaRespuesta<GastoRespuesta> listarPaginados(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(required = false) String busqueda, @RequestParam(required = false) CategoriaGasto categoria) {
+        return gastoService.listarPaginados(page, size, busqueda, categoria);
     }
 
     @GetMapping("/{id}")

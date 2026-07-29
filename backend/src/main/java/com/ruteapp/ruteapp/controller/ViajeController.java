@@ -10,6 +10,7 @@ import com.ruteapp.ruteapp.dto.entrada.ViajeEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.PaginaRespuesta;
 import com.ruteapp.ruteapp.dto.respuesta.ViajeRespuesta;
 import com.ruteapp.ruteapp.service.ViajeService;
+import com.ruteapp.ruteapp.model.EstadoViaje;
 
 import jakarta.validation.Valid;
 
@@ -29,6 +30,7 @@ public class ViajeController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String busqueda,
+            @RequestParam(required = false) EstadoViaje estado,
             Authentication authentication) {
 
         boolean esAdministrador = authentication.getAuthorities()
@@ -44,9 +46,10 @@ public class ViajeController {
         return ResponseEntity.ok(
                 viajeService.listarPaginados(
                         page,
-                        size,
-                        busqueda,
-                        correoOrganizador
+                         size,
+                         busqueda,
+                         correoOrganizador,
+                         estado
                 )
         );
     }

@@ -6,10 +6,15 @@ import java.util.Locale;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import com.ruteapp.ruteapp.dto.entrada.UsuarioEntrada;
+import com.ruteapp.ruteapp.dto.entrada.UsuarioAdminEntrada;
 import com.ruteapp.ruteapp.dto.entrada.ActualizarPerfilEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.UsuarioRespuesta;
+import com.ruteapp.ruteapp.dto.respuesta.PaginaRespuesta;
 import com.ruteapp.ruteapp.exception.CorreoDuplicadoException;
 import com.ruteapp.ruteapp.exception.RecursoNoEncontradoException;
 import com.ruteapp.ruteapp.model.Rol;
@@ -50,6 +55,11 @@ public class UsuarioService {
         }
 
         return respuestas;
+    }
+
+    public PaginaRespuesta<UsuarioRespuesta> listarPaginados(int pagina, int tamanio, String busqueda, String rol, Boolean activo) {
+        Page<UsuarioRespuesta> resultado = usuarioRepository.buscar(busqueda == null ? "" : busqueda.trim(), rol == null ? "" : rol, activo, PageRequest.of(pagina, tamanio, Sort.by("fechaCreacion").descending())).map(this::convertirARespuesta);
+        return new PaginaRespuesta<>(resultado.getContent(), resultado.getNumber(), resultado.getSize(), resultado.getTotalElements(), resultado.getTotalPages(), resultado.isLast());
     }
 
     public UsuarioRespuesta buscarPorId(Long id) {
@@ -94,6 +104,12 @@ public class UsuarioService {
         return convertirARespuesta(guardado);
     }
 
+    public UsuarioRespuesta crearPublico(UsuarioEntrada entrada) {
+        Rol rol = obtenerRolPorId(entrada.getRolId());
+        if ("ADMINISTRADOR".equals(rol.getNombre())) throw new IllegalArgumentException("El rol administrador solo puede asignarlo otro administrador");
+        return crear(entrada);
+    }
+
     public UsuarioRespuesta actualizar(
             Long id,
             UsuarioEntrada entrada) {
@@ -109,6 +125,18 @@ public class UsuarioService {
         Usuario actualizado = usuarioRepository.save(usuario);
 
         return convertirARespuesta(actualizado);
+    }
+
+    public UsuarioRespuesta actualizarComoAdmin(Long id, UsuarioAdminEntrada entrada) {
+        Usuario usuario = obtenerEntidadPorId(id);
+        validarCorreoActualizacion(id, entrada.getCorreo());
+        usuario.setNombre(entrada.getNombre().trim());
+        usuario.setCorreo(entrada.getCorreo().trim().toLowerCase(Locale.ROOT));
+        usuario.setTelefono(normalizarTelefono(entrada.getTelefono()));
+        usuario.setRol(obtenerRolPorId(entrada.getRolId()));
+        usuario.setActivo(entrada.getActivo());
+        if (entrada.getPassword() != null && !entrada.getPassword().isBlank()) usuario.setPassword(passwordEncoder.encode(entrada.getPassword()));
+        return convertirARespuesta(usuarioRepository.save(usuario));
     }
 
     public UsuarioRespuesta actualizarPerfil(

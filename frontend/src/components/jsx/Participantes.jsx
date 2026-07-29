@@ -6,6 +6,7 @@ import { AlertTriangle, Mail, MessageCircle, Trash2 } from 'lucide-react';
 import api from '../../service/api';
 import { AuthContext } from '../../context/AuthContext';
 import avatarImg from '../../assets/react.svg';
+import { esTelefonoValido, normalizarTelefono } from '../../utils/telefono';
 import '../css/styles.css';
 
 function convertirParticipante(participante) {
@@ -34,6 +35,7 @@ export default function Participantes() {
   const [selectedParticipante, setSelectedParticipante] = useState(null);
 
   // Formulario de invitación
+  const [canalInvitacion, setCanalInvitacion] = useState('CORREO');
   const [invitacionContacto, setInvitacionContacto] = useState('');
   const [errorInvitacion, setErrorInvitacion] = useState('');
   const [enviandoInvitacion, setEnviandoInvitacion] = useState(false);
@@ -87,10 +89,17 @@ export default function Participantes() {
 
   const handleEnviarInvitacion = async (e) => {
     e.preventDefault();
-    const correo = invitacionContacto.trim();
+    const contacto = invitacionContacto.trim();
     setErrorInvitacion('');
-    if (!/\S+@\S+\.\S+/.test(correo)) {
+    if (canalInvitacion === 'CORREO' && !/\S+@\S+\.\S+/.test(contacto)) {
       setErrorInvitacion('Ingresa un correo electrónico válido');
+      return;
+    }
+    const telefono = canalInvitacion === 'WHATSAPP'
+      ? normalizarTelefono(contacto)
+      : '';
+    if (canalInvitacion === 'WHATSAPP' && !esTelefonoValido(telefono)) {
+      setErrorInvitacion('Ingresa 10 dígitos mexicanos o un teléfono internacional');
       return;
     }
     if (!id) {
@@ -102,13 +111,16 @@ export default function Participantes() {
     try {
       const response = await api.post('/participantes', {
         viajeId: Number(id),
-        correoUsuario: correo,
+        canalInvitacion,
+        ...(canalInvitacion === 'CORREO'
+          ? { correoUsuario: contacto }
+          : { telefonoUsuario: telefono }),
       });
 
       setParticipantes(prev => [...prev, convertirParticipante(response.data)]);
       setInvitacionContacto('');
       setShowInviteModal(false);
-      showToast('Invitación enviada por correo');
+      showToast(`Invitación enviada por ${canalInvitacion === 'CORREO' ? 'correo' : 'WhatsApp'}`);
     } catch (error) {
       setErrorInvitacion(
         error.response?.data?.mensaje
@@ -299,20 +311,50 @@ export default function Participantes() {
       {/* Modal Invitar Participante */}
       <div className={`modal-backdrop ${showInviteModal ? 'open' : ''}`}>
         <div className="modal">
-          <div className="modal-icon"><Mail size={28} /></div>
+          <div className="modal-icon">
+            {canalInvitacion === 'CORREO' ? <Mail size={28} /> : <MessageCircle size={28} />}
+          </div>
           <h3>Invitar participante</h3>
           <form onSubmit={handleEnviarInvitacion}>
+            <div className="invite-channels" aria-label="Canal de invitación">
+              <button
+                type="button"
+                className={`invite-channel ${canalInvitacion === 'CORREO' ? 'active' : ''}`}
+                onClick={() => {
+                  setCanalInvitacion('CORREO');
+                  setInvitacionContacto('');
+                  setErrorInvitacion('');
+                }}
+              >
+                <Mail size={18} /> Correo electrónico
+              </button>
+              <button
+                type="button"
+                className={`invite-channel whatsapp ${canalInvitacion === 'WHATSAPP' ? 'active' : ''}`}
+                onClick={() => {
+                  setCanalInvitacion('WHATSAPP');
+                  setInvitacionContacto('');
+                  setErrorInvitacion('');
+                }}
+              >
+                <MessageCircle size={18} /> WhatsApp
+              </button>
+            </div>
             <label className={`field ${errorInvitacion ? 'error' : ''}`}>
-              <span>Correo electrónico</span>
+              <span>{canalInvitacion === 'CORREO' ? 'Correo electrónico' : 'Número de WhatsApp'}</span>
               <input 
-                type="email"
-                placeholder="persona@ejemplo.com"
+                type={canalInvitacion === 'CORREO' ? 'email' : 'tel'}
+                inputMode={canalInvitacion === 'CORREO' ? 'email' : 'tel'}
+                placeholder={canalInvitacion === 'CORREO' ? 'persona@ejemplo.com' : '951 123 4567'}
                 value={invitacionContacto}
                 onChange={(e) => {
                   setInvitacionContacto(e.target.value);
                   setErrorInvitacion('');
                 }}
               />
+              {canalInvitacion === 'WHATSAPP' && !errorInvitacion && (
+                <span className="muted small">La persona debe tener ese teléfono registrado en RuteApp.</span>
+              )}
               {errorInvitacion && <span className="error-text">{errorInvitacion}</span>}
             </label>
             <div className="modal-actions">

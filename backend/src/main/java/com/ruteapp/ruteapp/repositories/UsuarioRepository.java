@@ -1,5 +1,7 @@
 package com.ruteapp.ruteapp.repositories;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,6 +17,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByCorreo(String correo);
 
     Optional<Usuario> findByCorreoIgnoreCase(String correo);
+
+    List<Usuario> findByTelefonoIn(Collection<String> telefonos);
 
     Optional<Usuario> findByGoogleSubject(String googleSubject);
 

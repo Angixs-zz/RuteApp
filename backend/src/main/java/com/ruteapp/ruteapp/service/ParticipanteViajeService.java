@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ruteapp.ruteapp.dto.entrada.ParticipanteEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.ParticipanteRespuesta;
@@ -17,6 +18,7 @@ import com.ruteapp.ruteapp.model.Viaje;
 import com.ruteapp.ruteapp.repositories.ParticipanteViajeRepository;
 import com.ruteapp.ruteapp.repositories.UsuarioRepository;
 import com.ruteapp.ruteapp.repositories.ViajeRepository;
+import com.ruteapp.ruteapp.util.TelefonoUtil;
 
 @Service
 public class ParticipanteViajeService {
@@ -75,6 +77,7 @@ public class ParticipanteViajeService {
         return respuestas;
     }
 
+    @Transactional
     public ParticipanteRespuesta crear(
             ParticipanteEntrada entrada,
             String correoAutenticado,
@@ -110,14 +113,17 @@ public class ParticipanteViajeService {
         }
 
         ParticipanteViaje guardado = participanteViajeRepository.save(participante);
-        servicioCorreo.enviarInvitacion(usuario, viaje);
-        whatsAppService.enviarNotificacion(
-                usuario,
-                "Hola " + usuario.getNombre() + ", "
-                        + viaje.getOrganizador().getNombre()
-                        + " te invitó al viaje \"" + viaje.getNombre()
-                        + "\" en RuteApp. Entra a Invitaciones para aceptar o rechazar."
-        );
+        if ("WHATSAPP".equalsIgnoreCase(entrada.getCanalInvitacion())) {
+            whatsAppService.enviar(
+                    usuario.getTelefono(),
+                    "Hola " + usuario.getNombre() + ", "
+                            + viaje.getOrganizador().getNombre()
+                            + " te invitó al viaje \"" + viaje.getNombre()
+                            + "\" en RuteApp. Entra a Invitaciones para aceptar o rechazar."
+            );
+        } else {
+            servicioCorreo.enviarInvitacion(usuario, viaje);
+        }
         return convertirARespuesta(guardado);
     }
 
@@ -238,7 +244,24 @@ public class ParticipanteViajeService {
                     ));
         }
 
-        return usuarioRepository.findByCorreo(entrada.getCorreoUsuario())
+        if ("WHATSAPP".equalsIgnoreCase(entrada.getCanalInvitacion())) {
+            List<Usuario> usuarios = usuarioRepository.findByTelefonoIn(
+                    TelefonoUtil.variantesBusqueda(entrada.getTelefonoUsuario())
+            );
+            if (usuarios.isEmpty()) {
+                throw new RecursoNoEncontradoException(
+                        "No existe una cuenta registrada con ese teléfono"
+                );
+            }
+            if (usuarios.size() > 1) {
+                throw new IllegalArgumentException(
+                        "Hay más de una cuenta registrada con ese teléfono"
+                );
+            }
+            return usuarios.getFirst();
+        }
+
+        return usuarioRepository.findByCorreoIgnoreCase(entrada.getCorreoUsuario().trim())
                 .orElseThrow(() -> new RecursoNoEncontradoException(
                         "No existe una cuenta registrada con ese correo"
                 ));

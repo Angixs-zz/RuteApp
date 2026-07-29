@@ -69,7 +69,7 @@ export default function Dashboard() {
             const resAct = await api.get(`/actividades/viaje/${primerViajeId}`);
             const actividades = resAct.data || [];
             if (actividades.length > 0) {
-              setProximaActividad(actividades[0]);
+              setProximaActividad({ ...actividades[0], viajeId: primerViajeId });
             }
           } catch {
             setProximaActividad(null);
@@ -224,6 +224,12 @@ export default function Dashboard() {
                       <article key={viaje.id} className="card trip-card">
                         <div className="trip-cover">
                           <span className={`status ${badge.className}`}>{badge.label}</span>
+                          <span 
+                            className={`status ${user?.id === viaje.organizadorId ? 'planning' : 'info'}`} 
+                            style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '0.7rem' }}
+                          >
+                            {user?.id === viaje.organizadorId ? 'Organizador' : 'Participante'}
+                          </span>
                         </div>
                         <div className="trip-body">
                           <span className="date">
@@ -242,7 +248,7 @@ export default function Dashboard() {
                               <span>MA</span>
                               <span>+1</span>
                             </div>
-                            <Link to={`/detalle-viaje`}>Ver viaje →</Link>
+                            <Link to={`/viajes/${viaje.id}`}>Ver viaje →</Link>
                           </div>
                         </div>
                       </article>
@@ -270,7 +276,7 @@ export default function Dashboard() {
                   <>
                     <h3>{proximaActividad.lugar}</h3>
                     <p className="muted small">{proximaActividad.descripcion || 'Sin descripción'}</p>
-                    <Link to="/itinerario">Ver itinerario →</Link>
+                    <Link to={`/viajes/${proximaActividad.viajeId}/itinerario`}>Ver itinerario →</Link>
                   </>
                 ) : (
                   <>

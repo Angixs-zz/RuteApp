@@ -1,0 +1,22 @@
+info:
+  name: Actualizar usuario como administrador
+  type: http
+  seq: 8
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/usuarios/{{usuarioId}}/admin"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Usuario administrado",
+        "correo": "{{usuarioCorreo}}",
+        "password": "",
+        "telefono": "{{telefono}}",
+        "rolId": {{usuarioRolId}},
+        "activo": true
+      }
+  auth:
+    type: bearer
+    token: "{{adminToken}}"

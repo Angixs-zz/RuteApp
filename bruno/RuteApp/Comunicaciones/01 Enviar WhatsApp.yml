@@ -1,0 +1,18 @@
+info:
+  name: Enviar mensaje por WhatsApp
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/comunicaciones/whatsapp"
+  body:
+    type: json
+    data: |-
+      {
+        "telefono": "{{telefono}}",
+        "mensaje": "Tu itinerario de RuteApp fue actualizado."
+      }
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

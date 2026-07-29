@@ -1,0 +1,11 @@
+info:
+  name: Notificar participante por WhatsApp
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/participantes/{{participanteId}}/notificar-whatsapp"
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

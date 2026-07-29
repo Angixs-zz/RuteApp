@@ -1,0 +1,11 @@
+info:
+  name: Eliminar usuario por ID
+  type: http
+  seq: 10
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/usuarios/{{usuarioId}}"
+  auth:
+    type: bearer
+    token: "{{adminToken}}"

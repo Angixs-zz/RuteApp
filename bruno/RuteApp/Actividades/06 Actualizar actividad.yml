@@ -1,0 +1,23 @@
+info:
+  name: Actualizar actividad por ID
+  type: http
+  seq: 6
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/actividades/{{actividadId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "viajeId": {{viajeId}},
+        "lugar": "Centro historico actualizado",
+        "horario": "2026-09-05T11:00:00",
+        "descripcion": "Recorrido actualizado",
+        "responsableId": {{responsableId}},
+        "costoEstimado": 350.00,
+        "estado": "PENDIENTE"
+      }
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

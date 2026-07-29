@@ -1,0 +1,11 @@
+info:
+  name: Eliminar viaje por ID
+  type: http
+  seq: 7
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/viajes/{{viajeId}}"
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

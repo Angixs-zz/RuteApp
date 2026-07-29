@@ -1,0 +1,17 @@
+info:
+  name: Crear un rol
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/roles"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "OPERADOR"
+      }
+  auth:
+    type: bearer
+    token: "{{adminToken}}"

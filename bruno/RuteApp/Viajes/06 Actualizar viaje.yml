@@ -1,0 +1,27 @@
+info:
+  name: Actualizar viaje por ID
+  type: http
+  seq: 6
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/viajes/{{viajeId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Viaje a Oaxaca actualizado",
+        "descripcion": "Itinerario actualizado",
+        "origen": "Ciudad de Mexico",
+        "destino": "Oaxaca de Juarez",
+        "fechaInicio": "2026-09-04",
+        "fechaFin": "2026-09-07",
+        "presupuestoEstimado": 9000.00,
+        "transporte": "Autobus",
+        "estado": "PLANIFICACION",
+        "organizadorId": {{organizadorId}},
+        "publico": true
+      }
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

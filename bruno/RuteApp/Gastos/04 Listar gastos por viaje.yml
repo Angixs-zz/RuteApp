@@ -1,0 +1,11 @@
+info:
+  name: Listar gastos de un viaje
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/gastos/viaje/{{viajeId}}"
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

@@ -1,0 +1,11 @@
+info:
+  name: Eliminar actividad por ID
+  type: http
+  seq: 7
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/actividades/{{actividadId}}"
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

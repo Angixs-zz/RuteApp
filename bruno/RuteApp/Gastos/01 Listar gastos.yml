@@ -1,0 +1,11 @@
+info:
+  name: Listar todos los gastos
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/gastos"
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

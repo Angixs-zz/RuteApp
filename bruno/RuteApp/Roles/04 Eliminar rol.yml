@@ -1,0 +1,11 @@
+info:
+  name: Eliminar rol por ID
+  type: http
+  seq: 4
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/roles/{{rolId}}"
+  auth:
+    type: bearer
+    token: "{{adminToken}}"

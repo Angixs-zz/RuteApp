@@ -1,0 +1,19 @@
+info:
+  name: Actualizar perfil sin cambiar rol ni contrasena
+  type: http
+  seq: 9
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/api/usuarios/{{usuarioId}}/perfil"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Nombre de perfil actualizado",
+        "correo": "{{usuarioCorreo}}",
+        "telefono": "{{telefono}}"
+      }
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

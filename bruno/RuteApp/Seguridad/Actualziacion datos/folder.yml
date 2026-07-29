@@ -1,7 +1,0 @@
-info:
-  name: Actualziacion datos
-  type: folder
-  seq: 6
-
-request:
-  auth: inherit

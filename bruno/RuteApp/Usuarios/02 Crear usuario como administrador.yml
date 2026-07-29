@@ -1,0 +1,21 @@
+info:
+  name: Crear usuario como administrador
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/usuarios/admin"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Usuario creado por administrador",
+        "correo": "usuario.admin@ruteapp.com",
+        "password": "Prueba123!",
+        "telefono": "{{telefono}}",
+        "rolId": {{usuarioRolId}}
+      }
+  auth:
+    type: bearer
+    token: "{{adminToken}}"

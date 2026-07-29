@@ -1,0 +1,20 @@
+info:
+  name: Actualizar participante por ID
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/participantes/{{participanteId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "usuarioId": {{invitadoId}},
+        "viajeId": {{viajeId}},
+        "estadoInvitacion": "PENDIENTE",
+        "permisoColaborar": true
+      }
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

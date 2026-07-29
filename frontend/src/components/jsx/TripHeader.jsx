@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../service/api';
 import ConfirmModal from './ConfirmModal';
+import SuccessModal from './SuccessModal';
 
 export default function TripHeader({ id, currentTab }) {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ export default function TripHeader({ id, currentTab }) {
     };
   });
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [successModalConfig, setSuccessModalConfig] = useState({ isOpen: false, title: '', message: '' });
 
   const fetchDetalleViaje = useCallback(async () => {
     if (!id) return;
@@ -41,12 +44,47 @@ export default function TripHeader({ id, currentTab }) {
   const handleCancelarViaje = async () => {
     try {
       await api.put(`/viajes/${id}`, { ...viaje, estado: 'CANCELADO' });
+      setViaje(prev => ({ ...prev, estado: 'CANCELADO' }));
+      sessionStorage.setItem(`trip_${id}`, JSON.stringify({ ...viaje, estado: 'CANCELADO' }));
     } catch (err) {
       console.error('Error al cancelar:', err);
     }
-    setViaje(prev => ({ ...prev, estado: 'CANCELADO' }));
     setShowCancelModal(false);
-    navigate(`/viajes/${id}`);
+    setSuccessModalConfig({
+      isOpen: true,
+      title: 'Viaje Cancelado',
+      message: 'El viaje ha sido cancelado exitosamente.'
+    });
+  };
+
+  const calcularEstadoReal = (inicio, fin) => {
+    if (!inicio || !fin) return 'PLANIFICACION';
+    const hoy = new Date().toISOString().split('T')[0];
+    if (hoy < inicio) return 'PLANIFICACION';
+    if (hoy > fin) return 'FINALIZADO';
+    return 'EN_CURSO';
+  };
+
+  const handleReanudarViaje = async () => {
+    try {
+      const nuevoEstado = calcularEstadoReal(viaje.fechaInicio, viaje.fechaFin);
+      await api.put(`/viajes/${id}`, { ...viaje, estado: nuevoEstado });
+      setViaje(prev => ({ ...prev, estado: nuevoEstado }));
+      sessionStorage.setItem(`trip_${id}`, JSON.stringify({ ...viaje, estado: nuevoEstado }));
+    } catch (err) {
+      console.error('Error al reanudar:', err);
+    }
+    setShowResumeModal(false);
+    setSuccessModalConfig({
+      isOpen: true,
+      title: 'Viaje Reanudado',
+      message: 'El viaje ha sido reanudado exitosamente.'
+    });
+  };
+
+  const handleSuccessAccept = () => {
+    setSuccessModalConfig({ isOpen: false, title: '', message: '' });
+    window.location.reload(); // Recargar para sincronizar DetalleViaje
   };
 
   const formatearEstado = (estado) => {
@@ -85,9 +123,13 @@ export default function TripHeader({ id, currentTab }) {
             <h1>{viaje.nombre}</h1>
             <p>{viaje.destino} · {formatearFechas(viaje.fechaInicio, viaje.fechaFin)}</p>
           </div>
-          {viaje.estado !== 'CANCELADO' && (
+          {viaje.estado !== 'CANCELADO' ? (
             <button className="button ghost" onClick={() => setShowCancelModal(true)}>
               Cancelar viaje
+            </button>
+          ) : (
+            <button className="button ghost" onClick={() => setShowResumeModal(true)}>
+              Reanudar viaje
             </button>
           )}
         </div>
@@ -98,7 +140,6 @@ export default function TripHeader({ id, currentTab }) {
         <Link className={currentTab === 'participantes' ? 'active' : ''} to={`/viajes/${id}/participantes`}>Participantes</Link>
         <Link className={currentTab === 'itinerario' ? 'active' : ''} to={`/viajes/${id}/itinerario`}>Itinerario</Link>
         <Link className={currentTab === 'gastos' ? 'active' : ''} to={`/viajes/${id}/gastos`}>Gastos</Link>
-        <Link className={currentTab === 'notificaciones' ? 'active' : ''} to={`/viajes/${id}/notificaciones`}>Notificaciones</Link>
       </nav>
 
       <ConfirmModal 
@@ -109,6 +150,23 @@ export default function TripHeader({ id, currentTab }) {
         cancelText="Volver"
         onConfirm={handleCancelarViaje}
         onCancel={() => setShowCancelModal(false)}
+      />
+
+      <ConfirmModal 
+        isOpen={showResumeModal}
+        title="¿Reanudar este viaje?"
+        message="El viaje volverá a estar activo y el estado se actualizará según las fechas programadas."
+        confirmText="Reanudar viaje"
+        cancelText="Volver"
+        onConfirm={handleReanudarViaje}
+        onCancel={() => setShowResumeModal(false)}
+      />
+
+      <SuccessModal 
+        isOpen={successModalConfig.isOpen}
+        title={successModalConfig.title}
+        message={successModalConfig.message}
+        onAccept={handleSuccessAccept}
       />
     </>
   );

@@ -134,6 +134,25 @@ public class GlobalExceptionHandler {
                 .body(respuesta);
     }
 
+    @ExceptionHandler(ComunicacionException.class)
+    public ResponseEntity<ErrorRespuesta> manejarErrorComunicacion(
+            ComunicacionException ex,
+            HttpServletRequest request) {
+
+        ErrorRespuesta respuesta = new ErrorRespuesta(
+                LocalDateTime.now(),
+                HttpStatus.BAD_GATEWAY.value(),
+                HttpStatus.BAD_GATEWAY.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                null
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .body(respuesta);
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorRespuesta> manejarRuntimeException(
             RuntimeException ex,

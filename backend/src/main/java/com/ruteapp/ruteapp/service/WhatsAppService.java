@@ -10,6 +10,7 @@ import com.ruteapp.ruteapp.config.TwilioConfig;
 import com.ruteapp.ruteapp.dto.entrada.WhatsAppEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.WhatsAppRespuesta;
 import com.ruteapp.ruteapp.exception.ComunicacionException;
+import com.ruteapp.ruteapp.model.Usuario;
 import com.twilio.exception.ApiException;
 import com.twilio.exception.TwilioException;
 import com.twilio.rest.api.v2010.account.Message;
@@ -64,6 +65,29 @@ public class WhatsAppService {
             LOGGER.error("No fue posible conectar con Twilio", ex);
             throw new ComunicacionException(
                     "No fue posible conectar con el servicio de WhatsApp"
+            );
+        }
+    }
+
+    public WhatsAppRespuesta enviar(String telefono, String mensaje) {
+        WhatsAppEntrada entrada = new WhatsAppEntrada();
+        entrada.setTelefono(telefono);
+        entrada.setMensaje(mensaje);
+        return enviar(entrada);
+    }
+
+    public void enviarNotificacion(Usuario usuario, String mensaje) {
+        if (usuario.getTelefono() == null || usuario.getTelefono().isBlank()) {
+            return;
+        }
+
+        try {
+            enviar(usuario.getTelefono(), mensaje);
+        } catch (ComunicacionException ex) {
+            LOGGER.warn(
+                    "No se envió la notificación de WhatsApp al usuario {}: {}",
+                    usuario.getId(),
+                    ex.getMessage()
             );
         }
     }

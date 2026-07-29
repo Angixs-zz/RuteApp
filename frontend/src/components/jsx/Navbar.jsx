@@ -1,16 +1,42 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Bell, User } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import '../css/styles.css';
 import logoImg from '../../assets/logo.jpeg';
+import api from '../../service/api';
 
-export default function Navbar({ invitacionesCount = 0 }) {
+export default function Navbar({ invitacionesCount }) {
   const { user, logoutContext } = useContext(AuthContext);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [invitacionesPendientes, setInvitacionesPendientes] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    if (invitacionesCount !== undefined) return;
+    if (!user || user.rol === 'ADMINISTRADOR') return;
+
+    let activo = true;
+    api.get('/participantes')
+      .then((response) => {
+        if (!activo) return;
+        const participantes = Array.isArray(response.data) ? response.data : [];
+        setInvitacionesPendientes(
+          participantes.filter((p) => p.estadoInvitacion === 'PENDIENTE').length
+        );
+      })
+      .catch(() => {
+        if (activo) setInvitacionesPendientes(0);
+      });
+
+    return () => {
+      activo = false;
+    };
+  }, [invitacionesCount, user]);
+
+  const cantidadInvitaciones = invitacionesCount ?? invitacionesPendientes;
 
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen((prev) => !prev);
@@ -46,14 +72,14 @@ export default function Navbar({ invitacionesCount = 0 }) {
             <Link className={pathname === '/dashboard' ? 'active' : ''} to="/dashboard">Inicio</Link>
             <Link className={pathname.startsWith('/viajes') ? 'active' : ''} to="/viajes">Mis viajes</Link>
             <Link className={pathname === '/invitaciones' ? 'active' : ''} to="/invitaciones">
-              Invitaciones {invitacionesCount > 0 && <span className="nav-badge">{invitacionesCount}</span>}
+              Invitaciones {cantidadInvitaciones > 0 && <span className="nav-badge">{cantidadInvitaciones}</span>}
             </Link>
           </nav>
 
           <div className="user-menu">
-            {invitacionesCount > 0 && (
+            {cantidadInvitaciones > 0 && (
               <button className="icon-btn" aria-label="Notificaciones">
-                <Bell size={20} style={{ display: 'inline', verticalAlign: 'middle' }} /><span className="count">{invitacionesCount}</span>
+                <Bell size={20} style={{ display: 'inline', verticalAlign: 'middle' }} /><span className="count">{cantidadInvitaciones}</span>
               </button>
             )}
             

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Navbar from './Navbar';
 import TripHeader from './TripHeader';
-import { AlertTriangle, Mail, Trash2 } from 'lucide-react';
+import { AlertTriangle, Mail, MessageCircle, Trash2 } from 'lucide-react';
 import api from '../../service/api';
 import avatarImg from '../../assets/react.svg';
 import '../css/styles.css';
@@ -12,7 +12,7 @@ function convertirParticipante(participante) {
     id: participante.id,
     nombre: participante.nombreUsuario || 'Participante',
     correo: participante.correoUsuario || 'Sin correo',
-    telefono: 'No registrado',
+    telefono: participante.whatsappDisponible ? 'Registrado' : 'No registrado',
     rol: participante.permisoColaborar ? 'Colaborador' : 'Participante',
     estado: participante.estadoInvitacion || 'PENDIENTE',
   };
@@ -20,8 +20,6 @@ function convertirParticipante(participante) {
 
 export default function Participantes() {
   const { id } = useParams();
-  const viajeId = id || 1;
-
   const [viaje, setViaje] = useState(null);
   const [errorCarga, setErrorCarga] = useState('');
 
@@ -37,6 +35,7 @@ export default function Participantes() {
   const [invitacionContacto, setInvitacionContacto] = useState('');
   const [errorInvitacion, setErrorInvitacion] = useState('');
   const [enviandoInvitacion, setEnviandoInvitacion] = useState(false);
+  const [notificandoId, setNotificandoId] = useState(null);
 
   const [toastMessage, setToastMessage] = useState('');
 
@@ -134,6 +133,21 @@ export default function Participantes() {
     showToast('Participante eliminado');
   };
 
+  const handleNotificarWhatsApp = async (participante) => {
+    setNotificandoId(participante.id);
+    try {
+      await api.post(`/participantes/${participante.id}/notificar-whatsapp`);
+      showToast(`Recordatorio enviado a ${participante.nombre}`);
+    } catch (error) {
+      showToast(
+        error.response?.data?.mensaje
+          || 'No fue posible enviar el mensaje por WhatsApp'
+      );
+    } finally {
+      setNotificandoId(null);
+    }
+  };
+
   const formatearEstadoBadge = (estado) => {
     switch (estado?.toUpperCase()) {
       case 'ACEPTADA':
@@ -145,21 +159,6 @@ export default function Participantes() {
         return <span className="status cancelled">Rechazado</span>;
       default:
         return <span className="status confirmed">Confirmado</span>;
-    }
-  };
-
-  const formatearFechas = (inicio, fin) => {
-    if (!inicio || !fin) return '12–16 de agosto de 2026';
-    try {
-      const fIni = new Date(inicio + 'T00:00:00');
-      const fFin = new Date(fin + 'T00:00:00');
-      const mesAñoOptions = { month: 'long', year: 'numeric' };
-      if (fIni.getMonth() === fFin.getMonth() && fIni.getFullYear() === fFin.getFullYear()) {
-        return `${fIni.getDate()}–${fFin.getDate()} de ${fFin.toLocaleDateString('es-MX', mesAñoOptions)}`;
-      }
-      return `${fIni.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })} – ${fFin.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}`;
-    } catch {
-      return `${inicio} – ${fin}`;
     }
   };
 
@@ -230,28 +229,34 @@ export default function Participantes() {
                           <td>{p.rol}</td>
                           <td>{formatearEstadoBadge(p.estado)}</td>
                           <td>
-                            {p.rol === 'Organizador' ? (
-                              '—'
-                            ) : p.estado === 'PENDIENTE' ? (
-                              <span className="muted small">Esperando respuesta</span>
-                            ) : p.estado === 'RECHAZADA' ? (
-                              <button 
-                                className="button danger small" 
-                                onClick={() => {
-                                  setSelectedParticipante(p);
-                                  setShowDeleteModal(true);
-                                }}
-                              >
-                                Eliminar
-                              </button>
-                            ) : (
-                              <button 
-                                className="button ghost small"
-                                onClick={() => showToast(`Editando participante ${p.nombre}`)}
-                              >
-                                Editar
-                              </button>
-                            )}
+                            <div className="participant-actions">
+                              {p.estado === 'PENDIENTE' && (
+                                <span className="muted small">Esperando respuesta</span>
+                              )}
+                              {p.estado === 'RECHAZADA' ? (
+                                <button
+                                  className="button danger small"
+                                  onClick={() => {
+                                    setSelectedParticipante(p);
+                                    setShowDeleteModal(true);
+                                  }}
+                                >
+                                  Eliminar
+                                </button>
+                              ) : (
+                                <button
+                                  className="button whatsapp small"
+                                  onClick={() => handleNotificarWhatsApp(p)}
+                                  disabled={p.telefono === 'No registrado' || notificandoId === p.id}
+                                  title={p.telefono === 'No registrado'
+                                    ? 'El participante debe registrar su teléfono en Perfil'
+                                    : 'Enviar recordatorio por WhatsApp'}
+                                >
+                                  <MessageCircle size={16} />
+                                  {notificandoId === p.id ? 'Enviando...' : 'WhatsApp'}
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}

@@ -8,6 +8,7 @@ import org.springframework.security.access.AccessDeniedException;
 
 import com.ruteapp.ruteapp.dto.entrada.ParticipanteEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.ParticipanteRespuesta;
+import com.ruteapp.ruteapp.dto.respuesta.WhatsAppRespuesta;
 import com.ruteapp.ruteapp.exception.RecursoNoEncontradoException;
 import com.ruteapp.ruteapp.model.EstadoInvitacion;
 import com.ruteapp.ruteapp.model.ParticipanteViaje;
@@ -24,16 +25,19 @@ public class ParticipanteViajeService {
     private final ViajeRepository viajeRepository;
     private final UsuarioRepository usuarioRepository;
     private final ServicioCorreo servicioCorreo;
+    private final WhatsAppService whatsAppService;
 
     public ParticipanteViajeService(
             ParticipanteViajeRepository participanteViajeRepository,
             ViajeRepository viajeRepository,
             UsuarioRepository usuarioRepository,
-            ServicioCorreo servicioCorreo) {
+            ServicioCorreo servicioCorreo,
+            WhatsAppService whatsAppService) {
         this.participanteViajeRepository = participanteViajeRepository;
         this.viajeRepository = viajeRepository;
         this.usuarioRepository = usuarioRepository;
         this.servicioCorreo = servicioCorreo;
+        this.whatsAppService = whatsAppService;
     }
 
     public List<ParticipanteRespuesta> listarTodos(String correoUsuario) {
@@ -107,6 +111,13 @@ public class ParticipanteViajeService {
 
         ParticipanteViaje guardado = participanteViajeRepository.save(participante);
         servicioCorreo.enviarInvitacion(usuario, viaje);
+        whatsAppService.enviarNotificacion(
+                usuario,
+                "Hola " + usuario.getNombre() + ", "
+                        + viaje.getOrganizador().getNombre()
+                        + " te invitó al viaje \"" + viaje.getNombre()
+                        + "\" en RuteApp. Entra a Invitaciones para aceptar o rechazar."
+        );
         return convertirARespuesta(guardado);
     }
 
@@ -124,7 +135,43 @@ public class ParticipanteViajeService {
 
         participante.setEstadoInvitacion(respuesta);
         ParticipanteViaje actualizado = participanteViajeRepository.save(participante);
+        whatsAppService.enviarNotificacion(
+                participante.getViaje().getOrganizador(),
+                participante.getUsuario().getNombre()
+                        + " " + (respuesta == EstadoInvitacion.ACEPTADA
+                                ? "aceptó" : "rechazó")
+                        + " la invitación al viaje \""
+                        + participante.getViaje().getNombre() + "\"."
+        );
         return convertirARespuesta(actualizado);
+    }
+
+    public WhatsAppRespuesta notificarPorWhatsApp(
+            Long id,
+            String correoAutenticado,
+            boolean esAdministrador) {
+        ParticipanteViaje participante = obtenerEntidadPorId(id);
+        Viaje viaje = participante.getViaje();
+
+        if (!esAdministrador
+                && !viaje.getOrganizador().getCorreo().equals(correoAutenticado)) {
+            throw new AccessDeniedException(
+                    "Solo el organizador puede notificar a los participantes"
+            );
+        }
+
+        Usuario usuario = participante.getUsuario();
+        if (usuario.getTelefono() == null || usuario.getTelefono().isBlank()) {
+            throw new IllegalArgumentException(
+                    "El participante no tiene un teléfono registrado"
+            );
+        }
+
+        return whatsAppService.enviar(
+                usuario.getTelefono(),
+                "Hola " + usuario.getNombre() + ", recuerda revisar el viaje \""
+                        + viaje.getNombre() + "\" en RuteApp."
+        );
     }
 
     public void eliminar(Long id) {
@@ -168,6 +215,10 @@ public class ParticipanteViajeService {
         respuesta.setUsuarioId(p.getUsuario().getId());
         respuesta.setNombreUsuario(p.getUsuario().getNombre());
         respuesta.setCorreoUsuario(p.getUsuario().getCorreo());
+        respuesta.setWhatsappDisponible(
+                p.getUsuario().getTelefono() != null
+                        && !p.getUsuario().getTelefono().isBlank()
+        );
         respuesta.setViajeId(p.getViaje().getId());
         respuesta.setNombreViaje(p.getViaje().getNombre());
         respuesta.setNombreOrganizador(p.getViaje().getOrganizador().getNombre());

@@ -31,7 +31,7 @@ export default function Perfil() {
   const [nombre, setNombre] = useState(() => getInitialName(user).initNombre);
   const [apellidos, setApellidos] = useState(() => getInitialName(user).initApellidos);
   const [correo, setCorreo] = useState(() => user?.correo || 'miguel@ruteapp.mx');
-  const [telefono, setTelefono] = useState('+52 951 000 0000');
+  const [telefono, setTelefono] = useState(() => user?.telefono || '');
   const [rol, setRol] = useState(() => {
     if (!user?.rol) return 'Organizador';
     if (user.rol === 'ADMINISTRADOR') return 'Administrador';
@@ -99,7 +99,7 @@ export default function Perfil() {
             }
           }
           if (u.correo) setCorreo(u.correo);
-          if (u.telefono) setTelefono(u.telefono);
+          setTelefono(u.telefono || '');
           if (u.rol) {
             const r =
               u.rol === 'ADMINISTRADOR'
@@ -125,30 +125,36 @@ export default function Perfil() {
     setGuardando(true);
 
     const nombreCompleto = `${nombre.trim()} ${apellidos.trim()}`.trim();
+    const telefonoNormalizado = telefono.replace(/\s/g, '');
+
+    if (telefonoNormalizado && !/^\+[1-9]\d{7,14}$/.test(telefonoNormalizado)) {
+      showToast('Usa un teléfono internacional, por ejemplo +5219511168398');
+      setGuardando(false);
+      return;
+    }
 
     try {
       if (user?.id) {
-        await api.put(`/usuarios/${user.id}`, {
+        await api.patch(`/usuarios/${user.id}/perfil`, {
           nombre: nombreCompleto,
           correo: correo,
-          telefono: telefono,
-          rolId: user?.rolId || 2,
+          telefono: telefonoNormalizado,
         });
       }
-    } catch (err) {
-      console.warn('Backend update bypassed or failed:', err);
-    } finally {
-      // Actualizar AuthContext y localStorage independientemente para fluidez de UI
       if (updateUserContext) {
         updateUserContext({
           nombre: nombreCompleto,
           correo: correo,
-          telefono: telefono,
+          telefono: telefonoNormalizado,
           avatar: avatar,
         });
       }
-      setGuardando(false);
+      setTelefono(telefonoNormalizado);
       showToast('Perfil actualizado');
+    } catch (err) {
+      showToast(err.response?.data?.mensaje || 'No fue posible actualizar el perfil');
+    } finally {
+      setGuardando(false);
     }
   };
 
@@ -256,7 +262,9 @@ export default function Perfil() {
                     type="tel"
                     value={telefono}
                     onChange={(e) => setTelefono(e.target.value)}
+                    placeholder="+5219511168398"
                   />
+                  <span className="muted small">Necesario para recibir notificaciones por WhatsApp.</span>
                 </label>
 
                 <div className="form-actions">

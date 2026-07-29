@@ -329,6 +329,7 @@ Algunas rutas principales son:
 | GET | `/api/gastos/viaje/{id}` | Consultar gastos de un viaje |
 | GET | `/api/lugares/autocompletar` | Buscar sugerencias de lugares |
 | POST | `/api/comunicaciones/whatsapp` | Enviar un mensaje por WhatsApp mediante Twilio |
+| POST | `/api/participantes/{id}/notificar-whatsapp` | Enviar un recordatorio de viaje al participante |
 
 ## Pruebas con Bruno
 

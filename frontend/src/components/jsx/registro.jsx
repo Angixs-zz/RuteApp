@@ -19,6 +19,7 @@ export default function Registro() {
   const [errorNombre, setErrorNombre] = useState('');
   const [errorCorreo, setErrorCorreo] = useState('');
   const [errorPassword, setErrorPassword] = useState('');
+  const [errorTelefono, setErrorTelefono] = useState('');
   const [errorGeneral, setErrorGeneral] = useState('');
   const [mensajeExito, setMensajeExito] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,6 +31,7 @@ export default function Registro() {
     setErrorNombre('');
     setErrorCorreo('');
     setErrorPassword('');
+    setErrorTelefono('');
     setErrorGeneral('');
     setMensajeExito('');
 
@@ -67,6 +69,12 @@ export default function Registro() {
       }
     }
 
+    const telefonoNormalizado = telefono.replace(/\s/g, '');
+    if (telefonoNormalizado && !/^\+[1-9]\d{7,14}$/.test(telefonoNormalizado)) {
+      setErrorTelefono('Usa formato internacional, por ejemplo +5219511168398.');
+      hayErrores = true;
+    }
+
     if (hayErrores) return;
 
     setLoading(true);
@@ -75,7 +83,7 @@ export default function Registro() {
         nombre,
         correo,
         password,
-        telefono,
+        telefono: telefonoNormalizado,
         rolId: Number(rolId)
       });
 
@@ -188,14 +196,19 @@ export default function Registro() {
               {errorCorreo && <span className="error-text">{errorCorreo}</span>}
             </label>
 
-            <label className="field">
+            <label className={`field ${errorTelefono ? 'error' : ''}`}>
               <span>Teléfono</span>
               <input 
                 type="tel" 
                 value={telefono} 
-                onChange={(e) => setTelefono(e.target.value)}
-                placeholder="+52 951 000 0000"
+                onChange={(e) => {
+                  setTelefono(e.target.value);
+                  setErrorTelefono('');
+                }}
+                placeholder="+5219511168398"
               />
+              {errorTelefono && <span className="error-text">{errorTelefono}</span>}
+              <span className="muted small">Opcional. Se usa para notificaciones por WhatsApp.</span>
             </label>
 
             <label className={`field ${errorPassword ? 'error' : ''}`}>

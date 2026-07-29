@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.ruteapp.ruteapp.dto.entrada.UsuarioEntrada;
+import com.ruteapp.ruteapp.dto.entrada.ActualizarPerfilEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.UsuarioRespuesta;
 import com.ruteapp.ruteapp.service.UsuarioService;
 
@@ -60,6 +61,17 @@ public class UsuarioController {
             @Valid @RequestBody UsuarioEntrada entrada) {
 
         return usuarioService.actualizar(id, entrada);
+    }
+
+    @PreAuthorize(
+        "hasRole('ADMINISTRADOR') or " +
+        "@usuarioPermisos.esMismoUsuario(#id, authentication)"
+    )
+    @PatchMapping("/{id}/perfil")
+    public UsuarioRespuesta actualizarPerfil(
+            @PathVariable Long id,
+            @Valid @RequestBody ActualizarPerfilEntrada entrada) {
+        return usuarioService.actualizarPerfil(id, entrada);
     }
 
     @PreAuthorize("hasRole('ADMINISTRADOR')")

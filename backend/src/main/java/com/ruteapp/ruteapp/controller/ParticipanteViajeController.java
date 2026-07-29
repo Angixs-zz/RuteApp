@@ -3,6 +3,7 @@ package com.ruteapp.ruteapp.controller;
 import com.ruteapp.ruteapp.dto.entrada.ParticipanteEntrada;
 import com.ruteapp.ruteapp.dto.entrada.RespuestaInvitacionEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.ParticipanteRespuesta;
+import com.ruteapp.ruteapp.dto.respuesta.WhatsAppRespuesta;
 import com.ruteapp.ruteapp.model.EstadoInvitacion;
 import com.ruteapp.ruteapp.service.ParticipanteViajeService;
 import jakarta.validation.Valid;
@@ -81,6 +82,19 @@ public class ParticipanteViajeController {
                         id,
                         EstadoInvitacion.valueOf(entrada.getRespuesta()),
                         authentication.getName()
+                )
+        );
+    }
+
+    @PostMapping("/{id}/notificar-whatsapp")
+    public ResponseEntity<WhatsAppRespuesta> notificarWhatsApp(
+            @PathVariable Long id,
+            Authentication authentication) {
+        return ResponseEntity.ok(
+                participanteViajeService.notificarPorWhatsApp(
+                        id,
+                        authentication.getName(),
+                        esAdministrador(authentication)
                 )
         );
     }

@@ -9,6 +9,7 @@ public class ParticipanteRespuesta {
     private Long usuarioId;
     private String nombreUsuario;
     private String correoUsuario;
+    private Boolean whatsappDisponible;
     private Long viajeId;
     private String nombreViaje;
     private String nombreOrganizador;
@@ -30,6 +31,9 @@ public class ParticipanteRespuesta {
 
     public String getCorreoUsuario() { return correoUsuario; }
     public void setCorreoUsuario(String correoUsuario) { this.correoUsuario = correoUsuario; }
+
+    public Boolean getWhatsappDisponible() { return whatsappDisponible; }
+    public void setWhatsappDisponible(Boolean whatsappDisponible) { this.whatsappDisponible = whatsappDisponible; }
 
     public Long getViajeId() { return viajeId; }
     public void setViajeId(Long viajeId) { this.viajeId = viajeId; }

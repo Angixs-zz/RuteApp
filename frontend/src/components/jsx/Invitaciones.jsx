@@ -82,7 +82,7 @@ export default function Invitaciones() {
 
   return (
     <>
-      <Navbar />
+      <Navbar invitacionesCount={invitaciones.length} />
       <main className="page">
         <div className="container">
           <div className="page-head">

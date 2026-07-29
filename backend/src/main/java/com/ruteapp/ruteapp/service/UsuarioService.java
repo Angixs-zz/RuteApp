@@ -2,11 +2,13 @@ package com.ruteapp.ruteapp.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ruteapp.ruteapp.dto.entrada.UsuarioEntrada;
+import com.ruteapp.ruteapp.dto.entrada.ActualizarPerfilEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.UsuarioRespuesta;
 import com.ruteapp.ruteapp.exception.CorreoDuplicadoException;
 import com.ruteapp.ruteapp.exception.RecursoNoEncontradoException;
@@ -22,17 +24,20 @@ public class UsuarioService {
     private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
     private final ServicioCorreo servicioCorreo;
+    private final WhatsAppService whatsAppService;
 
     public UsuarioService(
             UsuarioRepository usuarioRepository,
             RolRepository rolRepository,
             PasswordEncoder passwordEncoder,
-            ServicioCorreo servicioCorreo) {
+            ServicioCorreo servicioCorreo,
+            WhatsAppService whatsAppService) {
 
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
         this.passwordEncoder = passwordEncoder;
         this.servicioCorreo = servicioCorreo;
+        this.whatsAppService = whatsAppService;
     }
 
     public List<UsuarioRespuesta> listarTodos() {
@@ -79,6 +84,12 @@ public class UsuarioService {
 
         Usuario guardado = usuarioRepository.save(usuario);
         servicioCorreo.enviarBienvenida(guardado);
+        whatsAppService.enviarNotificacion(
+                guardado,
+                "Hola " + guardado.getNombre()
+                        + ", tu cuenta de RuteApp fue creada correctamente. "
+                        + "Ya puedes organizar tus próximos viajes."
+        );
 
         return convertirARespuesta(guardado);
     }
@@ -98,6 +109,19 @@ public class UsuarioService {
         Usuario actualizado = usuarioRepository.save(usuario);
 
         return convertirARespuesta(actualizado);
+    }
+
+    public UsuarioRespuesta actualizarPerfil(
+            Long id,
+            ActualizarPerfilEntrada entrada) {
+        Usuario usuario = obtenerEntidadPorId(id);
+        validarCorreoActualizacion(id, entrada.getCorreo());
+
+        usuario.setNombre(entrada.getNombre().trim());
+        usuario.setCorreo(entrada.getCorreo().trim().toLowerCase(Locale.ROOT));
+        usuario.setTelefono(normalizarTelefono(entrada.getTelefono()));
+
+        return convertirARespuesta(usuarioRepository.save(usuario));
     }
 
     public void eliminar(Long id) {
@@ -129,8 +153,15 @@ public class UsuarioService {
         usuario.setNombre(entrada.getNombre());
         usuario.setCorreo(entrada.getCorreo());
         usuario.setPassword(passwordEncoder.encode(entrada.getPassword()));
-        usuario.setTelefono(entrada.getTelefono());
+        usuario.setTelefono(normalizarTelefono(entrada.getTelefono()));
         usuario.setRol(rol);
+    }
+
+    private String normalizarTelefono(String telefono) {
+        if (telefono == null || telefono.isBlank()) {
+            return null;
+        }
+        return telefono.trim();
     }
 
     private void validarCorreoActualizacion(

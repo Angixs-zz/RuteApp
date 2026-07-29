@@ -18,6 +18,8 @@ import com.ruteapp.ruteapp.model.EstadoViaje;
 import com.ruteapp.ruteapp.model.Lugar;
 import com.ruteapp.ruteapp.model.Usuario;
 import com.ruteapp.ruteapp.model.Viaje;
+import com.ruteapp.ruteapp.model.ParticipanteViaje;
+import com.ruteapp.ruteapp.repositories.ParticipanteViajeRepository;
 import com.ruteapp.ruteapp.repositories.UsuarioRepository;
 import com.ruteapp.ruteapp.repositories.ViajeRepository;
 
@@ -27,15 +29,21 @@ public class ViajeService {
     private final ViajeRepository viajeRepository;
     private final UsuarioRepository usuarioRepository;
     private final LugarPersistenciaService lugarPersistenciaService;
+    private final ParticipanteViajeRepository participanteViajeRepository;
+    private final WhatsAppService whatsAppService;
 
     public ViajeService(
             ViajeRepository viajeRepository,
             UsuarioRepository usuarioRepository,
-            LugarPersistenciaService lugarPersistenciaService) {
+            LugarPersistenciaService lugarPersistenciaService,
+            ParticipanteViajeRepository participanteViajeRepository,
+            WhatsAppService whatsAppService) {
 
         this.viajeRepository = viajeRepository;
         this.usuarioRepository = usuarioRepository;
         this.lugarPersistenciaService = lugarPersistenciaService;
+        this.participanteViajeRepository = participanteViajeRepository;
+        this.whatsAppService = whatsAppService;
     }
 
     public List<ViajeRespuesta> listarTodos() {
@@ -171,6 +179,7 @@ public class ViajeService {
         validarFechas(entrada);
 
         Viaje viaje = obtenerEntidadPorId(id);
+        EstadoViaje estadoAnterior = viaje.getEstado();
 
         Usuario organizador = usuarioRepository
                 .findById(entrada.getOrganizadorId())
@@ -181,7 +190,26 @@ public class ViajeService {
 
         Viaje actualizado = viajeRepository.save(viaje);
 
+        if (estadoAnterior != actualizado.getEstado()) {
+            notificarCambioEstado(actualizado);
+        }
+
         return convertirARespuesta(actualizado);
+    }
+
+    private void notificarCambioEstado(Viaje viaje) {
+        List<ParticipanteViaje> participantes =
+                participanteViajeRepository.findByViaje(viaje);
+
+        for (ParticipanteViaje participante : participantes) {
+            if (participante.getEstadoInvitacion() == EstadoInvitacion.ACEPTADA) {
+                whatsAppService.enviarNotificacion(
+                        participante.getUsuario(),
+                        "El viaje \"" + viaje.getNombre()
+                                + "\" cambió al estado " + viaje.getEstado() + "."
+                );
+            }
+        }
     }
 
     public void eliminar(Long id) {

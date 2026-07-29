@@ -1,10 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import api from '../../service/api';
+import { AuthContext } from '../../context/AuthContext';
 import '../css/styles.css';
 
 export default function MisViajes() {
+  const { user } = useContext(AuthContext);
+  
   const [viajes, setViajes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorCarga, setErrorCarga] = useState('');
@@ -12,6 +15,7 @@ export default function MisViajes() {
   // Filtros
   const [busqueda, setBusqueda] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('TODOS');
+  const [rolFiltro, setRolFiltro] = useState('TODOS');
   
   // Paginación
   const [paginaActual, setPaginaActual] = useState(0);
@@ -67,6 +71,7 @@ export default function MisViajes() {
   const limpiarFiltros = () => {
     setBusqueda('');
     setEstadoFiltro('TODOS');
+    setRolFiltro('TODOS');
     setPaginaActual(0);
   };
 
@@ -104,7 +109,13 @@ export default function MisViajes() {
 
   const viajesFiltrados = viajes.filter(v => {
     const estadoReal = calcularEstadoVisual(v.fechaInicio, v.fechaFin, v.estado);
+    const esOrganizador = user?.id === v.organizadorId;
+    
     if (estadoFiltro !== 'TODOS' && estadoReal !== estadoFiltro) return false;
+    
+    if (rolFiltro === 'ORGANIZADOR' && !esOrganizador) return false;
+    if (rolFiltro === 'PARTICIPANTE' && esOrganizador) return false;
+    
     if (busqueda.trim() !== '') {
       const q = busqueda.toLowerCase();
       const matchNombre = v.nombre?.toLowerCase().includes(q);
@@ -147,6 +158,14 @@ export default function MisViajes() {
               <option value="EN_CURSO">Confirmado / En Curso</option>
               <option value="FINALIZADO">Finalizado</option>
             </select>
+            <select 
+              value={rolFiltro} 
+              onChange={(e) => setRolFiltro(e.target.value)}
+            >
+              <option value="TODOS">Cualquier rol</option>
+              <option value="ORGANIZADOR">Solo Organizador</option>
+              <option value="PARTICIPANTE">Solo Participante</option>
+            </select>
             <button type="button" className="button ghost" onClick={limpiarFiltros}>
               Limpiar filtros
             </button>
@@ -177,6 +196,7 @@ export default function MisViajes() {
               {viajesFiltrados.map((viaje) => {
                 const estadoReal = calcularEstadoVisual(viaje.fechaInicio, viaje.fechaFin, viaje.estado);
                 const est = formatearEstado(estadoReal);
+                const esOrganizador = user?.id === viaje.organizadorId;
                 
                 // Formatear solo el día y mes de inicio para el recuadro
                 const fechaCorta = viaje.fechaInicio 
@@ -187,7 +207,12 @@ export default function MisViajes() {
                   <article key={viaje.id} className="trip-row">
                     <div className="row-thumb" style={{ background: viaje.gradiente || 'linear-gradient(135deg, #0E7C7B, #17BEBB)' }}></div>
                     <div className="row-main">
-                      <span className={est.className}>{est.label}</span>
+                      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                        <span className={est.className}>{est.label}</span>
+                        <span className={`status ${esOrganizador ? 'planning' : 'info'}`}>
+                          {esOrganizador ? 'Organizador' : 'Participante'}
+                        </span>
+                      </div>
                       <h3>{viaje.nombre}</h3>
                       <p>{viaje.destino} · {formatearFechas(viaje.fechaInicio, viaje.fechaFin)}</p>
                     </div>

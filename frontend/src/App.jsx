@@ -16,6 +16,7 @@ import Itinerario from './components/jsx/Itinerario';
 import CrearActividad from './components/jsx/CrearActividad';
 import Gastos from './components/jsx/Gastos';
 import Invitaciones from './components/jsx/Invitaciones';
+import Perfil from './components/jsx/Perfil';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           {/* Rutas Protegidas */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/perfil" element={<Perfil />} />
             <Route path="/viajes" element={<MisViajes />} />
             <Route path="/invitaciones" element={<Invitaciones />} />
             <Route path="/viajes/:id" element={<DetalleViaje />} />

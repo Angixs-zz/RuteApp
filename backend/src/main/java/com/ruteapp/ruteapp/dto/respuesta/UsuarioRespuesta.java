@@ -7,7 +7,7 @@ public class UsuarioRespuesta {
     private Long id;
     private String nombre;
     private String correo;
-    private String avatar;
+    private String telefono;
     private Boolean activo;
     private String rol;
     private LocalDateTime fechaCreacion;
@@ -19,7 +19,7 @@ public class UsuarioRespuesta {
             Long id,
             String nombre,
             String correo,
-            String avatar,
+            String telefono,
             Boolean activo,
             String rol,
             LocalDateTime fechaCreacion) {
@@ -27,7 +27,7 @@ public class UsuarioRespuesta {
         this.id = id;
         this.nombre = nombre;
         this.correo = correo;
-        this.avatar = avatar;
+        this.telefono = telefono;
         this.activo = activo;
         this.rol = rol;
         this.fechaCreacion = fechaCreacion;
@@ -45,8 +45,8 @@ public class UsuarioRespuesta {
         return correo;
     }
 
-    public String getAvatar() {
-        return avatar;
+    public String getTelefono() {
+        return telefono;
     }
 
     public Boolean getActivo() {

@@ -22,7 +22,7 @@ public class UsuarioEntrada {
     )
     private String password;
 
-    private String avatar;
+    private String telefono;
 
     private Long rolId;
 
@@ -50,12 +50,12 @@ public class UsuarioEntrada {
         this.password = password;
     }
 
-    public String getAvatar() {
-        return avatar;
+    public String getTelefono() {
+        return telefono;
     }
 
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 
     public Long getRolId() {

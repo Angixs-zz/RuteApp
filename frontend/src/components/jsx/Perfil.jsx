@@ -99,7 +99,7 @@ export default function Perfil() {
             }
           }
           if (u.correo) setCorreo(u.correo);
-          if (u.avatar) setAvatar(u.avatar);
+          if (u.telefono) setTelefono(u.telefono);
           if (u.rol) {
             const r =
               u.rol === 'ADMINISTRADOR'
@@ -131,7 +131,7 @@ export default function Perfil() {
         await api.put(`/usuarios/${user.id}`, {
           nombre: nombreCompleto,
           correo: correo,
-          avatar: avatar,
+          telefono: telefono,
           rolId: user?.rolId || 2,
         });
       }
@@ -143,6 +143,7 @@ export default function Perfil() {
         updateUserContext({
           nombre: nombreCompleto,
           correo: correo,
+          telefono: telefono,
           avatar: avatar,
         });
       }

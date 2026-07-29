@@ -13,6 +13,7 @@ export default function Registro() {
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
+  const [telefono, setTelefono] = useState('');
   const [rolId, setRolId] = useState('2');
   
   const [errorNombre, setErrorNombre] = useState('');
@@ -74,7 +75,7 @@ export default function Registro() {
         nombre,
         correo,
         password,
-        avatar: null,
+        telefono,
         rolId: Number(rolId)
       });
 
@@ -82,6 +83,7 @@ export default function Registro() {
       setNombre('');
       setCorreo('');
       setPassword('');
+      setTelefono('');
       setRolId('2');
       
       setTimeout(() => {
@@ -184,6 +186,16 @@ export default function Registro() {
                 placeholder="correo@ruteapp.mx"
               />
               {errorCorreo && <span className="error-text">{errorCorreo}</span>}
+            </label>
+
+            <label className="field">
+              <span>Teléfono</span>
+              <input 
+                type="tel" 
+                value={telefono} 
+                onChange={(e) => setTelefono(e.target.value)}
+                placeholder="+52 951 000 0000"
+              />
             </label>
 
             <label className={`field ${errorPassword ? 'error' : ''}`}>

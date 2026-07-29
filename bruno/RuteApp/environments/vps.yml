@@ -4,10 +4,10 @@ variables:
     value: https://ruteapp.online
     description: API desplegada en el VPS
   - name: authCorreo
-    value: ""
+    value: admin@ruteapp.com
     description: Correo de una cuenta del VPS
   - name: authPassword
-    value: ""
+    value: Prueba123!
     description: Contrasena de la cuenta del VPS
   - name: googleCredential
     value: ""

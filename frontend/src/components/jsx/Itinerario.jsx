@@ -120,7 +120,11 @@ export default function Itinerario() {
     try {
       await api.delete(`/actividades/${actividadAEliminar.id}`);
       await fetchDatos();
-      showToast('Actividad eliminada');
+      setSuccessModalConfig({
+        isOpen: true,
+        title: 'Actividad eliminada',
+        message: 'La actividad ha sido eliminada exitosamente del itinerario.'
+      });
     } catch (err) {
       console.error("Error eliminando actividad", err);
       showToast('Error al eliminar la actividad');

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import { MapPin, Map } from 'lucide-react';
 import Navbar from './Navbar';
 import api from '../../service/api';
 import LugarAutocomplete from './LugarAutocomplete';
@@ -104,6 +105,11 @@ export default function CrearActividad() {
     }, 1000);
   };
 
+
+
+
+
+  //---------------------------------------------------
   return (
     <>
       <Navbar />
@@ -222,10 +228,10 @@ export default function CrearActividad() {
               </label>
 
               <div className="cover-uploader" style={{ textAlign: 'left' }}>
-                <strong>📍 Resultado de lugar</strong>
+                <strong><MapPin size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Resultado de lugar</strong>
                 <p className="small muted">{lugar || 'Cancún'} · Vista previa del mapa</p>
                 <div style={{ height: '170px', borderRadius: '12px', background: 'linear-gradient(135deg, #D8ECE9, #B7D6C8)', display: 'grid', placeItems: 'center', fontSize: '42px' }}>
-                  🗺️
+                  <Map size={48} color="white" />
                 </div>
               </div>
 

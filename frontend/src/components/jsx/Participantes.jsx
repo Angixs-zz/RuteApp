@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import TripHeader from './TripHeader';
+import { AlertTriangle, Mail, Trash2 } from 'lucide-react';
 import api from '../../service/api';
 import avatarImg from '../../assets/react.svg';
 import '../css/styles.css';
@@ -263,10 +264,29 @@ export default function Participantes() {
         </div>
       </main>
 
+      {/* Modal Cancelar Viaje */}
+      <div className={`modal-backdrop ${showCancelModal ? 'open' : ''}`}>
+        <div className="modal">
+          <div className="modal-icon"><AlertTriangle size={28} /></div>
+          <h3>¿Cancelar este viaje?</h3>
+          <p className="muted">
+            Los participantes recibirán una notificación y el viaje cambiará al estado cancelado.
+          </p>
+          <div className="modal-actions">
+            <button className="button ghost" onClick={() => setShowCancelModal(false)}>
+              Volver
+            </button>
+            <button className="button danger" onClick={handleCancelarViaje}>
+              Cancelar viaje
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Modal Invitar Participante */}
       <div className={`modal-backdrop ${showInviteModal ? 'open' : ''}`}>
         <div className="modal">
-          <div className="modal-icon">✉️</div>
+          <div className="modal-icon"><Mail size={28} /></div>
           <h3>Invitar participante</h3>
           <form onSubmit={handleEnviarInvitacion}>
             <label className={`field ${errorInvitacion ? 'error' : ''}`}>
@@ -301,7 +321,7 @@ export default function Participantes() {
       {/* Modal Eliminar Participante */}
       <div className={`modal-backdrop ${showDeleteModal ? 'open' : ''}`}>
         <div className="modal">
-          <div className="modal-icon">🗑️</div>
+          <div className="modal-icon"><Trash2 size={28} color="#ef4444" /></div>
           <h3>Eliminar participante</h3>
           <p className="muted">
             {selectedParticipante?.nombre} dejará de tener acceso al viaje.

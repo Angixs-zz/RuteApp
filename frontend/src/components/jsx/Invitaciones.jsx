@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { PartyPopper } from 'lucide-react';
 import Navbar from './Navbar';
 import api from '../../service/api';
 import '../css/styles.css';
@@ -102,7 +103,7 @@ export default function Invitaciones() {
             </div>
           ) : invitaciones.length === 0 ? (
             <div className="card" style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#6B7280' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</div>
+              <div style={{ marginBottom: '1rem' }}><PartyPopper size={48} color="#9CA3AF" style={{ margin: '0 auto' }} /></div>
               <h3>¡No tienes invitaciones pendientes!</h3>
               <p className="muted">Cuando tus amigos te inviten a un viaje aparecerán aquí.</p>
             </div>

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -19,6 +20,7 @@ import com.ruteapp.ruteapp.model.Viaje;
 import com.ruteapp.ruteapp.repositories.GastoRepository;
 import com.ruteapp.ruteapp.repositories.UsuarioRepository;
 import com.ruteapp.ruteapp.repositories.ViajeRepository;
+import com.ruteapp.ruteapp.security.ViajeAcceso;
 
 @Service
 public class GastoService {
@@ -26,15 +28,18 @@ public class GastoService {
     private final GastoRepository gastoRepository;
     private final ViajeRepository viajeRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ViajeAcceso viajeAcceso;
 
     public GastoService(
             GastoRepository gastoRepository,
             ViajeRepository viajeRepository,
-            UsuarioRepository usuarioRepository) {
+            UsuarioRepository usuarioRepository,
+            ViajeAcceso viajeAcceso) {
 
         this.gastoRepository = gastoRepository;
         this.viajeRepository = viajeRepository;
         this.usuarioRepository = usuarioRepository;
+        this.viajeAcceso = viajeAcceso;
     }
 
     public List<GastoRespuesta> listarTodos() {
@@ -54,18 +59,23 @@ public class GastoService {
         return new PaginaRespuesta<>(resultado.getContent(), resultado.getNumber(), resultado.getSize(), resultado.getTotalElements(), resultado.getTotalPages(), resultado.isLast());
     }
 
-    public GastoRespuesta buscarPorId(Long id) {
+    public GastoRespuesta buscarPorId(
+            Long id, String correoAutenticado, boolean esAdministrador) {
 
         Gasto gasto = obtenerEntidadPorId(id);
+        viajeAcceso.validarAccesoInterno(
+                gasto.getViaje(), correoAutenticado, esAdministrador);
 
         return convertirARespuesta(gasto);
     }
 
-    public List<GastoRespuesta> listarPorViaje(Long viajeId) {
+    public List<GastoRespuesta> listarPorViaje(
+            Long viajeId, String correoAutenticado, boolean esAdministrador) {
 
         Viaje viaje = viajeRepository.findById(viajeId)
                 .orElseThrow(() ->
                         new RecursoNoEncontradoException("Viaje no encontrado"));
+        viajeAcceso.validarAccesoInterno(viaje, correoAutenticado, esAdministrador);
 
         List<Gasto> gastos = gastoRepository.findByViaje(viaje);
         List<GastoRespuesta> respuestas = new ArrayList<>();
@@ -77,11 +87,15 @@ public class GastoService {
         return respuestas;
     }
 
-    public List<GastoRespuesta> listarPorPagador(Long pagadorId) {
+    public List<GastoRespuesta> listarPorPagador(
+            Long pagadorId, String correoAutenticado, boolean esAdministrador) {
 
         Usuario pagador = usuarioRepository.findById(pagadorId)
                 .orElseThrow(() ->
                         new RecursoNoEncontradoException("Usuario no encontrado"));
+        if (!esAdministrador && !pagador.getCorreo().equals(correoAutenticado)) {
+            throw new AccessDeniedException("Solo puedes consultar tus gastos");
+        }
 
         List<Gasto> gastos = gastoRepository.findByPagador(pagador);
         List<GastoRespuesta> respuestas = new ArrayList<>();
@@ -93,15 +107,20 @@ public class GastoService {
         return respuestas;
     }
 
-    public GastoRespuesta crear(GastoEntrada entrada) {
+    public GastoRespuesta crear(
+            GastoEntrada entrada, String correoAutenticado, boolean esAdministrador) {
 
         Viaje viaje = viajeRepository.findById(entrada.getViajeId())
                 .orElseThrow(() ->
                         new RecursoNoEncontradoException("Viaje no encontrado"));
+        viajeAcceso.validarAccesoInterno(viaje, correoAutenticado, esAdministrador);
 
         Usuario pagador = usuarioRepository.findById(entrada.getPagadorId())
                 .orElseThrow(() ->
                         new RecursoNoEncontradoException("Usuario pagador no encontrado"));
+        validarPagador(viaje, pagador);
+        validarPuedeRegistrarParaPagador(
+                viaje, pagador, correoAutenticado, esAdministrador);
 
         Gasto gasto = new Gasto();
 
@@ -114,17 +133,24 @@ public class GastoService {
 
     public GastoRespuesta actualizar(
             Long id,
-            GastoEntrada entrada) {
+            GastoEntrada entrada,
+            String correoAutenticado,
+            boolean esAdministrador) {
 
         Gasto gasto = obtenerEntidadPorId(id);
+        validarPuedeModificar(gasto, correoAutenticado, esAdministrador);
 
         Viaje viaje = viajeRepository.findById(entrada.getViajeId())
                 .orElseThrow(() ->
                         new RecursoNoEncontradoException("Viaje no encontrado"));
+        viajeAcceso.validarAccesoInterno(viaje, correoAutenticado, esAdministrador);
 
         Usuario pagador = usuarioRepository.findById(entrada.getPagadorId())
                 .orElseThrow(() ->
                         new RecursoNoEncontradoException("Usuario pagador no encontrado"));
+        validarPagador(viaje, pagador);
+        validarPuedeRegistrarParaPagador(
+                viaje, pagador, correoAutenticado, esAdministrador);
 
         copiarDatos(entrada, gasto, viaje, pagador);
 
@@ -133,11 +159,40 @@ public class GastoService {
         return convertirARespuesta(actualizado);
     }
 
-    public void eliminar(Long id) {
+    public void eliminar(Long id, String correoAutenticado, boolean esAdministrador) {
 
         Gasto gasto = obtenerEntidadPorId(id);
+        validarPuedeModificar(gasto, correoAutenticado, esAdministrador);
 
         gastoRepository.delete(gasto);
+    }
+
+    private void validarPagador(Viaje viaje, Usuario pagador) {
+        if (!viajeAcceso.perteneceAlViaje(viaje, pagador)) {
+            throw new IllegalArgumentException("El pagador no pertenece a este viaje");
+        }
+    }
+
+    private void validarPuedeRegistrarParaPagador(
+            Viaje viaje,
+            Usuario pagador,
+            String correoAutenticado,
+            boolean esAdministrador) {
+        if (esAdministrador || viaje.getOrganizador().getCorreo().equals(correoAutenticado)
+                || pagador.getCorreo().equals(correoAutenticado)) {
+            return;
+        }
+        throw new AccessDeniedException("No puedes registrar gastos para otro usuario");
+    }
+
+    private void validarPuedeModificar(
+            Gasto gasto, String correoAutenticado, boolean esAdministrador) {
+        if (esAdministrador
+                || gasto.getViaje().getOrganizador().getCorreo().equals(correoAutenticado)
+                || gasto.getPagador().getCorreo().equals(correoAutenticado)) {
+            return;
+        }
+        throw new AccessDeniedException("No puedes modificar este gasto");
     }
 
     public Gasto obtenerEntidadPorId(Long id) {

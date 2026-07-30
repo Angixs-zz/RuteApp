@@ -18,9 +18,9 @@ import com.ruteapp.ruteapp.model.Lugar;
 import com.ruteapp.ruteapp.model.Usuario;
 import com.ruteapp.ruteapp.model.Viaje;
 import com.ruteapp.ruteapp.repositories.ActividadItinerarioRepository;
-import com.ruteapp.ruteapp.repositories.ParticipanteViajeRepository;
 import com.ruteapp.ruteapp.repositories.UsuarioRepository;
 import com.ruteapp.ruteapp.repositories.ViajeRepository;
+import com.ruteapp.ruteapp.security.ViajeAcceso;
 
 @Service
 public class ActividadItinerarioService {
@@ -28,20 +28,20 @@ public class ActividadItinerarioService {
     private final ActividadItinerarioRepository actividadRepository;
     private final ViajeRepository viajeRepository;
     private final UsuarioRepository usuarioRepository;
-    private final ParticipanteViajeRepository participanteViajeRepository;
     private final LugarPersistenciaService lugarPersistenciaService;
+    private final ViajeAcceso viajeAcceso;
 
     public ActividadItinerarioService(
             ActividadItinerarioRepository actividadRepository,
             ViajeRepository viajeRepository,
             UsuarioRepository usuarioRepository,
-            ParticipanteViajeRepository participanteViajeRepository,
-            LugarPersistenciaService lugarPersistenciaService) {
+            LugarPersistenciaService lugarPersistenciaService,
+            ViajeAcceso viajeAcceso) {
         this.actividadRepository = actividadRepository;
         this.viajeRepository = viajeRepository;
         this.usuarioRepository = usuarioRepository;
-        this.participanteViajeRepository = participanteViajeRepository;
         this.lugarPersistenciaService = lugarPersistenciaService;
+        this.viajeAcceso = viajeAcceso;
     }
 
     public List<ActividadRespuesta> listarTodos() {
@@ -58,14 +58,18 @@ public class ActividadItinerarioService {
         return new PaginaRespuesta<>(resultado.getContent(), resultado.getNumber(), resultado.getSize(), resultado.getTotalElements(), resultado.getTotalPages(), resultado.isLast());
     }
 
-    public ActividadRespuesta buscarPorId(Long id) {
+    public ActividadRespuesta buscarPorId(
+            Long id, String correoAutenticado, boolean esAdministrador) {
         ActividadItinerario actividad = obtenerEntidadPorId(id);
+        viajeAcceso.validarLectura(actividad.getViaje(), correoAutenticado, esAdministrador);
         return convertirARespuesta(actividad);
     }
 
-    public List<ActividadRespuesta> listarPorViajeId(Long viajeId) {
+    public List<ActividadRespuesta> listarPorViajeId(
+            Long viajeId, String correoAutenticado, boolean esAdministrador) {
         Viaje viaje = viajeRepository.findById(viajeId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Viaje no encontrado"));
+        viajeAcceso.validarLectura(viaje, correoAutenticado, esAdministrador);
 
         List<ActividadItinerario> actividades = actividadRepository.findByViaje(viaje);
         List<ActividadRespuesta> respuestas = new ArrayList<>();
@@ -75,15 +79,17 @@ public class ActividadItinerarioService {
         return respuestas;
     }
 
-    public ActividadRespuesta crear(ActividadEntrada entrada) {
+    public ActividadRespuesta crear(
+            ActividadEntrada entrada, String correoAutenticado, boolean esAdministrador) {
         Viaje viaje = viajeRepository.findById(entrada.getViajeId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Viaje no encontrado"));
+        viajeAcceso.validarColaboracion(viaje, correoAutenticado, esAdministrador);
 
         Usuario responsable = usuarioRepository.findById(entrada.getResponsableId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario responsable no encontrado"));
 
         boolean esOrganizador = viaje.getOrganizador() != null && viaje.getOrganizador().getId().equals(responsable.getId());        
-        boolean esParticipante = participanteViajeRepository.existsByViajeAndUsuario(viaje, responsable);
+        boolean esParticipante = viajeAcceso.perteneceAlViaje(viaje, responsable);
 
         if (!esOrganizador && !esParticipante) {
             throw new IllegalArgumentException("El usuario responsable no pertenece a este viaje");
@@ -111,17 +117,24 @@ public class ActividadItinerarioService {
     }
 
     // MÉTODO NUEVO PARA ACTUALIZAR
-    public ActividadRespuesta actualizar(Long id, ActividadEntrada entrada) {
+    public ActividadRespuesta actualizar(
+            Long id,
+            ActividadEntrada entrada,
+            String correoAutenticado,
+            boolean esAdministrador) {
         ActividadItinerario actividad = obtenerEntidadPorId(id);
+        viajeAcceso.validarColaboracion(
+                actividad.getViaje(), correoAutenticado, esAdministrador);
 
         Viaje viaje = viajeRepository.findById(entrada.getViajeId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Viaje no encontrado"));
+        viajeAcceso.validarColaboracion(viaje, correoAutenticado, esAdministrador);
 
         Usuario responsable = usuarioRepository.findById(entrada.getResponsableId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario responsable no encontrado"));
 
         boolean esOrganizador = viaje.getOrganizador() != null && viaje.getOrganizador().getId().equals(responsable.getId());        
-        boolean esParticipante = participanteViajeRepository.existsByViajeAndUsuario(viaje, responsable);
+        boolean esParticipante = viajeAcceso.perteneceAlViaje(viaje, responsable);
 
         if (!esOrganizador && !esParticipante) {
             throw new IllegalArgumentException("El usuario responsable no pertenece a este viaje");

@@ -19,11 +19,23 @@ variables:
     value: ""
     description: JWT de un usuario ADMINISTRADOR
   - name: usuarioToken
-    value: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbkBydXRlYXBwLmNvbSIsInVzdWFyaW9JZCI6MSwibm9tYnJlIjoiQWRtaW5pc3RyYWRvciBQcmluY2lwYWwiLCJyb2wiOiJBRE1JTklTVFJBRE9SIiwiaWF0IjoxNzg1MzY0NTg5LCJleHAiOjE3ODU0NTA5ODl9.kNj3zyH25FFCdyzT7kc3RmfLTPafoa8Ay4VlI7hGnXEvxLAtZhG8gtPIvSLcuyuLA1E4_TIb5B-fyreNUi5jNg
+    value: ""
     description: JWT de un usuario USUARIO
   - name: agenciaToken
     value: ""
     description: JWT de un usuario AGENCIA
+  - name: agenciaCorreo
+    value: ""
+    description: Correo de una agencia del VPS
+  - name: agenciaPassword
+    value: ""
+    description: Contrasena de una agencia del VPS
+  - name: agenciaId
+    value: ""
+    description: ID de una agencia del VPS
+  - name: agenciaViajeId
+    value: ""
+    description: ID de un viaje publico de agencia
   - name: usuarioId
     value: "1"
     description: ID del usuario usado en las solicitudes

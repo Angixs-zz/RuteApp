@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.ruteapp.ruteapp.dto.entrada.GastoEntrada;
@@ -25,6 +26,7 @@ public class GastoController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public List<GastoRespuesta> listarTodos() {
         return gastoService.listarTodos();
     }
@@ -36,44 +38,58 @@ public class GastoController {
     }
 
     @GetMapping("/{id}")
-    public GastoRespuesta buscarPorId(@PathVariable Long id) {
-        return gastoService.buscarPorId(id);
+    public GastoRespuesta buscarPorId(@PathVariable Long id, Authentication authentication) {
+        return gastoService.buscarPorId(
+                id, authentication.getName(), esAdministrador(authentication));
     }
 
     @GetMapping("/viaje/{viajeId}")
     public List<GastoRespuesta> listarPorViaje(
-            @PathVariable Long viajeId) {
+            @PathVariable Long viajeId,
+            Authentication authentication) {
 
-        return gastoService.listarPorViaje(viajeId);
+        return gastoService.listarPorViaje(
+                viajeId, authentication.getName(), esAdministrador(authentication));
     }
 
     @GetMapping("/pagador/{pagadorId}")
     public List<GastoRespuesta> listarPorPagador(
-            @PathVariable Long pagadorId) {
+            @PathVariable Long pagadorId,
+            Authentication authentication) {
 
-        return gastoService.listarPorPagador(pagadorId);
+        return gastoService.listarPorPagador(
+                pagadorId, authentication.getName(), esAdministrador(authentication));
     }
 
     @PostMapping
     public GastoRespuesta crear(
-            @Valid @RequestBody GastoEntrada entrada) {
+            @Valid @RequestBody GastoEntrada entrada,
+            Authentication authentication) {
 
-        return gastoService.crear(entrada);
+        return gastoService.crear(
+                entrada, authentication.getName(), esAdministrador(authentication));
     }
 
     @PutMapping("/{id}")
     public GastoRespuesta actualizar(
             @PathVariable Long id,
-            @Valid @RequestBody GastoEntrada entrada) {
+            @Valid @RequestBody GastoEntrada entrada,
+            Authentication authentication) {
 
-        return gastoService.actualizar(id, entrada);
+        return gastoService.actualizar(
+                id, entrada, authentication.getName(), esAdministrador(authentication));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable Long id, Authentication authentication) {
 
-        gastoService.eliminar(id);
+        gastoService.eliminar(id, authentication.getName(), esAdministrador(authentication));
 
         return ResponseEntity.noContent().build();
+    }
+
+    private boolean esAdministrador(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(autoridad -> autoridad.getAuthority().equals("ROLE_ADMINISTRADOR"));
     }
 }

@@ -18,19 +18,24 @@ export default function EditarViajeModal({ isOpen, onClose, viaje, onSaveSuccess
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (isOpen && viaje) {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (!active || !isOpen || !viaje) return;
       setFormData({
-        nombre: viaje.nombre || '',
-        descripcion: viaje.descripcion || '',
-        origen: viaje.origen || '',
-        destino: viaje.destino || '',
-        fechaInicio: viaje.fechaInicio || '',
-        fechaFin: viaje.fechaFin || '',
-        presupuestoEstimado: viaje.presupuestoEstimado || '',
-        transporte: viaje.transporte || ''
-      });
-      setError('');
-    }
+          nombre: viaje.nombre || '',
+          descripcion: viaje.descripcion || '',
+          origen: viaje.origen || '',
+          destino: viaje.destino || '',
+          fechaInicio: viaje.fechaInicio || '',
+          fechaFin: viaje.fechaFin || '',
+          presupuestoEstimado: viaje.presupuestoEstimado || '',
+          transporte: viaje.transporte || ''
+        });
+        setError('');
+    });
+    return () => {
+      active = false;
+    };
   }, [isOpen, viaje]);
 
   const handleChange = (e) => {

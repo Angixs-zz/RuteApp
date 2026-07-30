@@ -47,11 +47,13 @@ public interface ViajeRepository extends JpaRepository<Viaje, Long> {
                     OR LOWER(v.origen) LIKE LOWER(CONCAT('%', :busqueda, '%'))
                     OR LOWER(v.destino) LIKE LOWER(CONCAT('%', :busqueda, '%'))
               )
+              AND (:estado IS NULL OR v.estado = :estado)
             """)
     Page<Viaje> buscarDelUsuario(
             @Param("correo") String correo,
             @Param("estadoAceptada") EstadoInvitacion estadoAceptada,
             @Param("busqueda") String busqueda,
+            @Param("estado") EstadoViaje estado,
             Pageable pageable
     );
 

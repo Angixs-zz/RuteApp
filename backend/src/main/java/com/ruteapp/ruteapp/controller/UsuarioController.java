@@ -65,10 +65,7 @@ public class UsuarioController {
         return usuarioService.crear(entrada);
     }
 
-    @PreAuthorize(
-        "hasRole('ADMINISTRADOR') or " +
-        "@usuarioPermisos.esMismoUsuario(#id, authentication)"
-    )
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     @PutMapping("/{id}")
     public UsuarioRespuesta actualizar(
             @PathVariable Long id,

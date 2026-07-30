@@ -26,6 +26,7 @@ public class ActividadItinerarioController {
 
     // GET: Listar todas las actividades de la plataforma
     @GetMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<List<ActividadRespuesta>> listarTodas() {
         return ResponseEntity.ok(actividadService.listarTodos());
     }
@@ -38,31 +39,36 @@ public class ActividadItinerarioController {
 
     // GET: Buscar actividad por ID
     @GetMapping("/{id}")
-    public ResponseEntity<ActividadRespuesta> buscarPorId(@PathVariable Long id) {
-        ActividadRespuesta actividad = actividadService.buscarPorId(id);
+    public ResponseEntity<ActividadRespuesta> buscarPorId(
+            @PathVariable Long id, Authentication authentication) {
+        ActividadRespuesta actividad = actividadService.buscarPorId(
+                id, authentication.getName(), esAdministrador(authentication));
         return ResponseEntity.ok(actividad);
     }
 
     // GET: Listar actividades por ID de viaje
     @GetMapping("/viaje/{viajeId}")
-    public ResponseEntity<List<ActividadRespuesta>> listarPorViaje(@PathVariable Long viajeId) {
-        List<ActividadRespuesta> actividades = actividadService.listarPorViajeId(viajeId);
+    public ResponseEntity<List<ActividadRespuesta>> listarPorViaje(
+            @PathVariable Long viajeId, Authentication authentication) {
+        List<ActividadRespuesta> actividades = actividadService.listarPorViajeId(
+                viajeId, authentication.getName(), esAdministrador(authentication));
         return ResponseEntity.ok(actividades);
     }
 
     // POST: Crear una nueva actividad validando con @Valid
     @PostMapping
-    public ResponseEntity<ActividadRespuesta> guardar(@Valid @RequestBody ActividadEntrada entrada) {
-        ActividadRespuesta nuevaActividad = actividadService.crear(entrada);
+    public ResponseEntity<ActividadRespuesta> guardar(
+            @Valid @RequestBody ActividadEntrada entrada, Authentication authentication) {
+        ActividadRespuesta nuevaActividad = actividadService.crear(
+                entrada, authentication.getName(), esAdministrador(authentication));
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaActividad);
     }
 
     // DELETE: Eliminar una actividad
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id, Authentication authentication) {
-        boolean esAdmin = authentication.getAuthorities().stream()
-                .anyMatch(autoridad -> autoridad.getAuthority().equals("ROLE_ADMINISTRADOR"));
-        actividadService.eliminar(id, authentication.getName(), esAdmin);
+        actividadService.eliminar(
+                id, authentication.getName(), esAdministrador(authentication));
         return ResponseEntity.noContent().build();
     }
 
@@ -71,8 +77,15 @@ public class ActividadItinerarioController {
     @PutMapping("/{id}")
     public ResponseEntity<ActividadRespuesta> actualizar(
             @PathVariable Long id, 
-            @Valid @RequestBody ActividadEntrada entrada) {
-        ActividadRespuesta actividadActualizada = actividadService.actualizar(id, entrada);
+            @Valid @RequestBody ActividadEntrada entrada,
+            Authentication authentication) {
+        ActividadRespuesta actividadActualizada = actividadService.actualizar(
+                id, entrada, authentication.getName(), esAdministrador(authentication));
         return ResponseEntity.ok(actividadActualizada);
+    }
+
+    private boolean esAdministrador(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(autoridad -> autoridad.getAuthority().equals("ROLE_ADMINISTRADOR"));
     }
 }

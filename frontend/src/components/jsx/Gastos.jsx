@@ -5,7 +5,6 @@ import TripHeader from './TripHeader';
 import ConfirmModal from './ConfirmModal';
 import SuccessModal from './SuccessModal';
 import RegistrarGasto from './RegistrarGasto';
-import { Calendar, Edit2 } from 'lucide-react';
 import api from '../../service/api';
 import { AuthContext } from '../../context/AuthContext';
 import '../css/styles.css';

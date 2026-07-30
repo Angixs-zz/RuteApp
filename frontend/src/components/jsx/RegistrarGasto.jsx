@@ -24,7 +24,9 @@ export default function RegistrarGasto({
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active && isOpen) {
       if (gastoAEditar) {
         setConcepto(gastoAEditar.concepto);
         setMonto(gastoAEditar.monto);
@@ -42,8 +44,12 @@ export default function RegistrarGasto({
         setFecha(new Date().toISOString().split('T')[0]);
       }
       setErrors({});
-    }
-  }, [isOpen, gastoAEditar, participantes]);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [isOpen, gastoAEditar, participantes, user?.id, viajeOrgId]);
 
   const handleGuardarGasto = async (e) => {
     e.preventDefault();

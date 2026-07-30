@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback, useContext } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import api from '../../service/api';
 import ConfirmModal from './ConfirmModal';
 import SuccessModal from './SuccessModal';
 import { AuthContext } from '../../context/AuthContext';
 
 export default function TripHeader({ id, currentTab }) {
-  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { user } = useContext(AuthContext);
   const [viaje, setViaje] = useState(() => {
     const cached = sessionStorage.getItem(`trip_${id}`);
@@ -40,7 +40,13 @@ export default function TripHeader({ id, currentTab }) {
   }, [id]);
 
   useEffect(() => {
-    fetchDetalleViaje();
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) fetchDetalleViaje();
+    });
+    return () => {
+      active = false;
+    };
   }, [fetchDetalleViaje]);
 
   const handleCancelarViaje = async () => {
@@ -48,15 +54,15 @@ export default function TripHeader({ id, currentTab }) {
       await api.put(`/viajes/${id}`, { ...viaje, estado: 'CANCELADO' });
       setViaje(prev => ({ ...prev, estado: 'CANCELADO' }));
       sessionStorage.setItem(`trip_${id}`, JSON.stringify({ ...viaje, estado: 'CANCELADO' }));
+      setShowCancelModal(false);
+      setSuccessModalConfig({
+        isOpen: true,
+        title: 'Viaje Cancelado',
+        message: 'El viaje ha sido cancelado exitosamente.'
+      });
     } catch (err) {
       console.error('Error al cancelar:', err);
     }
-    setShowCancelModal(false);
-    setSuccessModalConfig({
-      isOpen: true,
-      title: 'Viaje Cancelado',
-      message: 'El viaje ha sido cancelado exitosamente.'
-    });
   };
 
   const calcularEstadoReal = (inicio, fin) => {
@@ -73,15 +79,15 @@ export default function TripHeader({ id, currentTab }) {
       await api.put(`/viajes/${id}`, { ...viaje, estado: nuevoEstado });
       setViaje(prev => ({ ...prev, estado: nuevoEstado }));
       sessionStorage.setItem(`trip_${id}`, JSON.stringify({ ...viaje, estado: nuevoEstado }));
+      setShowResumeModal(false);
+      setSuccessModalConfig({
+        isOpen: true,
+        title: 'Viaje Reanudado',
+        message: 'El viaje ha sido reanudado exitosamente.'
+      });
     } catch (err) {
       console.error('Error al reanudar:', err);
     }
-    setShowResumeModal(false);
-    setSuccessModalConfig({
-      isOpen: true,
-      title: 'Viaje Reanudado',
-      message: 'El viaje ha sido reanudado exitosamente.'
-    });
   };
 
   const handleSuccessAccept = () => {
@@ -115,6 +121,8 @@ export default function TripHeader({ id, currentTab }) {
   };
 
   const estadoBadge = formatearEstado(viaje.estado);
+  const esCatalogoAgencia = pathname.startsWith('/viajes-agencia/');
+  const rutaBase = esCatalogoAgencia ? '/viajes-agencia' : '/viajes';
 
   return (
     <>
@@ -140,13 +148,16 @@ export default function TripHeader({ id, currentTab }) {
       </section>
 
       <nav className="tabs">
+        <Link className={currentTab === 'resumen' ? 'active' : ''} to={`${rutaBase}/${id}`}>Resumen</Link>
+        {!esCatalogoAgencia && user?.rol !== 'AGENCIA' && (
+          <Link className={currentTab === 'participantes' ? 'active' : ''} to={`${rutaBase}/${id}/participantes`}>Participantes</Link>
         <Link className={currentTab === 'resumen' ? 'active' : ''} to={`${window.location.pathname.includes('/viajes-agencia') ? '/viajes-agencia' : '/viajes'}/${id}`}>Resumen</Link>
         {!window.location.pathname.includes('/viajes-agencia') && user?.rol !== 'AGENCIA' && (
           <Link className={currentTab === 'participantes' ? 'active' : ''} to={`/viajes/${id}/participantes`}>Participantes</Link>
         )}
-        <Link className={currentTab === 'itinerario' ? 'active' : ''} to={`${window.location.pathname.includes('/viajes-agencia') ? '/viajes-agencia' : '/viajes'}/${id}/itinerario`}>Itinerario</Link>
-        {user?.rol !== 'AGENCIA' && (
-          <Link className={currentTab === 'gastos' ? 'active' : ''} to={`${window.location.pathname.includes('/viajes-agencia') ? '/viajes-agencia' : '/viajes'}/${id}/gastos`}>Gastos</Link>
+        <Link className={currentTab === 'itinerario' ? 'active' : ''} to={`${rutaBase}/${id}/itinerario`}>Itinerario</Link>
+        {!esCatalogoAgencia && user?.rol !== 'AGENCIA' && (
+          <Link className={currentTab === 'gastos' ? 'active' : ''} to={`${rutaBase}/${id}/gastos`}>Gastos</Link>
         )}
       </nav>
 

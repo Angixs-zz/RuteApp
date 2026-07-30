@@ -24,6 +24,18 @@ variables:
   - name: agenciaToken
     value: ""
     description: JWT de un usuario AGENCIA
+  - name: agenciaCorreo
+    value: agencia1@ruteapp.com
+    description: Correo de la agencia de prueba
+  - name: agenciaPassword
+    value: Prueba123!
+    description: Contrasena de la agencia de prueba
+  - name: agenciaId
+    value: "8"
+    description: ID de la agencia de prueba
+  - name: agenciaViajeId
+    value: "5"
+    description: ID de un viaje publico de agencia
   - name: usuarioId
     value: "2"
     description: ID del usuario usado en las solicitudes

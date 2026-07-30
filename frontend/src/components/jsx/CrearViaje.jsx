@@ -1,6 +1,5 @@
 import { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ImagePlus } from 'lucide-react';
 import Navbar from './Navbar';
 import LugarAutocomplete from './LugarAutocomplete';
 import api from '../../service/api';
@@ -20,7 +19,7 @@ export default function CrearViaje() {
     fechaFin: '',
     presupuestoEstimado: '',
     transporte: 'Avión',
-    publico: true
+    publico: false
   });
 
   const [origenLugar, setOrigenLugar] = useState(null);
@@ -91,7 +90,7 @@ export default function CrearViaje() {
         presupuestoEstimado: formData.presupuestoEstimado ? parseFloat(formData.presupuestoEstimado) : 0,
         transporte: formData.transporte,
         estado: 'PLANIFICACION',
-        organizadorId: user?.id || 1,
+        organizadorId: user?.id,
         publico: formData.publico,
         origenLugar,
         destinoLugar

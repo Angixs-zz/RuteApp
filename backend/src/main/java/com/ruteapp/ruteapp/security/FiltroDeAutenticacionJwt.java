@@ -12,6 +12,8 @@ import org.springframework.security.core.context
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.ruteapp.ruteapp.repositories.UsuarioRepository;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,11 +24,14 @@ public class FiltroDeAutenticacionJwt
         extends OncePerRequestFilter {
 
     private final ServicioGestionTokensJwt jwtService;
+    private final UsuarioRepository usuarioRepository;
 
     public FiltroDeAutenticacionJwt(
-            ServicioGestionTokensJwt jwtService) {
+            ServicioGestionTokensJwt jwtService,
+            UsuarioRepository usuarioRepository) {
 
         this.jwtService = jwtService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Override
@@ -62,8 +67,15 @@ public class FiltroDeAutenticacionJwt
         String correo =
                 jwtService.extraerCorreo(token);
 
-        String rol =
-                jwtService.extraerRol(token);
+        var usuario = usuarioRepository.findByCorreo(correo)
+                .filter(usuarioEncontrado -> Boolean.TRUE.equals(usuarioEncontrado.getActivo()))
+                .orElse(null);
+        if (usuario == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String rol = usuario.getRol().getNombre();
 
         SimpleGrantedAuthority autoridad =
                 new SimpleGrantedAuthority(

@@ -1,0 +1,27 @@
+info:
+  name: Crear viaje publico de agencia
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/viajes"
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Paquete de agencia Bruno",
+        "descripcion": "Viaje publico para validar el flujo de agencia",
+        "origen": "Ciudad de Mexico",
+        "destino": "Oaxaca de Juarez",
+        "fechaInicio": "2026-11-10",
+        "fechaFin": "2026-11-13",
+        "presupuestoEstimado": 9500.00,
+        "transporte": "Autobus",
+        "estado": "PLANIFICACION",
+        "organizadorId": {{agenciaId}},
+        "publico": true
+      }
+  auth:
+    type: bearer
+    token: "{{agenciaToken}}"

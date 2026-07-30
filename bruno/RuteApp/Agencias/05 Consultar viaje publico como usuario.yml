@@ -1,0 +1,11 @@
+info:
+  name: Consultar viaje publico como usuario
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/viajes/{{agenciaViajeId}}"
+  auth:
+    type: bearer
+    token: "{{usuarioToken}}"

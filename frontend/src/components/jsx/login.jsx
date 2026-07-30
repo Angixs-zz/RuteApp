@@ -145,15 +145,9 @@ export default function Login() {
             <img src={logoImg} alt="RuteApp" />
           </div>
 
-<<<<<<< Updated upstream
-          <span className="eyebrow"></span>
-          <h1>Bienvenido de nuevo</h1>
-          <p className="muted"></p>
-=======
           <span className="eyebrow">ACCESO A LA PLATAFORMA</span>
-          <h1>Bienvenido de nuevo</h1> 
+          <h1>Bienvenido de nuevo</h1>
           <p className="muted">Ingresa tus datos para continuar con tus viajes.</p>
->>>>>>> Stashed changes
 
           {errorGeneral && <div className="banner warn" style={{ marginBottom: '15px' }}><div><strong>Aviso</strong><span>{errorGeneral}</span></div></div>}
           {mensajeExito && <div className="banner success" style={{ marginBottom: '15px' }}><div><strong>¡Éxito!</strong><span>{mensajeExito}</span></div></div>}

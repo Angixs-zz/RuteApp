@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Users, CreditCard } from 'lucide-react';
 import '../css/styles.css';
-import logoImg from '../../assets/react.svg';
-import heroImg from '../../assets/hero.png';
+import logoImg from '../../assets/logo.png';
+import heroImg from '../../assets/portadapara sitio.avif';
 
 export default function Inicio() {
   useEffect(() => {
@@ -126,7 +126,7 @@ export default function Inicio() {
         <div className="container footer-grid">
           <div>
             <div className="brand">
-              <img src={logoImg} alt="RuteApp" style={{ width: '130px', filter: 'brightness(0) invert(1)' }} />
+              <img src={logoImg} alt="RuteApp" style={{ width: '130px' }} />
             </div>
             <p>Organización colaborativa para viajes grupales.</p>
           </div>

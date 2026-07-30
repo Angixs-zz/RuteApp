@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import api from '../../service/api';
 import '../css/styles.css';
-import logoImg from '../../assets/logo.jpeg';
+import logoImg from '../../assets/logo.png';
 
 export default function RecuperarContrasena() {
   const [email, setEmail] = useState('');
@@ -49,8 +49,8 @@ export default function RecuperarContrasena() {
     <div className="auth-shell">
       {/* Lado izquierdo visual */}
       <aside className="auth-visual">
-        <div className="brand" style={{ width: '150px' }}>
-          <img src={logoImg} alt="RuteApp" style={{ width: '100%', height: 'auto', display: 'block' }} />
+        <div className="brand" style={{ marginBottom: '2rem' }}>
+          <img src={logoImg} alt="RuteApp" style={{ width: '160px' }} />
         </div>
         <div className="route-line">
           <svg viewBox="0 0 620 450">

@@ -2,7 +2,7 @@ import { useContext, useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { Link, useNavigate } from 'react-router-dom';
 import '../css/styles.css'; 
-import logoImg from '../../assets/logo.jpeg'; 
+import logoImg from '../../assets/logo.png'; 
 import api from '../../service/api';
 import { AuthContext } from '../../context/AuthContext';
 import { esTelefonoValido, normalizarTelefono } from '../../utils/telefono';

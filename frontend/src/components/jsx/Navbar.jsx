@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Bell, User } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
+import ConfirmModal from './ConfirmModal';
 import '../css/styles.css';
 import logoImg from '../../assets/logo.jpeg';
 import api from '../../service/api';
@@ -10,6 +11,7 @@ export default function Navbar({ invitacionesCount }) {
   const { user, logoutContext } = useContext(AuthContext);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [invitacionesPendientes, setInvitacionesPendientes] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,7 +38,10 @@ export default function Navbar({ invitacionesCount }) {
     };
   }, [invitacionesCount, user]);
 
-  const cantidadInvitaciones = invitacionesCount ?? invitacionesPendientes;
+  const esAgencia = user?.rol === 'AGENCIA';
+  const esAdministrador = user?.rol === 'ADMINISTRADOR';
+
+  const cantidadInvitaciones = (invitacionesCount ?? invitacionesPendientes) > 0 && !esAgencia ? (invitacionesCount ?? invitacionesPendientes) : 0;
 
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen((prev) => !prev);
@@ -47,8 +52,13 @@ export default function Navbar({ invitacionesCount }) {
   };
 
   const handleLogout = () => {
-    logoutContext();
+    setShowLogoutModal(true);
     closeProfileMenu();
+  };
+
+  const confirmarLogout = () => {
+    logoutContext();
+    setShowLogoutModal(false);
     navigate('/login');
   };
 
@@ -59,7 +69,6 @@ export default function Navbar({ invitacionesCount }) {
   const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(nombreUsuario)}&background=random`;
 
   const pathname = location.pathname;
-  const esAdministrador = user?.rol === 'ADMINISTRADOR';
 
   return (
     <>
@@ -81,10 +90,15 @@ export default function Navbar({ invitacionesCount }) {
             ) : (
               <>
                 <Link className={pathname === '/dashboard' ? 'active' : ''} to="/dashboard">Inicio</Link>
-                <Link className={pathname.startsWith('/viajes') ? 'active' : ''} to="/viajes">Mis viajes</Link>
-                <Link className={pathname === '/invitaciones' ? 'active' : ''} to="/invitaciones">
-                  Invitaciones {cantidadInvitaciones > 0 && <span className="nav-badge">{cantidadInvitaciones}</span>}
-                </Link>
+                <Link className={pathname.startsWith('/viajes') && pathname !== '/viajes-agencia' ? 'active' : ''} to="/viajes">Mis viajes</Link>
+                {!esAgencia && (
+                  <>
+                    <Link className={pathname === '/viajes-agencia' ? 'active' : ''} to="/viajes-agencia">Viajes de Agencia</Link>
+                    <Link className={pathname === '/invitaciones' ? 'active' : ''} to="/invitaciones">
+                      Invitaciones {cantidadInvitaciones > 0 && <span className="nav-badge">{cantidadInvitaciones}</span>}
+                    </Link>
+                  </>
+                )}
               </>
             )}
           </nav>
@@ -148,6 +162,16 @@ export default function Navbar({ invitacionesCount }) {
           </div>
         </div>
       </div>
+
+      <ConfirmModal 
+        isOpen={showLogoutModal}
+        title="Cerrar sesión"
+        message="¿Estás seguro de que deseas salir de tu cuenta?"
+        confirmText="Cerrar sesión"
+        cancelText="Cancelar"
+        onConfirm={confirmarLogout}
+        onCancel={() => setShowLogoutModal(false)}
+      />
     </>
   );
 }

@@ -9,6 +9,7 @@ import ProtectedRoute from './components/jsx/ProtectedRoute';
 
 import Dashboard from './components/jsx/Dashboard';
 import MisViajes from './components/jsx/MisViajes';
+import ViajesAgencia from './components/jsx/ViajesAgencia';
 import CrearViaje from './components/jsx/CrearViaje';
 import DetalleViaje from './components/jsx/DetalleViaje';
 import Participantes from './components/jsx/Participantes';
@@ -45,6 +46,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/viajes" element={<MisViajes />} />
+            <Route path="/viajes-agencia" element={<ViajesAgencia />} />
             <Route path="/invitaciones" element={<Invitaciones />} />
             <Route path="/viajes/:id" element={<DetalleViaje />} />
             <Route path="/detalle-viaje" element={<DetalleViaje />} />

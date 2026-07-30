@@ -157,10 +157,12 @@ export default function DetalleViaje() {
                         <span>Organizador</span>
                         <strong>{viaje.organizadorNombre}</strong>
                       </div>
-                      <div className="info-item">
-                        <span>Participantes</span>
-                        <strong>{viaje.participantesCount} confirmado(s)</strong>
-                      </div>
+                      {user?.rol !== 'AGENCIA' && (
+                        <div className="info-item">
+                          <span>Participantes</span>
+                          <strong>{viaje.participantesCount} confirmado(s)</strong>
+                        </div>
+                      )}
                       <div className="info-item">
                         <span>Presupuesto por persona</span>
                         <strong>${(viaje.presupuestoEstimado || 0).toLocaleString('es-MX')} MXN</strong>
@@ -179,9 +181,9 @@ export default function DetalleViaje() {
                       
                       <ul className="activity-list" style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
                         <li><span>✓</span><span>Destino y Fechas</span></li>
-                        <li><span>✓</span><span>Participantes</span></li>
+                        {user?.rol !== 'AGENCIA' && <li><span>✓</span><span>Participantes</span></li>}
                         <li><span>✓</span><span>Itinerario</span></li>
-                        <li><span>✓</span><span>Gastos Compartidos</span></li>
+                        {user?.rol !== 'AGENCIA' && <li><span>✓</span><span>Gastos Compartidos</span></li>}
                       </ul>
 
                       {user?.id === viaje.organizadorId && (

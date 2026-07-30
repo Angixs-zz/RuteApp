@@ -98,6 +98,12 @@ public class ParticipanteViajeService {
 
         Usuario usuario = obtenerUsuarioInvitado(entrada);
 
+        if (usuario.getRol() != null && "AGENCIA".equals(usuario.getRol().getNombre())) {
+            throw new IllegalArgumentException(
+                    "No puedes enviar invitaciones a un usuario de tipo Agencia"
+            );
+        }
+
         if (participanteViajeRepository.existsByViajeAndUsuario(viaje, usuario)) {
             throw new IllegalArgumentException(
                     "El usuario ya fue invitado a este viaje"

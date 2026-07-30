@@ -235,6 +235,20 @@ export default function CrearViaje() {
               </div>
             </section>
 
+            {user?.rol === 'AGENCIA' && (
+              <section className="form-section">
+                <h3>Visibilidad</h3>
+                <label className="checkbox-field" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                  <input 
+                    type="checkbox" 
+                    name="publico"
+                    checked={formData.publico}
+                    onChange={handleChange}
+                  />
+                  <span>Viaje público (visible para todos los usuarios en "Viajes de Agencia")</span>
+                </label>
+              </section>
+            )}
 
             <div className="form-actions">
               <Link className="button ghost" to="/viajes">

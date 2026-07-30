@@ -12,6 +12,7 @@ import '../css/styles.css';
 export default function Gastos() {
   const { id } = useParams();
   const { user } = useContext(AuthContext);
+  const esViajeAgencia = window.location.pathname.includes('/viajes-agencia');
 
   const [viaje, setViaje] = useState(null);
   const [viajeDates, setViajeDates] = useState({ inicio: null, fin: null });
@@ -158,7 +159,7 @@ export default function Gastos() {
   // Cálculo de totales
   const totalPresupuesto = viaje?.presupuestoEstimado || 0;
   const totalGastado = gastos
-    .filter(g => g.pagadorId === user?.id)
+    .filter(g => esViajeAgencia ? true : g.pagadorId === user?.id)
     .reduce((sum, g) => sum + g.monto, 0);
   const disponible = totalPresupuesto - totalGastado;
 
@@ -215,22 +216,24 @@ export default function Gastos() {
                     <h2>Gastos del viaje</h2>
                     <p className="muted small">Consulta el presupuesto y captura nuevos pagos globales.</p>
                   </div>
-                  <button
-                    className="button primary"
-                    onClick={abrirModalCrear}
-                  >
-                    + Registrar Gasto
-                  </button>
+                  {!esViajeAgencia && (
+                    <button
+                      className="button primary"
+                      onClick={abrirModalCrear}
+                    >
+                      + Registrar Gasto
+                    </button>
+                  )}
                 </div>
 
                 {/* Resumen de Presupuesto */}
                 <div className="budget-summary">
                   <article className="card budget-card">
-                    <span>Presupuesto total estimado por persona</span>
+                    <span>{esViajeAgencia ? 'Presupuesto total estimado' : 'Presupuesto total estimado por persona'}</span>
                     <strong>${totalPresupuesto.toLocaleString('es-MX')}</strong>
                   </article>
                   <article className="card budget-card">
-                    <span>Tu total gastado (capturado)</span>
+                    <span>{esViajeAgencia ? 'Total gastado registrado' : 'Tu total gastado (capturado)'}</span>
                     <strong>${totalGastado.toLocaleString('es-MX')}</strong>
                   </article>
                   <article className="card budget-card">
@@ -282,7 +285,7 @@ export default function Gastos() {
                             <th>Categoría</th>
                             <th>Monto</th>
                             <th>Pagado por</th>
-                            <th>Acciones</th>
+                            {!esViajeAgencia && <th>Acciones</th>}
                           </tr>
                         </thead>
                         <tbody>
@@ -303,24 +306,26 @@ export default function Gastos() {
                                 <td>{g.categoria}</td>
                                 <td><strong>${g.monto.toLocaleString('es-MX')}</strong></td>
                                 <td>{g.pagadorNombre}</td>
-                                <td>
-                                  {(user?.id === viajeOrgId || user?.id === g.pagadorId) && (
-                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                      <button
-                                        className="button ghost small"
-                                        onClick={() => abrirModalEditar(g)}
-                                      >
-                                        Editar
-                                      </button>
-                                      <button
-                                        className="button danger small"
-                                        onClick={() => setGastoAEliminar(g)}
-                                      >
-                                        Eliminar
-                                      </button>
-                                    </div>
-                                  )}
-                                </td>
+                                {!esViajeAgencia && (
+                                  <td>
+                                    {(user?.id === viajeOrgId || user?.id === g.pagadorId) && (
+                                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button
+                                          className="button ghost small"
+                                          onClick={() => abrirModalEditar(g)}
+                                        >
+                                          Editar
+                                        </button>
+                                        <button
+                                          className="button danger small"
+                                          onClick={() => setGastoAEliminar(g)}
+                                        >
+                                          Eliminar
+                                        </button>
+                                      </div>
+                                    )}
+                                  </td>
+                                )}
                               </tr>
                             ))
                           )}

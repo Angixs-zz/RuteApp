@@ -151,6 +151,9 @@ export default function TripHeader({ id, currentTab }) {
         <Link className={currentTab === 'resumen' ? 'active' : ''} to={`${rutaBase}/${id}`}>Resumen</Link>
         {!esCatalogoAgencia && user?.rol !== 'AGENCIA' && (
           <Link className={currentTab === 'participantes' ? 'active' : ''} to={`${rutaBase}/${id}/participantes`}>Participantes</Link>
+        <Link className={currentTab === 'resumen' ? 'active' : ''} to={`${window.location.pathname.includes('/viajes-agencia') ? '/viajes-agencia' : '/viajes'}/${id}`}>Resumen</Link>
+        {!window.location.pathname.includes('/viajes-agencia') && user?.rol !== 'AGENCIA' && (
+          <Link className={currentTab === 'participantes' ? 'active' : ''} to={`/viajes/${id}/participantes`}>Participantes</Link>
         )}
         <Link className={currentTab === 'itinerario' ? 'active' : ''} to={`${rutaBase}/${id}/itinerario`}>Itinerario</Link>
         {!esCatalogoAgencia && user?.rol !== 'AGENCIA' && (

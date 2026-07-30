@@ -2,6 +2,8 @@ import { useState, useEffect, useContext } from 'react';
 import Navbar from './Navbar';
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../service/api';
+import ConfirmModal from './ConfirmModal';
+import SuccessModal from './SuccessModal';
 import '../css/styles.css';
 import { esTelefonoValido, normalizarTelefono } from '../../utils/telefono';
 
@@ -68,6 +70,9 @@ export default function Perfil() {
   // Estado general UI
   const [guardando, setGuardando] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [successModalConfig, setSuccessModalConfig] = useState({ isOpen: false, title: '', message: '' });
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -123,16 +128,21 @@ export default function Perfil() {
 
   const handleGuardarCambios = async (e) => {
     e.preventDefault();
-    setGuardando(true);
 
-    const nombreCompleto = `${nombre.trim()} ${apellidos.trim()}`.trim();
     const telefonoNormalizado = normalizarTelefono(telefono);
 
     if (!esTelefonoValido(telefonoNormalizado)) {
       showToast('Usa 10 dígitos mexicanos o formato internacional');
-      setGuardando(false);
       return;
     }
+
+    setShowConfirmModal(true);
+  };
+
+  const ejecutarGuardarCambios = async () => {
+    setGuardando(true);
+    const nombreCompleto = `${nombre.trim()} ${apellidos.trim()}`.trim();
+    const telefonoNormalizado = normalizarTelefono(telefono);
 
     try {
       if (user?.id) {
@@ -151,8 +161,10 @@ export default function Perfil() {
         });
       }
       setTelefono(telefonoNormalizado);
-      showToast('Perfil actualizado');
+      setShowConfirmModal(false);
+      setSuccessModalConfig({ isOpen: true, title: 'Perfil actualizado', message: 'Tus datos se han guardado con éxito.' });
     } catch (err) {
+      setShowConfirmModal(false);
       showToast(err.response?.data?.mensaje || 'No fue posible actualizar el perfil');
     } finally {
       setGuardando(false);
@@ -439,6 +451,25 @@ export default function Perfil() {
           </form>
         </div>
       </div>
+
+      {/* Modales para Guardar Cambios */}
+      <ConfirmModal 
+        isOpen={showConfirmModal}
+        title="Guardar cambios"
+        message="¿Estás seguro de que deseas actualizar la información de tu perfil?"
+        confirmText="Guardar"
+        cancelText="Cancelar"
+        onConfirm={ejecutarGuardarCambios}
+        onCancel={() => setShowConfirmModal(false)}
+        isLoading={guardando}
+      />
+
+      <SuccessModal 
+        isOpen={successModalConfig.isOpen}
+        title={successModalConfig.title}
+        message={successModalConfig.message}
+        onAccept={() => setSuccessModalConfig({ isOpen: false, title: '', message: '' })}
+      />
 
       {/* Toast Component */}
       <div className={`toast ${toastMessage ? 'show' : ''}`}>

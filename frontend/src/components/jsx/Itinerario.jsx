@@ -11,6 +11,7 @@ import '../css/styles.css';
 export default function Itinerario() {
   const { id } = useParams();
   const { user } = useContext(AuthContext);
+  const esViajeAgencia = window.location.pathname.includes('/viajes-agencia');
 
   const [actividades, setActividades] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -282,12 +283,14 @@ export default function Itinerario() {
                     <h2>Itinerario</h2>
                     <p className="muted small">Actividades organizadas por día.</p>
                   </div>
-                  <button 
-                    className="button primary"
-                    onClick={abrirModalCrear}
-                  >
-                    ＋ Agregar actividad
-                  </button>
+                  {!esViajeAgencia && (
+                    <button 
+                      className="button primary"
+                      onClick={abrirModalCrear}
+                    >
+                      ＋ Agregar actividad
+                    </button>
+                  )}
                 </div>
 
                 <div className="timeline">
@@ -313,34 +316,36 @@ export default function Itinerario() {
                                   {act.costo ? ` · Costo estimado: $${act.costo.toLocaleString('es-MX')}` : ''}
                                 </p>
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
-                                  {(user?.id === viajeOrgId || user?.id === act.responsableId) && (
-                                    <>
-                                      {act.tipo !== 'REALIZADO' && new Date() > new Date(act.rawHorario) && (
-                                        <button 
-                                          className="button success small"
-                                          onClick={() => handleMarcarRealizado(act)}
-                                        >
-                                          Realizado
-                                        </button>
-                                      )}
-                                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                        <button 
-                                          className="button ghost small"
-                                          onClick={() => abrirModalEditar(act)}
-                                        >
-                                          Editar
-                                        </button>
-                                        <button 
-                                          className="button danger small"
-                                          onClick={() => setActividadAEliminar(act)}
-                                        >
-                                          Eliminar
-                                        </button>
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
+                                {!esViajeAgencia && (
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+                                    {(user?.id === viajeOrgId || user?.id === act.responsableId) && (
+                                      <>
+                                        {act.tipo !== 'REALIZADO' && new Date() > new Date(act.rawHorario) && (
+                                          <button 
+                                            className="button success small"
+                                            onClick={() => handleMarcarRealizado(act)}
+                                          >
+                                            Realizado
+                                          </button>
+                                        )}
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                          <button 
+                                            className="button ghost small"
+                                            onClick={() => abrirModalEditar(act)}
+                                          >
+                                            Editar
+                                          </button>
+                                          <button 
+                                            className="button danger small"
+                                            onClick={() => setActividadAEliminar(act)}
+                                          >
+                                            Eliminar
+                                          </button>
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+                                )}
                               </article>
                           ))}
                         </div>

@@ -33,14 +33,18 @@ public class ParticipanteViajeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ParticipanteRespuesta> buscarPorId(@PathVariable Long id) {
-        ParticipanteRespuesta participante = participanteViajeService.buscarPorId(id);
+    public ResponseEntity<ParticipanteRespuesta> buscarPorId(
+            @PathVariable Long id, Authentication authentication) {
+        ParticipanteRespuesta participante = participanteViajeService.buscarPorId(
+                id, authentication.getName(), esAdministrador(authentication));
         return ResponseEntity.ok(participante);
     }
 
     @GetMapping("/viaje/{viajeId}")
-    public ResponseEntity<List<ParticipanteRespuesta>> listarPorViaje(@PathVariable Long viajeId) {
-        List<ParticipanteRespuesta> participantes = participanteViajeService.listarPorViaje(viajeId);
+    public ResponseEntity<List<ParticipanteRespuesta>> listarPorViaje(
+            @PathVariable Long viajeId, Authentication authentication) {
+        List<ParticipanteRespuesta> participantes = participanteViajeService.listarPorViaje(
+                viajeId, authentication.getName(), esAdministrador(authentication));
         return ResponseEntity.ok(participantes);
     }
 
@@ -67,8 +71,10 @@ public class ParticipanteViajeController {
     @PutMapping("/{id}")
     public ResponseEntity<ParticipanteRespuesta> actualizar(
             @PathVariable Long id,
-            @Valid @RequestBody ParticipanteEntrada entrada) {
-        ParticipanteRespuesta actualizado = participanteViajeService.actualizar(id, entrada);
+            @Valid @RequestBody ParticipanteEntrada entrada,
+            Authentication authentication) {
+        ParticipanteRespuesta actualizado = participanteViajeService.actualizar(
+                id, entrada, authentication.getName(), esAdministrador(authentication));
         return ResponseEntity.ok(actualizado);
     }
 

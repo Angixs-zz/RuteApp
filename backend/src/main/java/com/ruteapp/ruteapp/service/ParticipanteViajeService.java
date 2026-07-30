@@ -20,6 +20,7 @@ import com.ruteapp.ruteapp.repositories.ParticipanteViajeRepository;
 import com.ruteapp.ruteapp.repositories.UsuarioRepository;
 import com.ruteapp.ruteapp.repositories.ViajeRepository;
 import com.ruteapp.ruteapp.util.TelefonoUtil;
+import com.ruteapp.ruteapp.security.ViajeAcceso;
 
 @Service
 public class ParticipanteViajeService {
@@ -30,6 +31,7 @@ public class ParticipanteViajeService {
     private final ServicioCorreo servicioCorreo;
     private final String invitationUrl;
     private final WhatsAppService whatsAppService;
+    private final ViajeAcceso viajeAcceso;
 
     public ParticipanteViajeService(
             ParticipanteViajeRepository participanteViajeRepository,
@@ -37,12 +39,14 @@ public class ParticipanteViajeService {
             UsuarioRepository usuarioRepository,
             ServicioCorreo servicioCorreo,
             WhatsAppService whatsAppService,
+            ViajeAcceso viajeAcceso,
             @Value("${app.invitation-url}") String invitationUrl) {
         this.participanteViajeRepository = participanteViajeRepository;
         this.viajeRepository = viajeRepository;
         this.usuarioRepository = usuarioRepository;
         this.servicioCorreo = servicioCorreo;
         this.whatsAppService = whatsAppService;
+        this.viajeAcceso = viajeAcceso;
         this.invitationUrl = invitationUrl;
     }
 
@@ -64,14 +68,19 @@ public class ParticipanteViajeService {
         return respuestas;
     }
 
-    public ParticipanteRespuesta buscarPorId(Long id) {
+    public ParticipanteRespuesta buscarPorId(
+            Long id, String correoAutenticado, boolean esAdministrador) {
         ParticipanteViaje participante = obtenerEntidadPorId(id);
+        viajeAcceso.validarAccesoInterno(
+                participante.getViaje(), correoAutenticado, esAdministrador);
         return convertirARespuesta(participante);
     }
 
-    public List<ParticipanteRespuesta> listarPorViaje(Long viajeId) {
+    public List<ParticipanteRespuesta> listarPorViaje(
+            Long viajeId, String correoAutenticado, boolean esAdministrador) {
         Viaje viaje = viajeRepository.findById(viajeId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Viaje no encontrado"));
+        viajeAcceso.validarAccesoInterno(viaje, correoAutenticado, esAdministrador);
         
         List<ParticipanteViaje> participantes = participanteViajeRepository.findByViaje(viaje);
         List<ParticipanteRespuesta> respuestas = new ArrayList<>();
@@ -117,9 +126,7 @@ public class ParticipanteViajeService {
         participante.setViaje(viaje);
         participante.setUsuario(usuario);
         
-        if (entrada.getEstadoInvitacion() != null && !entrada.getEstadoInvitacion().isBlank()) {
-            participante.setEstadoInvitacion(EstadoInvitacion.valueOf(entrada.getEstadoInvitacion().toUpperCase()));
-        }
+        participante.setEstadoInvitacion(EstadoInvitacion.PENDIENTE);
 
         if (entrada.getPermisoColaborar() != null) {
             participante.setPermisoColaborar(entrada.getPermisoColaborar());
@@ -214,21 +221,14 @@ public class ParticipanteViajeService {
     }
 
 
-    public ParticipanteRespuesta actualizar(Long id, ParticipanteEntrada entrada) {
+    public ParticipanteRespuesta actualizar(
+            Long id,
+            ParticipanteEntrada entrada,
+            String correoAutenticado,
+            boolean esAdministrador) {
         ParticipanteViaje participante = obtenerEntidadPorId(id);
-
-        Viaje viaje = viajeRepository.findById(entrada.getViajeId())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Viaje no encontrado"));
-
-        Usuario usuario = usuarioRepository.findById(entrada.getUsuarioId())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
-
-        participante.setViaje(viaje);
-        participante.setUsuario(usuario);
-
-        if (entrada.getEstadoInvitacion() != null && !entrada.getEstadoInvitacion().isBlank()) {
-            participante.setEstadoInvitacion(EstadoInvitacion.valueOf(entrada.getEstadoInvitacion().toUpperCase()));
-        }
+        viajeAcceso.validarGestion(
+                participante.getViaje(), correoAutenticado, esAdministrador);
 
         if (entrada.getPermisoColaborar() != null) {
             participante.setPermisoColaborar(entrada.getPermisoColaborar());

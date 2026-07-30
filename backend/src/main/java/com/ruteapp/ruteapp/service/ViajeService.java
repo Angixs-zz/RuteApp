@@ -22,6 +22,7 @@ import com.ruteapp.ruteapp.model.ParticipanteViaje;
 import com.ruteapp.ruteapp.repositories.ParticipanteViajeRepository;
 import com.ruteapp.ruteapp.repositories.UsuarioRepository;
 import com.ruteapp.ruteapp.repositories.ViajeRepository;
+import com.ruteapp.ruteapp.security.ViajeAcceso;
 
 @Service
 public class ViajeService {
@@ -31,19 +32,22 @@ public class ViajeService {
     private final LugarPersistenciaService lugarPersistenciaService;
     private final ParticipanteViajeRepository participanteViajeRepository;
     private final WhatsAppService whatsAppService;
+    private final ViajeAcceso viajeAcceso;
 
     public ViajeService(
             ViajeRepository viajeRepository,
             UsuarioRepository usuarioRepository,
             LugarPersistenciaService lugarPersistenciaService,
             ParticipanteViajeRepository participanteViajeRepository,
-            WhatsAppService whatsAppService) {
+            WhatsAppService whatsAppService,
+            ViajeAcceso viajeAcceso) {
 
         this.viajeRepository = viajeRepository;
         this.usuarioRepository = usuarioRepository;
         this.lugarPersistenciaService = lugarPersistenciaService;
         this.participanteViajeRepository = participanteViajeRepository;
         this.whatsAppService = whatsAppService;
+        this.viajeAcceso = viajeAcceso;
     }
 
     public List<ViajeRespuesta> listarTodos() {
@@ -87,6 +91,7 @@ public class ViajeService {
                     correoOrganizador,
                     EstadoInvitacion.ACEPTADA,
                     texto,
+                    estado,
                     pageable
             );
         } else {
@@ -109,9 +114,10 @@ public class ViajeService {
         );
     }
 
-    public ViajeRespuesta buscarPorId(Long id) {
+    public ViajeRespuesta buscarPorId(Long id, String correoAutenticado, boolean esAdministrador) {
 
         Viaje viaje = obtenerEntidadPorId(id);
+        viajeAcceso.validarLectura(viaje, correoAutenticado, esAdministrador);
 
         return convertirARespuesta(viaje);
     }
@@ -130,12 +136,18 @@ public class ViajeService {
         return respuestas;
     }
 
-    public List<ViajeRespuesta> listarPorOrganizador(Long organizadorId) {
+    public List<ViajeRespuesta> listarPorOrganizador(
+            Long organizadorId, String correoAutenticado, boolean esAdministrador) {
 
         Usuario organizador = usuarioRepository
                 .findById(organizadorId)
                 .orElseThrow(() ->
                         new RecursoNoEncontradoException("Organizador no encontrado"));
+
+        if (!esAdministrador && !organizador.getCorreo().equals(correoAutenticado)) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "Solo puedes consultar tus viajes organizados");
+        }
 
         List<Viaje> viajes =
                 viajeRepository.findByOrganizador(organizador);
@@ -149,18 +161,18 @@ public class ViajeService {
         return respuestas;
     }
 
-    public ViajeRespuesta crear(ViajeEntrada entrada) {
+    public ViajeRespuesta crear(ViajeEntrada entrada, String correoAutenticado) {
 
         validarFechas(entrada);
 
         Usuario organizador = usuarioRepository
-                .findById(entrada.getOrganizadorId())
+                .findByCorreo(correoAutenticado)
                 .orElseThrow(() ->
                         new RecursoNoEncontradoException("Organizador no encontrado"));
 
         Viaje viaje = new Viaje();
 
-        copiarDatos(entrada, viaje, organizador);
+        copiarDatos(entrada, viaje, organizador, true);
 
         Viaje guardado = viajeRepository.save(viaje);
 
@@ -169,19 +181,17 @@ public class ViajeService {
 
     public ViajeRespuesta actualizar(
             Long id,
-            ViajeEntrada entrada) {
+            ViajeEntrada entrada,
+            String correoAutenticado,
+            boolean esAdministrador) {
 
         validarFechas(entrada);
 
         Viaje viaje = obtenerEntidadPorId(id);
+        viajeAcceso.validarGestion(viaje, correoAutenticado, esAdministrador);
         EstadoViaje estadoAnterior = viaje.getEstado();
 
-        Usuario organizador = usuarioRepository
-                .findById(entrada.getOrganizadorId())
-                .orElseThrow(() ->
-                        new RecursoNoEncontradoException("Organizador no encontrado"));
-
-        copiarDatos(entrada, viaje, organizador);
+        copiarDatos(entrada, viaje, viaje.getOrganizador(), false);
 
         Viaje actualizado = viajeRepository.save(viaje);
 
@@ -207,9 +217,10 @@ public class ViajeService {
         }
     }
 
-    public void eliminar(Long id) {
+    public void eliminar(Long id, String correoAutenticado, boolean esAdministrador) {
 
         Viaje viaje = obtenerEntidadPorId(id);
+        viajeAcceso.validarGestion(viaje, correoAutenticado, esAdministrador);
 
         viajeRepository.delete(viaje);
     }
@@ -224,7 +235,8 @@ public class ViajeService {
     private void copiarDatos(
             ViajeEntrada entrada,
             Viaje viaje,
-            Usuario organizador) {
+            Usuario organizador,
+            boolean esCreacion) {
 
         viaje.setNombre(entrada.getNombre());
         viaje.setDescripcion(entrada.getDescripcion());
@@ -244,10 +256,14 @@ public class ViajeService {
             viaje.setEstado(entrada.getEstado());
         }
 
-        if (entrada.getPublico() == null) {
-            viaje.setPublico(false);
-        } else {
+        if (entrada.getPublico() != null) {
+            if (Boolean.TRUE.equals(entrada.getPublico())
+                    && !"AGENCIA".equals(organizador.getRol().getNombre())) {
+                throw new IllegalArgumentException("Solo una agencia puede publicar viajes");
+            }
             viaje.setPublico(entrada.getPublico());
+        } else if (esCreacion) {
+            viaje.setPublico(false);
         }
 
         if (entrada.getOrigenLugar() != null) {

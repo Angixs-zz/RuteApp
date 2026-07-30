@@ -1,5 +1,6 @@
 import { createContext, useState } from 'react';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
 
 const decodeToken = (token) => {
@@ -24,14 +25,6 @@ const decodeToken = (token) => {
 const getInitialUser = () => {
   const token = localStorage.getItem('token');
   if (!token) return null;
-  const storedUser = localStorage.getItem('user');
-  if (storedUser) {
-    try {
-      return JSON.parse(storedUser);
-    } catch (e) {
-      console.error('Error parsing stored user', e);
-    }
-  }
   const userData = decodeToken(token);
   if (userData && (!userData.exp || userData.exp * 1000 > Date.now())) {
     return userData;
@@ -80,4 +73,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useContext } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Navbar from './Navbar';
 import TripHeader from './TripHeader';
 import ConfirmModal from './ConfirmModal';
@@ -27,16 +27,6 @@ export default function DetalleViaje() {
       const response = await api.get(`/viajes/${id}`, { timeout: 5000 });
       if (response.data) {
         const data = response.data;
-        let partCount = 5;
-        try {
-          const resPart = await api.get(`/participantes/viaje/${id}`, { timeout: 5000 });
-          if (resPart.data && Array.isArray(resPart.data)) {
-            partCount = resPart.data.length;
-          }
-        } catch {
-          // Fallback silencioso en caso de error o sin backend
-        }
-
         setViaje({
           id: data.id,
           nombre: data.nombre,
@@ -48,9 +38,12 @@ export default function DetalleViaje() {
           presupuestoEstimado: data.presupuestoEstimado || 0,
           transporte: data.transporte || 'No especificado',
           estado: data.estado || 'EN_CURSO',
+          publico: data.publico,
+          origenLugar: data.origenLugar,
+          destinoLugar: data.destinoLugar,
           organizadorId: data.organizadorId,
           organizadorNombre: data.organizadorNombre || 'Organizador',
-          participantesCount: partCount,
+          participantesCount: data.participantesCount || 1,
           porcentajePlaneado: data.estado === 'FINALIZADO' ? 100 : 68
         });
       }

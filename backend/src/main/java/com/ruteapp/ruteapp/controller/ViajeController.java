@@ -55,8 +55,8 @@ public class ViajeController {
     }
 
     @GetMapping("/{id}")
-    public ViajeRespuesta buscarPorId(@PathVariable Long id) {
-        return viajeService.buscarPorId(id);
+    public ViajeRespuesta buscarPorId(@PathVariable Long id, Authentication authentication) {
+        return viajeService.buscarPorId(id, authentication.getName(), esAdministrador(authentication));
     }
 
     @GetMapping("/publicos")
@@ -66,31 +66,41 @@ public class ViajeController {
 
     @GetMapping("/organizador/{usuarioId}")
     public List<ViajeRespuesta> listarPorOrganizador(
-            @PathVariable Long usuarioId) {
+            @PathVariable Long usuarioId,
+            Authentication authentication) {
 
-        return viajeService.listarPorOrganizador(usuarioId);
+        return viajeService.listarPorOrganizador(
+                usuarioId, authentication.getName(), esAdministrador(authentication));
     }
 
     @PostMapping
     public ViajeRespuesta crear(
-            @Valid @RequestBody ViajeEntrada entrada) {
+            @Valid @RequestBody ViajeEntrada entrada,
+            Authentication authentication) {
 
-        return viajeService.crear(entrada);
+        return viajeService.crear(entrada, authentication.getName());
     }
 
     @PutMapping("/{id}")
     public ViajeRespuesta actualizar(
             @PathVariable Long id,
-            @Valid @RequestBody ViajeEntrada entrada) {
+            @Valid @RequestBody ViajeEntrada entrada,
+            Authentication authentication) {
 
-        return viajeService.actualizar(id, entrada);
+        return viajeService.actualizar(
+                id, entrada, authentication.getName(), esAdministrador(authentication));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable Long id, Authentication authentication) {
 
-        viajeService.eliminar(id);
+        viajeService.eliminar(id, authentication.getName(), esAdministrador(authentication));
 
         return ResponseEntity.noContent().build();
+    }
+
+    private boolean esAdministrador(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(autoridad -> autoridad.getAuthority().equals("ROLE_ADMINISTRADOR"));
     }
 }

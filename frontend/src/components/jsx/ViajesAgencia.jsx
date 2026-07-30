@@ -1,13 +1,10 @@
-import { useState, useEffect, useCallback, useContext } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import api from '../../service/api';
-import { AuthContext } from '../../context/AuthContext';
 import '../css/styles.css';
 
 export default function ViajesAgencia() {
-  const { user } = useContext(AuthContext);
-  
   const [viajes, setViajes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorCarga, setErrorCarga] = useState('');

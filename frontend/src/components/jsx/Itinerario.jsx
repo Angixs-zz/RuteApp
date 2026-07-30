@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useContext } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Navbar from './Navbar';
 import TripHeader from './TripHeader';
 import ConfirmModal from './ConfirmModal';
@@ -10,7 +10,6 @@ import '../css/styles.css';
 
 export default function Itinerario() {
   const { id } = useParams();
-  const viajeId = id || 1;
   const { user } = useContext(AuthContext);
 
   const [actividades, setActividades] = useState([]);
@@ -248,21 +247,6 @@ export default function Itinerario() {
   const cerrarModal = () => {
     setShowCreateModal(false);
     setActividadAEditar(null);
-  };
-
-  const formatearFechas = (inicio, fin) => {
-    if (!inicio || !fin) return '12–16 de agosto de 2026';
-    try {
-      const fIni = new Date(inicio + 'T00:00:00');
-      const fFin = new Date(fin + 'T00:00:00');
-      const mesAñoOptions = { month: 'long', year: 'numeric' };
-      if (fIni.getMonth() === fFin.getMonth() && fIni.getFullYear() === fFin.getFullYear()) {
-        return `${fIni.getDate()}–${fFin.getDate()} de ${fFin.toLocaleDateString('es-MX', mesAñoOptions)}`;
-      }
-      return `${fIni.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })} – ${fFin.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}`;
-    } catch {
-      return `${inicio} – ${fin}`;
-    }
   };
 
   // Agrupar actividades por fechaGrupo

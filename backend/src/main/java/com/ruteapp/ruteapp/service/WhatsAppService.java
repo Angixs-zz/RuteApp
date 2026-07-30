@@ -27,6 +27,7 @@ public class WhatsAppService {
     public WhatsAppService(TwilioConfig twilioConfig) {
         this.twilioConfig = twilioConfig;
     }
+    //no se sube
 
     public WhatsAppRespuesta enviar(WhatsAppEntrada entrada) {
         if (!twilioConfig.estaConfigurado()) {

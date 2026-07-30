@@ -20,16 +20,19 @@ public class ServicioCorreo {
     private final boolean habilitado;
     private final String remitente;
     private final String frontendUrl;
+    private final String invitationUrl;
 
     public ServicioCorreo(
             JavaMailSender mailSender,
             @Value("${app.mail.enabled}") boolean habilitado,
             @Value("${app.mail.from}") String remitente,
-            @Value("${app.frontend-url}") String frontendUrl) {
+            @Value("${app.frontend-url}") String frontendUrl,
+            @Value("${app.invitation-url}") String invitationUrl) { 
         this.mailSender = mailSender;
         this.habilitado = habilitado;
         this.remitente = remitente;
         this.frontendUrl = frontendUrl;
+        this.invitationUrl = invitationUrl; 
     }
 
     public void enviarBienvenida(Usuario usuario) {
@@ -67,7 +70,7 @@ public class ServicioCorreo {
                         + " te invitó al viaje \""
                         + viaje.getNombre()
                         + "\". Ingresa a RuteApp para aceptar o rechazar la invitación:\n\n"
-                        + frontendUrl + "/invitaciones\n\n"
+                        + invitationUrl + "\n\n"
                         + "Equipo RuteApp"
         );
     }

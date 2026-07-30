@@ -3,6 +3,7 @@ package com.ruteapp.ruteapp.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -146,8 +147,18 @@ public class ActividadItinerarioService {
         return convertirARespuesta(actualizada);
     }
 
-    public void eliminar(Long id) {
+    public void eliminar(Long id, String correoAutenticado, boolean esAdministrador) {
         ActividadItinerario actividad = obtenerEntidadPorId(id);
+
+        if (!esAdministrador) {
+            String correoOrganizador = actividad.getViaje().getOrganizador().getCorreo();
+            String correoResponsable = actividad.getResponsable().getCorreo();
+
+            if (!correoOrganizador.equals(correoAutenticado) && !correoResponsable.equals(correoAutenticado)) {
+                throw new AccessDeniedException("Solo el organizador del viaje o el responsable pueden eliminar la actividad");
+            }
+        }
+
         actividadRepository.delete(actividad);
     }
 

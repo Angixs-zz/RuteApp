@@ -223,9 +223,8 @@ export default function Participantes() {
                       <tr>
                         <th>Participante</th>
                         <th>Teléfono</th>
-                        <th>Rol en el viaje</th>
                         <th>Estado</th>
-                        <th>Acciones</th>
+                        {user?.id === viaje.organizadorId && <th>Acciones</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -242,41 +241,38 @@ export default function Participantes() {
                             </div>
                           </td>
                           <td>{p.telefono}</td>
-                          <td>{p.rol}</td>
                           <td>{formatearEstadoBadge(p.estado)}</td>
-                          <td>
-                            <div className="participant-actions">
-                              {p.estado === 'PENDIENTE' && (
-                                <span className="muted small">Esperando respuesta</span>
-                              )}
-                              {user?.id === viaje.organizadorId && (
-                                <>
+                          {user?.id === viaje.organizadorId && (
+                            <td>
+                              <div className="participant-actions">
+                                {p.estado === 'PENDIENTE' && (
+                                  <span className="muted small">Esperando respuesta</span>
+                                )}
+                                <button
+                                  className="button danger small"
+                                  onClick={() => {
+                                    setSelectedParticipante(p);
+                                    setShowDeleteModal(true);
+                                  }}
+                                >
+                                  Eliminar
+                                </button>
+                                {p.estado !== 'RECHAZADA' && (
                                   <button
-                                    className="button danger small"
-                                    onClick={() => {
-                                      setSelectedParticipante(p);
-                                      setShowDeleteModal(true);
-                                    }}
+                                    className="button whatsapp small"
+                                    onClick={() => handleNotificarWhatsApp(p)}
+                                    disabled={p.telefono === 'No registrado' || notificandoId === p.id}
+                                    title={p.telefono === 'No registrado'
+                                      ? 'El participante debe registrar su teléfono en Perfil'
+                                      : 'Enviar recordatorio por WhatsApp'}
                                   >
-                                    Eliminar
+                                    <MessageCircle size={16} />
+                                    {notificandoId === p.id ? 'Enviando...' : 'WhatsApp'}
                                   </button>
-                                  {p.estado !== 'RECHAZADA' && (
-                                    <button
-                                      className="button whatsapp small"
-                                      onClick={() => handleNotificarWhatsApp(p)}
-                                      disabled={p.telefono === 'No registrado' || notificandoId === p.id}
-                                      title={p.telefono === 'No registrado'
-                                        ? 'El participante debe registrar su teléfono en Perfil'
-                                        : 'Enviar recordatorio por WhatsApp'}
-                                    >
-                                      <MessageCircle size={16} />
-                                      {notificandoId === p.id ? 'Enviando...' : 'WhatsApp'}
-                                    </button>
-                                  )}
-                                </>
-                              )}
-                            </div>
-                          </td>
+                                )}
+                              </div>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>

@@ -140,13 +140,13 @@ export default function TripHeader({ id, currentTab }) {
       </section>
 
       <nav className="tabs">
-        <Link className={currentTab === 'resumen' ? 'active' : ''} to={`/viajes/${id}`}>Resumen</Link>
+        <Link className={currentTab === 'resumen' ? 'active' : ''} to={`${window.location.pathname.includes('/viajes-agencia') ? '/viajes-agencia' : '/viajes'}/${id}`}>Resumen</Link>
         {user?.rol !== 'AGENCIA' && (
-          <Link className={currentTab === 'participantes' ? 'active' : ''} to={`/viajes/${id}/participantes`}>Participantes</Link>
+          <Link className={currentTab === 'participantes' ? 'active' : ''} to={`${window.location.pathname.includes('/viajes-agencia') ? '/viajes-agencia' : '/viajes'}/${id}/participantes`}>Participantes</Link>
         )}
-        <Link className={currentTab === 'itinerario' ? 'active' : ''} to={`/viajes/${id}/itinerario`}>Itinerario</Link>
+        <Link className={currentTab === 'itinerario' ? 'active' : ''} to={`${window.location.pathname.includes('/viajes-agencia') ? '/viajes-agencia' : '/viajes'}/${id}/itinerario`}>Itinerario</Link>
         {user?.rol !== 'AGENCIA' && (
-          <Link className={currentTab === 'gastos' ? 'active' : ''} to={`/viajes/${id}/gastos`}>Gastos</Link>
+          <Link className={currentTab === 'gastos' ? 'active' : ''} to={`${window.location.pathname.includes('/viajes-agencia') ? '/viajes-agencia' : '/viajes'}/${id}/gastos`}>Gastos</Link>
         )}
       </nav>
 

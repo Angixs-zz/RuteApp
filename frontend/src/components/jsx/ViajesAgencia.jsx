@@ -187,7 +187,7 @@ export default function ViajesAgencia() {
                       <strong>{fechaCorta}</strong>
                       <span>Salida</span>
                     </div>
-                    <Link className="button ghost small" to={`/viajes/${viaje.id}`}>
+                    <Link className="button ghost small" to={`/viajes-agencia/${viaje.id}`}>
                       Ver detalle
                     </Link>
                   </article>

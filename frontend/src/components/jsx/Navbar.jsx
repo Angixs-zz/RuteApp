@@ -90,10 +90,10 @@ export default function Navbar({ invitacionesCount }) {
             ) : (
               <>
                 <Link className={pathname === '/dashboard' ? 'active' : ''} to="/dashboard">Inicio</Link>
-                <Link className={pathname.startsWith('/viajes') && pathname !== '/viajes-agencia' ? 'active' : ''} to="/viajes">Mis viajes</Link>
+                <Link className={pathname.startsWith('/viajes') && !pathname.startsWith('/viajes-agencia') ? 'active' : ''} to="/viajes">Mis viajes</Link>
                 {!esAgencia && (
                   <>
-                    <Link className={pathname === '/viajes-agencia' ? 'active' : ''} to="/viajes-agencia">Viajes de Agencia</Link>
+                <Link className={(pathname.startsWith('/viajes-agencia') || pathname === '/viajes-agencia') ? 'active' : ''} to="/viajes-agencia">Viajes de Agencia</Link>
                     <Link className={pathname === '/invitaciones' ? 'active' : ''} to="/invitaciones">
                       Invitaciones {cantidadInvitaciones > 0 && <span className="nav-badge">{cantidadInvitaciones}</span>}
                     </Link>

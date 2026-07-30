@@ -4,7 +4,7 @@ import { Bell, User } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import ConfirmModal from './ConfirmModal';
 import '../css/styles.css';
-import logoImg from '../../assets/logo.jpeg';
+import logoImg from '../../assets/logo.png';
 import api from '../../service/api';
 
 export default function Navbar({ invitacionesCount }) {

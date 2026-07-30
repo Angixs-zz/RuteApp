@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../../service/api';
-import logoImg from '../../assets/logo.jpeg';
+import logoImg from '../../assets/logo.png';
 import '../css/styles.css';
 
 function validarPassword(password) {
@@ -60,8 +60,8 @@ export default function RestablecerContrasena() {
   return (
     <div className="auth-shell">
       <aside className="auth-visual">
-        <div className="brand" style={{ width: '150px' }}>
-          <img src={logoImg} alt="RuteApp" style={{ width: '100%', height: 'auto', display: 'block' }} />
+        <div className="brand" style={{ marginBottom: '2rem' }}>
+          <img src={logoImg} alt="RuteApp" style={{ width: '160px' }} />
         </div>
         <div className="auth-copy">
           <span className="eyebrow" style={{ color: 'var(--gold)' }}>RUTEAPP</span>

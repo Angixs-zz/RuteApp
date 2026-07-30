@@ -2,7 +2,7 @@ import { useState, useContext } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { Link, useNavigate } from 'react-router-dom';
 import '../css/styles.css'; 
-import logoImg from '../../assets/logo.jpeg'; 
+import logoImg from '../../assets/logo.png'; 
 import api from '../../service/api';
 import { AuthContext } from '../../context/AuthContext';
 
@@ -149,7 +149,6 @@ export default function Login() {
           <h1>Bienvenido de nuevo</h1>
           <p className="muted"></p>
           <span className="eyebrow">ACCESO A LA PLATAFORMA</span>
-          <h1>Bienvenido de nuevo</h1>
           <p className="muted">Ingresa tus datos para continuar con tus viajes.</p>
 
           {errorGeneral && <div className="banner warn" style={{ marginBottom: '15px' }}><div><strong>Aviso</strong><span>{errorGeneral}</span></div></div>}

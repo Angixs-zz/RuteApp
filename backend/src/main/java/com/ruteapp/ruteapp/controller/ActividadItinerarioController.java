@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -58,8 +59,10 @@ public class ActividadItinerarioController {
 
     // DELETE: Eliminar una actividad
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        actividadService.eliminar(id);
+    public ResponseEntity<Void> eliminar(@PathVariable Long id, Authentication authentication) {
+        boolean esAdmin = authentication.getAuthorities().stream()
+                .anyMatch(autoridad -> autoridad.getAuthority().equals("ROLE_ADMINISTRADOR"));
+        actividadService.eliminar(id, authentication.getName(), esAdmin);
         return ResponseEntity.noContent().build();
     }
 

@@ -158,7 +158,9 @@ export default function Gastos() {
 
   // Cálculo de totales
   const totalPresupuesto = viaje?.presupuestoEstimado || 0;
-  const totalGastado = gastos.reduce((sum, g) => sum + g.monto, 0);
+  const totalGastado = gastos
+    .filter(g => g.pagadorId === user?.id)
+    .reduce((sum, g) => sum + g.monto, 0);
   const disponible = totalPresupuesto - totalGastado;
 
   const gastosFiltrados = gastos.filter(g => {
@@ -225,11 +227,11 @@ export default function Gastos() {
                 {/* Resumen de Presupuesto */}
                 <div className="budget-summary">
                   <article className="card budget-card">
-                    <span>Presupuesto total estimado</span>
+                    <span>Presupuesto total estimado por persona</span>
                     <strong>${totalPresupuesto.toLocaleString('es-MX')}</strong>
                   </article>
                   <article className="card budget-card">
-                    <span>Total gastado (capturado)</span>
+                    <span>Tu total gastado (capturado)</span>
                     <strong>${totalGastado.toLocaleString('es-MX')}</strong>
                   </article>
                   <article className="card budget-card">
@@ -374,6 +376,7 @@ export default function Gastos() {
         onClose={cerrarModal}
         gastoAEditar={gastoAEditar}
         viajeId={id}
+        viajeOrgId={viajeOrgId}
         participantes={participantes}
         viajeDates={viajeDates}
         onSaveSuccess={handleSaveSuccess}

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Calendar, Edit2 } from 'lucide-react';
 import api from '../../service/api';
+import { AuthContext } from '../../context/AuthContext';
 
 export default function RegistrarGasto({ 
   isOpen, 
@@ -9,9 +10,11 @@ export default function RegistrarGasto({
   viajeId, 
   participantes, 
   viajeDates, 
+  viajeOrgId,
   onSaveSuccess,
   onSaveError
 }) {
+  const { user } = useContext(AuthContext);
   const [concepto, setConcepto] = useState('');
   const [monto, setMonto] = useState('');
   const [categoria, setCategoria] = useState('OTRO');
@@ -27,12 +30,15 @@ export default function RegistrarGasto({
         setMonto(gastoAEditar.monto);
         setCategoria(gastoAEditar.categoria);
         setPagadorId(gastoAEditar.pagadorId || (participantes.length > 0 ? participantes[0].id : ''));
+        if (user?.id !== viajeOrgId) {
+          setPagadorId(user?.id);
+        }
         setFecha(gastoAEditar.rawFecha || new Date().toISOString().split('T')[0]);
       } else {
         setConcepto('');
         setMonto('');
         setCategoria('OTRO');
-        setPagadorId(participantes.length > 0 ? participantes[0].id : '');
+        setPagadorId(user?.id !== viajeOrgId ? user?.id : (participantes.length > 0 ? participantes[0].id : ''));
         setFecha(new Date().toISOString().split('T')[0]);
       }
       setErrors({});
@@ -143,6 +149,7 @@ export default function RegistrarGasto({
               <select 
                 value={pagadorId} 
                 onChange={(e) => setPagadorId(e.target.value)}
+                disabled={user?.id !== viajeOrgId}
               >
                 {participantes.map(p => (
                   <option key={p.id} value={p.id}>{p.nombre}</option>
@@ -151,6 +158,11 @@ export default function RegistrarGasto({
                   <option value="">No hay participantes</option>
                 )}
               </select>
+              {user?.id !== viajeOrgId && (
+                <span style={{ fontSize: '0.8rem', color: '#6B7280', marginTop: '4px', display: 'block' }}>
+                  Como participante solo puedes registrar gastos propios.
+                </span>
+              )}
               {errors.pagadorId && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.2rem', display: 'block' }}>{errors.pagadorId}</span>}
             </label>
 

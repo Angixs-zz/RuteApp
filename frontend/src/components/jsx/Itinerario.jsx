@@ -224,7 +224,9 @@ export default function Itinerario() {
     setNuevaLugar('');
     setNuevaHorario('');
     setNuevaCosto('');
-    if (participantes.length > 0) setNuevaResponsable(participantes[0].id);
+    if (participantes.length > 0) {
+      setNuevaResponsable(user?.id !== viajeOrgId ? user?.id : participantes[0].id);
+    }
     setErrors({});
     setShowCreateModal(true);
   };
@@ -236,6 +238,9 @@ export default function Itinerario() {
     setNuevaHorario(act.rawHorario);
     setNuevaCosto(act.costo || '');
     setNuevaResponsable(act.responsableId || (participantes.length > 0 ? participantes[0].id : ''));
+    if (user?.id !== viajeOrgId) {
+      setNuevaResponsable(user?.id);
+    }
     setErrors({});
     setShowCreateModal(true);
   };
@@ -429,6 +434,7 @@ export default function Itinerario() {
                 <select 
                   value={nuevaResponsable} 
                   onChange={(e) => setNuevaResponsable(e.target.value)}
+                  disabled={user?.id !== viajeOrgId}
                 >
                   {participantes.map(p => (
                     <option key={p.id} value={p.id}>{p.nombre}</option>
@@ -437,6 +443,11 @@ export default function Itinerario() {
                     <option value="">No hay participantes</option>
                   )}
                 </select>
+                {user?.id !== viajeOrgId && (
+                  <span style={{ fontSize: '0.8rem', color: '#6B7280', marginTop: '4px', display: 'block' }}>
+                   
+                  </span>
+                )}
               </label>
             </div>
             <div className="form-grid">

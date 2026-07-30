@@ -149,7 +149,7 @@ export default function Login() {
           <h1>Bienvenido de nuevo</h1>
           <p className="muted"></p>
           <span className="eyebrow">ACCESO A LA PLATAFORMA</span>
-          <h1>Bienvenido de nuevo</h1> 
+          <h1>Bienvenido de nuevo</h1>
           <p className="muted">Ingresa tus datos para continuar con tus viajes.</p>
 
           {errorGeneral && <div className="banner warn" style={{ marginBottom: '15px' }}><div><strong>Aviso</strong><span>{errorGeneral}</span></div></div>}

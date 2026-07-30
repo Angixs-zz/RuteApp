@@ -15,9 +15,9 @@ public class TwilioConfig {
     private final String whatsappFrom;
 
     public TwilioConfig(
-            @Value("${twilio.account-sid:}") String accountSid,
-            @Value("${twilio.auth-token:}") String authToken,
-            @Value("${twilio.whatsapp-from:}") String whatsappFrom) {
+            @Value("${TWILIO_ACCOUNT_SID:${twilio.account-sid:}}") String accountSid,
+            @Value("${TWILIO_AUTH_TOKEN:${twilio.auth-token:}}") String authToken,
+            @Value("${TWILIO_WHATSAPP_FROM:${twilio.whatsapp-from:}}") String whatsappFrom) {
         this.accountSid = accountSid;
         this.authToken = authToken;
         this.whatsappFrom = whatsappFrom;

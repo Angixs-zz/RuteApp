@@ -58,8 +58,8 @@ public class ParticipanteViajeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        participanteViajeService.eliminar(id);
+    public ResponseEntity<Void> eliminar(@PathVariable Long id, Authentication authentication) {
+        participanteViajeService.eliminar(id, authentication.getName(), esAdministrador(authentication));
         return ResponseEntity.noContent().build();
     }
 

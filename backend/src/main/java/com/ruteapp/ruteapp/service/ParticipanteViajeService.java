@@ -98,10 +98,13 @@ public class ParticipanteViajeService {
 
         Usuario usuario = obtenerUsuarioInvitado(entrada);
 
-        if (usuario.getRol() != null && "AGENCIA".equals(usuario.getRol().getNombre())) {
-            throw new IllegalArgumentException(
-                    "No puedes enviar invitaciones a un usuario de tipo Agencia"
-            );
+        if (usuario.getRol() != null) {
+            String nombreRol = usuario.getRol().getNombre();
+            if ("AGENCIA".equals(nombreRol) || "ADMINISTRADOR".equals(nombreRol)) {
+                throw new IllegalArgumentException(
+                        "No puedes enviar invitaciones a un usuario de tipo " + nombreRol
+                );
+            }
         }
 
         if (participanteViajeRepository.existsByViajeAndUsuario(viaje, usuario)) {
@@ -192,8 +195,16 @@ public class ParticipanteViajeService {
         );
     }
 
-    public void eliminar(Long id) {
+    public void eliminar(Long id, String correoAutenticado, boolean esAdministrador) {
         ParticipanteViaje participante = obtenerEntidadPorId(id);
+
+        if (!esAdministrador
+                && !participante.getViaje().getOrganizador().getCorreo().equals(correoAutenticado)) {
+            throw new AccessDeniedException(
+                    "Solo el organizador puede eliminar participantes"
+            );
+        }
+
         participanteViajeRepository.delete(participante);
     }
 

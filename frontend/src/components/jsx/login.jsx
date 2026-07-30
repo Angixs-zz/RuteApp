@@ -145,6 +145,9 @@ export default function Login() {
             <img src={logoImg} alt="RuteApp" />
           </div>
 
+          <span className="eyebrow"></span>
+          <h1>Bienvenido de nuevo</h1>
+          <p className="muted"></p>
           <span className="eyebrow">ACCESO A LA PLATAFORMA</span>
           <h1>Bienvenido de nuevo</h1>
           <p className="muted">Ingresa tus datos para continuar con tus viajes.</p>

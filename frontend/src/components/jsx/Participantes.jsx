@@ -251,17 +251,16 @@ export default function Participantes() {
                               )}
                               {user?.id === viaje.organizadorId && (
                                 <>
-                                  {p.estado === 'RECHAZADA' ? (
-                                    <button
-                                      className="button danger small"
-                                      onClick={() => {
-                                        setSelectedParticipante(p);
-                                        setShowDeleteModal(true);
-                                      }}
-                                    >
-                                      Eliminar
-                                    </button>
-                                  ) : (
+                                  <button
+                                    className="button danger small"
+                                    onClick={() => {
+                                      setSelectedParticipante(p);
+                                      setShowDeleteModal(true);
+                                    }}
+                                  >
+                                    Eliminar
+                                  </button>
+                                  {p.estado !== 'RECHAZADA' && (
                                     <button
                                       className="button whatsapp small"
                                       onClick={() => handleNotificarWhatsApp(p)}

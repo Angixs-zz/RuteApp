@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.ruteapp.ruteapp.dto.entrada.ParticipanteEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.ParticipanteRespuesta;
@@ -27,6 +28,7 @@ public class ParticipanteViajeService {
     private final ViajeRepository viajeRepository;
     private final UsuarioRepository usuarioRepository;
     private final ServicioCorreo servicioCorreo;
+    private final String invitationUrl;
     private final WhatsAppService whatsAppService;
 
     public ParticipanteViajeService(
@@ -34,12 +36,14 @@ public class ParticipanteViajeService {
             ViajeRepository viajeRepository,
             UsuarioRepository usuarioRepository,
             ServicioCorreo servicioCorreo,
-            WhatsAppService whatsAppService) {
+            WhatsAppService whatsAppService,
+            @Value("${app.invitation-url}") String invitationUrl) {
         this.participanteViajeRepository = participanteViajeRepository;
         this.viajeRepository = viajeRepository;
         this.usuarioRepository = usuarioRepository;
         this.servicioCorreo = servicioCorreo;
         this.whatsAppService = whatsAppService;
+        this.invitationUrl = invitationUrl;
     }
 
     public List<ParticipanteRespuesta> listarTodos(String correoUsuario) {
@@ -119,7 +123,9 @@ public class ParticipanteViajeService {
                     "Hola " + usuario.getNombre() + ", "
                             + viaje.getOrganizador().getNombre()
                             + " te invitó al viaje \"" + viaje.getNombre()
-                            + "\" en RuteApp. Entra a Invitaciones para aceptar o rechazar."
+                            + "\" en RuteApp.\n\n"
+                            + invitationUrl + "\n\n"
+                            + "Entra para aceptar o rechazar."
             );
         } else {
             servicioCorreo.enviarInvitacion(usuario, viaje);

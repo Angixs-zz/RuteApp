@@ -11,6 +11,7 @@ import com.ruteapp.ruteapp.dto.entrada.WhatsAppEntrada;
 import com.ruteapp.ruteapp.dto.respuesta.WhatsAppRespuesta;
 import com.ruteapp.ruteapp.exception.ComunicacionException;
 import com.ruteapp.ruteapp.model.Usuario;
+import com.ruteapp.ruteapp.util.TelefonoUtil;
 import com.twilio.exception.ApiException;
 import com.twilio.exception.TwilioException;
 import com.twilio.rest.api.v2010.account.Message;
@@ -26,6 +27,7 @@ public class WhatsAppService {
     public WhatsAppService(TwilioConfig twilioConfig) {
         this.twilioConfig = twilioConfig;
     }
+    //no se sube
 
     public WhatsAppRespuesta enviar(WhatsAppEntrada entrada) {
         if (!twilioConfig.estaConfigurado()) {
@@ -33,7 +35,8 @@ public class WhatsAppService {
                     "El servicio de WhatsApp no está configurado");
         }
 
-        String destinatario = "whatsapp:" + entrada.getTelefono().trim();
+        String telefono = TelefonoUtil.normalizar(entrada.getTelefono());
+        String destinatario = "whatsapp:" + telefono;
 
         try {
             Message mensaje = Message.creator(
@@ -49,7 +52,7 @@ public class WhatsAppService {
             return new WhatsAppRespuesta(
                     mensaje.getSid(),
                     estado,
-                    entrada.getTelefono().trim(),
+                    telefono,
                     "Mensaje enviado correctamente"
             );
         } catch (ApiException ex) {

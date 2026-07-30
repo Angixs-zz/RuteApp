@@ -1,7 +1,7 @@
 info:
-  name: Invitar participante por correo
+  name: Invitar participante por WhatsApp
   type: http
-  seq: 4
+  seq: 5
 
 http:
   method: POST
@@ -10,8 +10,8 @@ http:
     type: json
     data: |-
       {
-        "correoUsuario": "{{invitadoCorreo}}",
-        "canalInvitacion": "CORREO",
+        "telefonoUsuario": "9511168398",
+        "canalInvitacion": "WHATSAPP",
         "viajeId": {{viajeId}},
         "estadoInvitacion": "PENDIENTE",
         "permisoColaborar": false

@@ -3,6 +3,7 @@ package com.ruteapp.ruteapp.dto.entrada;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class ParticipanteEntrada {
@@ -12,6 +13,16 @@ public class ParticipanteEntrada {
     @Email(message = "El correo del usuario no es válido")
     private String correoUsuario;
 
+    @Pattern(
+            regexp = "^(?:\\+?52)?\\d{10}$|^\\+[1-9]\\d{7,14}$",
+            message = "El teléfono debe tener 10 dígitos mexicanos o usar formato internacional")
+    private String telefonoUsuario;
+
+    @Pattern(
+            regexp = "(?i)^(CORREO|WHATSAPP)$",
+            message = "El canal de invitación debe ser CORREO o WHATSAPP")
+    private String canalInvitacion;
+
     @NotNull(message = "El ID del viaje es obligatorio")
     private Long viajeId;
 
@@ -20,10 +31,15 @@ public class ParticipanteEntrada {
 
     private Boolean permisoColaborar;
 
-    @AssertTrue(message = "Debes indicar el usuario o correo que deseas invitar")
+    @AssertTrue(message = "Debes indicar el correo o teléfono que deseas invitar")
     public boolean isUsuarioIdentificado() {
-        return usuarioId != null
-                || (correoUsuario != null && !correoUsuario.isBlank());
+        if (usuarioId != null) {
+            return true;
+        }
+        if ("WHATSAPP".equalsIgnoreCase(canalInvitacion)) {
+            return telefonoUsuario != null && !telefonoUsuario.isBlank();
+        }
+        return correoUsuario != null && !correoUsuario.isBlank();
     }
 
     // Getters y Setters
@@ -32,6 +48,12 @@ public class ParticipanteEntrada {
 
     public String getCorreoUsuario() { return correoUsuario; }
     public void setCorreoUsuario(String correoUsuario) { this.correoUsuario = correoUsuario; }
+
+    public String getTelefonoUsuario() { return telefonoUsuario; }
+    public void setTelefonoUsuario(String telefonoUsuario) { this.telefonoUsuario = telefonoUsuario; }
+
+    public String getCanalInvitacion() { return canalInvitacion; }
+    public void setCanalInvitacion(String canalInvitacion) { this.canalInvitacion = canalInvitacion; }
 
     public Long getViajeId() { return viajeId; }
     public void setViajeId(Long viajeId) { this.viajeId = viajeId; }

@@ -19,7 +19,7 @@ variables:
     value: ""
     description: JWT de un usuario ADMINISTRADOR
   - name: usuarioToken
-    value: ""
+    value: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbkBydXRlYXBwLmNvbSIsInVzdWFyaW9JZCI6MSwibm9tYnJlIjoiQWRtaW5pc3RyYWRvciBQcmluY2lwYWwiLCJyb2wiOiJBRE1JTklTVFJBRE9SIiwiaWF0IjoxNzg1MzY0NTg5LCJleHAiOjE3ODU0NTA5ODl9.kNj3zyH25FFCdyzT7kc3RmfLTPafoa8Ay4VlI7hGnXEvxLAtZhG8gtPIvSLcuyuLA1E4_TIb5B-fyreNUi5jNg
     description: JWT de un usuario USUARIO
   - name: agenciaToken
     value: ""
@@ -67,5 +67,5 @@ variables:
     value: "1"
     description: ID del rol usado en las solicitudes
   - name: telefono
-    value: ""
+    value: "+5219514669076"
     description: Telefono de prueba en formato internacional

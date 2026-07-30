@@ -3,6 +3,7 @@ import Navbar from './Navbar';
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../service/api';
 import '../css/styles.css';
+import { esTelefonoValido, normalizarTelefono } from '../../utils/telefono';
 
 const getInitialName = (user) => {
   const defaultName = user?.nombre || 'Miguel Ángel';
@@ -125,10 +126,10 @@ export default function Perfil() {
     setGuardando(true);
 
     const nombreCompleto = `${nombre.trim()} ${apellidos.trim()}`.trim();
-    const telefonoNormalizado = telefono.replace(/\s/g, '');
+    const telefonoNormalizado = normalizarTelefono(telefono);
 
-    if (telefonoNormalizado && !/^\+[1-9]\d{7,14}$/.test(telefonoNormalizado)) {
-      showToast('Usa un teléfono internacional, por ejemplo +5219511168398');
+    if (!esTelefonoValido(telefonoNormalizado)) {
+      showToast('Usa 10 dígitos mexicanos o formato internacional');
       setGuardando(false);
       return;
     }

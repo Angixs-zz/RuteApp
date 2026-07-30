@@ -5,6 +5,7 @@ import '../css/styles.css';
 import logoImg from '../../assets/logo.jpeg'; 
 import api from '../../service/api';
 import { AuthContext } from '../../context/AuthContext';
+import { esTelefonoValido, normalizarTelefono } from '../../utils/telefono';
 
 export default function Registro() {
   const { loginContext } = useContext(AuthContext);
@@ -69,9 +70,9 @@ export default function Registro() {
       }
     }
 
-    const telefonoNormalizado = telefono.replace(/\s/g, '');
-    if (telefonoNormalizado && !/^\+[1-9]\d{7,14}$/.test(telefonoNormalizado)) {
-      setErrorTelefono('Usa formato internacional, por ejemplo +5219511168398.');
+    const telefonoNormalizado = normalizarTelefono(telefono);
+    if (!esTelefonoValido(telefonoNormalizado)) {
+      setErrorTelefono('Usa 10 dígitos mexicanos o formato internacional.');
       hayErrores = true;
     }
 

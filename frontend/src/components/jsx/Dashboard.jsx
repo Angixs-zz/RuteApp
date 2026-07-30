@@ -152,8 +152,8 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          {/* Banner dinámico: Se muestra solo si existen invitaciones reales pendientes */}
-          {invitaciones.length > 0 && (
+          {/* Banner dinámico: Se muestra solo si existen invitaciones reales pendientes y no es Agencia */}
+          {invitaciones.length > 0 && user?.rol !== 'AGENCIA' && (
             <section className="banner info">
               <div className="banner-icon"><Plane size={24} color="white" /></div>
               <div>
@@ -174,28 +174,39 @@ export default function Dashboard() {
               <div className="stat-icon"><Luggage size={24} color="#10B981" /></div>
               <div>
                 <strong>{viajesProximosCount}</strong>
-                <span>{viajesProximosCount === 1 ? 'Viaje próximo' : 'Viajes próximos'}</span>
+                <span>{user?.rol === 'AGENCIA' ? 'Viajes totales' : (viajesProximosCount === 1 ? 'Viaje próximo' : 'Viajes próximos')}</span>
               </div>
             </article>
-            <article className="card stat-card">
-              <div className="stat-icon"><Users size={24} color="#6366F1" /></div>
-              <div>
-                <strong>{viajes.reduce((acc, v) => acc + (v.participantesCount || 1), 0)}</strong>
-                <span>Participantes Totales</span>
-              </div>
-            </article>
+            {user?.rol !== 'AGENCIA' && (
+              <article className="card stat-card">
+                <div className="stat-icon"><Users size={24} color="#6366F1" /></div>
+                <div>
+                  <strong>{viajes.reduce((acc, v) => acc + (v.participantesCount || 1), 0)}</strong>
+                  <span>Participantes Totales</span>
+                </div>
+              </article>
+            )}
+            {user?.rol === 'AGENCIA' && (
+              <article className="card stat-card">
+                <div className="stat-icon"><MapPin size={24} color="#6366F1" /></div>
+                <div>
+                  <strong>{proximaActividad ? 1 : 0}</strong>
+                  <span>Actividades totales</span>
+                </div>
+              </article>
+            )}
             <article className="card stat-card">
               <div className="stat-icon"><CreditCard size={24} color="#F59E0B" /></div>
               <div>
                 <strong>${presupuestoTotal.toLocaleString('es-MX')}</strong>
-                <span>Presupuesto total</span>
+                <span>{user?.rol === 'AGENCIA' ? 'Presupuesto general' : 'Presupuesto total'}</span>
               </div>
             </article>
             <article className="card stat-card">
-              <div className="stat-icon"><MapPin size={24} color="#EF4444" /></div>
+              <div className="stat-icon"><Plane size={24} color="#EF4444" /></div>
               <div>
-                <strong>{proximaActividad ? 1 : 0}</strong>
-                <span>Actividades planeadas</span>
+                <strong>{user?.rol === 'AGENCIA' ? viajes.filter(v => v.publico).length : (proximaActividad ? 1 : 0)}</strong>
+                <span>{user?.rol === 'AGENCIA' ? 'Viajes públicos' : 'Actividades planeadas'}</span>
               </div>
             </article>
           </section>
@@ -238,16 +249,22 @@ export default function Dashboard() {
                           <h3>{viaje.nombre}</h3>
                           <p>{viaje.destino || 'Destino no especificado'}</p>
                           <div className="meta">
-                            <span><Users size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> {viaje.participantesCount || 1} Participantes</span>
+                            {user?.rol !== 'AGENCIA' && (
+                              <span><Users size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> {viaje.participantesCount || 1} Participantes</span>
+                            )}
                             <span>
                               <CircleDollarSign size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> ${Number(viaje.presupuestoEstimado || 0).toLocaleString('es-MX')}
                             </span>
                           </div>
                           <div className="trip-footer">
-                            <div className="mini-avatars">
-                              <span>MA</span>
-                              <span>+1</span>
-                            </div>
+                            {user?.rol !== 'AGENCIA' ? (
+                              <div className="mini-avatars">
+                                <span>MA</span>
+                                <span>+1</span>
+                              </div>
+                            ) : (
+                              <div></div>
+                            )}
                             <Link to={`/viajes/${viaje.id}`}>Ver viaje →</Link>
                           </div>
                         </div>

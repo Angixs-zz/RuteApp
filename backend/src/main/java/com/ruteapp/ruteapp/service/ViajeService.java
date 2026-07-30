@@ -122,7 +122,9 @@ public class ViajeService {
         List<ViajeRespuesta> respuestas = new ArrayList<>();
 
         for (Viaje viaje : viajes) {
-            respuestas.add(convertirARespuesta(viaje));
+            if ("AGENCIA".equals(viaje.getOrganizador().getRol().getNombre())) {
+                respuestas.add(convertirARespuesta(viaje));
+            }
         }
 
         return respuestas;

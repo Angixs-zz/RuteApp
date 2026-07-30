@@ -1,12 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { MapPin, Map } from 'lucide-react';
 import Navbar from './Navbar';
 import api from '../../service/api';
 import LugarAutocomplete from './LugarAutocomplete';
+import { AuthContext } from '../../context/AuthContext';
 import '../css/styles.css';
 
 export default function CrearActividad() {
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const { id } = useParams();
   const viajeId = id || 1;
@@ -55,7 +57,14 @@ export default function CrearActividad() {
           id: p.usuarioId || p.id,
           nombre: p.nombreUsuario || 'Participante'
         })));
-        setResponsableId(resPart.data[0].usuarioId || resPart.data[0].id || '1');
+        
+        if (user?.rol === 'AGENCIA') {
+          setResponsableId(user.id);
+        } else {
+          setResponsableId(resPart.data[0].usuarioId || resPart.data[0].id || '1');
+        }
+      } else if (user?.rol === 'AGENCIA') {
+        setResponsableId(user.id);
       }
     } catch {
       // Fallback a los valores mock por defecto
@@ -165,14 +174,20 @@ export default function CrearActividad() {
                 </label>
                 <label className="field">
                   <span>Responsable</span>
-                  <select 
-                    value={responsableId} 
-                    onChange={(e) => setResponsableId(e.target.value)}
-                  >
-                    {participantes.map(p => (
-                      <option key={p.id} value={p.id}>{p.nombre}</option>
-                    ))}
-                  </select>
+                  {user?.rol === 'AGENCIA' ? (
+                     <div style={{ padding: '0.75rem', background: '#F3F4F6', borderRadius: '8px', color: '#4B5563', border: '1px solid #D1D5DB' }}>
+                       {user.nombre} (Organizador)
+                     </div>
+                  ) : (
+                    <select 
+                      value={responsableId} 
+                      onChange={(e) => setResponsableId(e.target.value)}
+                    >
+                      {participantes.map(p => (
+                        <option key={p.id} value={p.id}>{p.nombre}</option>
+                      ))}
+                    </select>
+                  )}
                 </label>
               </div>
 

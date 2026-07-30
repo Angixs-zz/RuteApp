@@ -141,9 +141,13 @@ export default function TripHeader({ id, currentTab }) {
 
       <nav className="tabs">
         <Link className={currentTab === 'resumen' ? 'active' : ''} to={`/viajes/${id}`}>Resumen</Link>
-        <Link className={currentTab === 'participantes' ? 'active' : ''} to={`/viajes/${id}/participantes`}>Participantes</Link>
+        {user?.rol !== 'AGENCIA' && (
+          <Link className={currentTab === 'participantes' ? 'active' : ''} to={`/viajes/${id}/participantes`}>Participantes</Link>
+        )}
         <Link className={currentTab === 'itinerario' ? 'active' : ''} to={`/viajes/${id}/itinerario`}>Itinerario</Link>
-        <Link className={currentTab === 'gastos' ? 'active' : ''} to={`/viajes/${id}/gastos`}>Gastos</Link>
+        {user?.rol !== 'AGENCIA' && (
+          <Link className={currentTab === 'gastos' ? 'active' : ''} to={`/viajes/${id}/gastos`}>Gastos</Link>
+        )}
       </nav>
 
       <ConfirmModal 

@@ -6,53 +6,110 @@ import Navbar from './Navbar';
 import api from '../../service/api';
 import '../css/styles.css';
 
-const formatearFecha = (fecha) =>
-  fecha
-    ? new Date(fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
+const formatearFecha = (fechaSinFormato) =>
+  fechaSinFormato
+    ? new Date(fechaSinFormato).toLocaleDateString('es-MX', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
     : 'Sin fecha';
 
 export default function AdminUsuarios() {
-  const { user } = useContext(AuthContext);
+  const { user: usuarioAutenticado } = useContext(AuthContext);
   const [usuarios, setUsuarios] = useState([]);
   const [busqueda, setBusqueda] = useState('');
-  const [rol, setRol] = useState('TODOS');
-  const [estado, setEstado] = useState('TODOS');
-  const [filtros, setFiltros] = useState({ busqueda: '', rol: 'TODOS', estado: 'TODOS' });
-  const [pagina, setPagina] = useState(0);
+  const [rolSeleccionado, setRolSeleccionado] = useState('TODOS');
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState('TODOS');
+  const [filtrosAplicados, setFiltrosAplicados] = useState({
+    busqueda: '',
+    rol: 'TODOS',
+    estado: 'TODOS',
+  });
+  const [paginaActual, setPaginaActual] = useState(0);
   const [totalPaginas, setTotalPaginas] = useState(1);
-  const [solicitud, setSolicitud] = useState(0);
+  const [numeroSolicitud, setNumeroSolicitud] = useState(0);
   const [usuarioAEliminar, setUsuarioAEliminar] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [cargando, setCargando] = useState(true);
+  const [mensajeError, setMensajeError] = useState('');
 
   useEffect(() => {
-    let activo = true;
-    api.get('/usuarios/paginados', { params: { page: pagina, size: 10, busqueda: filtros.busqueda || undefined, rol: filtros.rol === 'TODOS' ? undefined : filtros.rol, activo: filtros.estado === 'TODOS' ? undefined : filtros.estado === 'ACTIVO' } })
-      .then(({ data }) => {
-        if (activo) { setUsuarios(data?.contenido ?? []); setTotalPaginas(Math.max(data?.totalPaginas ?? 1, 1)); }
+    let solicitudVigente = true;
+
+    api
+      .get('/usuarios/paginados', {
+        params: {
+          page: paginaActual,
+          size: 10,
+          busqueda: filtrosAplicados.busqueda || undefined,
+          rol:
+            filtrosAplicados.rol === 'TODOS'
+              ? undefined
+              : filtrosAplicados.rol,
+          activo:
+            filtrosAplicados.estado === 'TODOS'
+              ? undefined
+              : filtrosAplicados.estado === 'ACTIVO',
+        },
+      })
+      .then(({ data: respuestaPaginada }) => {
+        if (solicitudVigente) {
+          setUsuarios(respuestaPaginada?.contenido ?? []);
+          setTotalPaginas(
+            Math.max(respuestaPaginada?.totalPaginas ?? 1, 1),
+          );
+        }
       })
       .catch(() => {
-        if (activo) setError('No fue posible cargar los usuarios.');
+        if (solicitudVigente) {
+          setMensajeError('No fue posible cargar los usuarios.');
+        }
       })
       .finally(() => {
-        if (activo) setLoading(false);
+        if (solicitudVigente) {
+          setCargando(false);
+        }
       });
-    return () => {
-      activo = false;
-    };
-  }, [filtros, pagina, solicitud]);
 
-  const buscar = () => { setLoading(true); setError(''); setPagina(0); setFiltros({ busqueda: busqueda.trim(), rol, estado }); setSolicitud((valor) => valor + 1); };
-  const cambiarPagina = (nuevaPagina) => { setLoading(true); setPagina(nuevaPagina); };
+    return () => {
+      solicitudVigente = false;
+    };
+  }, [filtrosAplicados, paginaActual, numeroSolicitud]);
+
+  const aplicarFiltros = () => {
+    setCargando(true);
+    setMensajeError('');
+    setPaginaActual(0);
+    setFiltrosAplicados({
+      busqueda: busqueda.trim(),
+      rol: rolSeleccionado,
+      estado: estadoSeleccionado,
+    });
+    setNumeroSolicitud((numeroSolicitudActual) => numeroSolicitudActual + 1);
+  };
+
+  const cambiarPagina = (nuevaPagina) => {
+    setCargando(true);
+    setPaginaActual(nuevaPagina);
+  };
 
   const eliminarUsuario = async () => {
-    if (!usuarioAEliminar) return;
+    if (!usuarioAEliminar) {
+      return;
+    }
+
     try {
       await api.delete(`/usuarios/${usuarioAEliminar.id}`);
-      setUsuarios((actuales) => actuales.filter((usuario) => usuario.id !== usuarioAEliminar.id));
+      setUsuarios((usuariosActuales) =>
+        usuariosActuales.filter(
+          (usuario) => usuario.id !== usuarioAEliminar.id,
+        ),
+      );
       setUsuarioAEliminar(null);
     } catch {
-      setError('No fue posible eliminar el usuario. Puede tener información relacionada.');
+      setMensajeError(
+        'No fue posible eliminar el usuario. Puede tener información relacionada.',
+      );
       setUsuarioAEliminar(null);
     }
   };
@@ -66,9 +123,13 @@ export default function AdminUsuarios() {
             <div>
               <span className="eyebrow">ADMINISTRACIÓN DE USUARIOS</span>
               <h1>Usuarios</h1>
-              <p className="muted">Consulta cuentas y elimina usuarios del sistema.</p>
+              <p className="muted">
+                Consulta cuentas y elimina usuarios del sistema.
+              </p>
             </div>
-            <Link className="button primary" to="/admin/usuarios/nuevo">＋ Nuevo usuario</Link>
+            <Link className="button primary" to="/admin/usuarios/nuevo">
+              ＋ Nuevo usuario
+            </Link>
           </div>
 
           <section className="filters">
@@ -76,47 +137,103 @@ export default function AdminUsuarios() {
               aria-label="Buscar usuario"
               placeholder="Buscar nombre o correo"
               value={busqueda}
-              onChange={(event) => setBusqueda(event.target.value)}
+              onChange={(eventoCambioBusqueda) =>
+                setBusqueda(eventoCambioBusqueda.target.value)
+              }
             />
-            <select aria-label="Filtrar por rol" value={rol} onChange={(event) => setRol(event.target.value)}>
+            <select
+              aria-label="Filtrar por rol"
+              value={rolSeleccionado}
+              onChange={(eventoCambioRol) =>
+                setRolSeleccionado(eventoCambioRol.target.value)
+              }
+            >
               <option value="TODOS">Todos los roles</option>
               <option value="ADMINISTRADOR">Administrador</option>
               <option value="USUARIO">Usuario</option>
               <option value="AGENCIA">Agencia</option>
             </select>
-            <select aria-label="Filtrar por estado" value={estado} onChange={(event) => setEstado(event.target.value)}>
+            <select
+              aria-label="Filtrar por estado"
+              value={estadoSeleccionado}
+              onChange={(eventoCambioEstado) =>
+                setEstadoSeleccionado(eventoCambioEstado.target.value)
+              }
+            >
               <option value="TODOS">Todos los estados</option>
               <option value="ACTIVO">Activo</option>
               <option value="INACTIVO">Inactivo</option>
             </select>
-            <button className="button ghost" type="button" onClick={buscar}>Buscar</button>
+            <button
+              className="button ghost"
+              type="button"
+              onClick={aplicarFiltros}
+            >
+              Buscar
+            </button>
           </section>
 
-          {error && <p className="banner warn">{error}</p>}
+          {mensajeError && <p className="banner warn">{mensajeError}</p>}
 
-          {loading ? (
-            <div className="card panel admin-loading"><div className="spinner"></div><p className="muted">Cargando usuarios...</p></div>
+          {cargando ? (
+            <div className="card panel admin-loading">
+              <div className="spinner"></div>
+              <p className="muted">Cargando usuarios...</p>
+            </div>
           ) : (
             <div className="table-wrap">
               <table>
-                <thead><tr><th>Usuario</th><th>Rol</th><th>Teléfono</th><th>Registro</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>Teléfono</th>
+                    <th>Registro</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
                 <tbody>
                   {usuarios.map((usuario) => (
                     <tr key={usuario.id}>
-                      <td><strong>{usuario.nombre}</strong><br /><span className="muted">{usuario.correo}</span></td>
+                      <td>
+                        <strong>{usuario.nombre}</strong>
+                        <br />
+                        <span className="muted">{usuario.correo}</span>
+                      </td>
                       <td>{usuario.rol}</td>
                       <td>{usuario.telefono || 'Sin teléfono'}</td>
                       <td>{formatearFecha(usuario.fechaCreacion)}</td>
-                      <td><span className={`status ${usuario.activo ? 'confirmed' : 'cancelled'}`}>{usuario.activo ? 'Activo' : 'Inactivo'}</span></td>
+                      <td>
+                        <span
+                          className={`status ${usuario.activo ? 'confirmed' : 'cancelled'}`}
+                        >
+                          {usuario.activo ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </td>
                       <td>
                         <div className="admin-actions">
-                          <Link className="button ghost small" to={`/admin/usuarios/${usuario.id}`}>Ver</Link>
-                          <Link className="button ghost small" to={`/admin/usuarios/${usuario.id}/editar`}>Editar</Link>
+                          <Link
+                            className="button ghost small"
+                            to={`/admin/usuarios/${usuario.id}`}
+                          >
+                            Ver
+                          </Link>
+                          <Link
+                            className="button ghost small"
+                            to={`/admin/usuarios/${usuario.id}/editar`}
+                          >
+                            Editar
+                          </Link>
                           <button
                             className="button danger small"
                             type="button"
-                            disabled={usuario.id === user?.id}
-                            title={usuario.id === user?.id ? 'No puedes eliminar tu propia cuenta' : undefined}
+                            disabled={usuario.id === usuarioAutenticado?.id}
+                            title={
+                              usuario.id === usuarioAutenticado?.id
+                                ? 'No puedes eliminar tu propia cuenta'
+                                : undefined
+                            }
                             onClick={() => setUsuarioAEliminar(usuario)}
                           >
                             Eliminar
@@ -125,12 +242,38 @@ export default function AdminUsuarios() {
                       </td>
                     </tr>
                   ))}
-                  {usuarios.length === 0 && <tr><td colSpan="6" className="admin-empty">No se encontraron usuarios.</td></tr>}
+                  {usuarios.length === 0 && (
+                    <tr>
+                      <td colSpan="6" className="admin-empty">
+                        No se encontraron usuarios.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
           )}
-          {!loading && totalPaginas > 1 && <div className="pagination"><button type="button" disabled={pagina === 0} onClick={() => cambiarPagina(pagina - 1)}>‹</button><span className="admin-page-count">Página {pagina + 1} de {totalPaginas}</span><button type="button" disabled={pagina + 1 >= totalPaginas} onClick={() => cambiarPagina(pagina + 1)}>›</button></div>}
+          {!cargando && totalPaginas > 1 && (
+            <div className="pagination">
+              <button
+                type="button"
+                disabled={paginaActual === 0}
+                onClick={() => cambiarPagina(paginaActual - 1)}
+              >
+                ‹
+              </button>
+              <span className="admin-page-count">
+                Página {paginaActual + 1} de {totalPaginas}
+              </span>
+              <button
+                type="button"
+                disabled={paginaActual + 1 >= totalPaginas}
+                onClick={() => cambiarPagina(paginaActual + 1)}
+              >
+                ›
+              </button>
+            </div>
+          )}
         </div>
       </main>
       <ConfirmModal

@@ -13,56 +13,104 @@ const metricasIniciales = {
 
 export default function AdminDashboard() {
   const [metricas, setMetricas] = useState(metricasIniciales);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [cargandoMetricas, setCargandoMetricas] = useState(true);
+  const [mensajeError, setMensajeError] = useState('');
 
   useEffect(() => {
-    let activo = true;
+    let componenteActivo = true;
 
     const cargarMetricas = async () => {
-      setLoading(true);
-      setError('');
+      setCargandoMetricas(true);
+      setMensajeError('');
 
-      const resultados = await Promise.allSettled([
-        api.get('/usuarios/paginados', { params: { page: 0, size: 1 } }),
-        api.get('/viajes', { params: { page: 0, size: 1 } }),
-        api.get('/actividades/paginadas', { params: { page: 0, size: 1 } }),
-        api.get('/gastos/paginados', { params: { page: 0, size: 1 } }),
+      const resultadosSolicitudes = await Promise.allSettled([
+        api.get('/usuarios/paginados', {
+          params: {
+            page: 0,
+            size: 1,
+          },
+        }),
+        api.get('/viajes', {
+          params: {
+            page: 0,
+            size: 1,
+          },
+        }),
+        api.get('/actividades/paginadas', {
+          params: {
+            page: 0,
+            size: 1,
+          },
+        }),
+        api.get('/gastos/paginados', {
+          params: {
+            page: 0,
+            size: 1,
+          },
+        }),
       ]);
 
-      if (!activo) return;
+      if (!componenteActivo) {
+        return;
+      }
 
-      const [usuarios, viajes, actividades, gastos] = resultados;
-      const cantidad = (resultado) => resultado.status === 'fulfilled' ? resultado.value.data?.totalElementos ?? null : null;
+      const [resultadoUsuarios, resultadoViajes, resultadoActividades, resultadoGastos] =
+        resultadosSolicitudes;
+      const obtenerCantidadTotal = (resultadoSolicitud) =>
+        resultadoSolicitud.status === 'fulfilled'
+          ? resultadoSolicitud.value.data?.totalElementos ?? null
+          : null;
 
       setMetricas({
-        usuarios: cantidad(usuarios),
+        usuarios: obtenerCantidadTotal(resultadoUsuarios),
         viajes:
-          viajes.status === 'fulfilled'
-            ? viajes.value.data?.totalElementos ?? viajes.value.data?.contenido?.length ?? null
+          resultadoViajes.status === 'fulfilled'
+            ? resultadoViajes.value.data?.totalElementos ??
+              resultadoViajes.value.data?.contenido?.length ??
+              null
             : null,
-        actividades: cantidad(actividades),
-        gastos: cantidad(gastos),
+        actividades: obtenerCantidadTotal(resultadoActividades),
+        gastos: obtenerCantidadTotal(resultadoGastos),
       });
 
-      if (resultados.some((resultado) => resultado.status === 'rejected')) {
-        setError('No fue posible cargar todos los indicadores.');
+      if (
+        resultadosSolicitudes.some(
+          (resultadoSolicitud) => resultadoSolicitud.status === 'rejected',
+        )
+      ) {
+        setMensajeError('No fue posible cargar todos los indicadores.');
       }
-      setLoading(false);
+      setCargandoMetricas(false);
     };
 
     cargarMetricas();
 
     return () => {
-      activo = false;
+      componenteActivo = false;
     };
   }, []);
 
   const tarjetas = [
-    { etiqueta: 'Usuarios registrados', valor: metricas.usuarios, icono: Users },
-    { etiqueta: 'Viajes registrados', valor: metricas.viajes, icono: Luggage },
-    { etiqueta: 'Actividades registradas', valor: metricas.actividades, icono: Activity },
-    { etiqueta: 'Gastos registrados', valor: metricas.gastos, icono: ReceiptText },
+    {
+      etiqueta: 'Usuarios registrados',
+      valor: metricas.usuarios,
+      icono: Users,
+    },
+    {
+      etiqueta: 'Viajes registrados',
+      valor: metricas.viajes,
+      icono: Luggage,
+    },
+    {
+      etiqueta: 'Actividades registradas',
+      valor: metricas.actividades,
+      icono: Activity,
+    },
+    {
+      etiqueta: 'Gastos registrados',
+      valor: metricas.gastos,
+      icono: ReceiptText,
+    },
   ];
 
   return (
@@ -78,18 +126,26 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {error && <p className="banner warn">{error}</p>}
+          {mensajeError && <p className="banner warn">{mensajeError}</p>}
 
-          {loading ? (
-            <div className="card panel" style={{ textAlign: 'center', padding: '40px' }}>
+          {cargandoMetricas ? (
+            <div
+              className="card panel"
+              style={{ textAlign: 'center', padding: '40px' }}
+            >
               <div className="spinner"></div>
               <p className="muted">Cargando indicadores...</p>
             </div>
           ) : (
-            <section className="stats-grid" aria-label="Indicadores de la plataforma">
+            <section
+              className="stats-grid"
+              aria-label="Indicadores de la plataforma"
+            >
               {tarjetas.map(({ etiqueta, valor, icono: Icono }) => (
                 <article className="card stat-card" key={etiqueta}>
-                  <div className="stat-icon"><Icono size={24} color="#0E7C7B" /></div>
+                  <div className="stat-icon">
+                    <Icono size={24} color="#0E7C7B" />
+                  </div>
                   <div>
                     <strong>{valor ?? 'No disponible'}</strong>
                     <span>{etiqueta}</span>

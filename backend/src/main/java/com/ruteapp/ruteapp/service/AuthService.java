@@ -44,7 +44,7 @@ public class AuthService {
     }
 
     public LoginRespuesta login(LoginEntrada entrada) {
-
+        //token
         Usuario usuario = usuarioRepository
                 .findByCorreo(entrada.getCorreo())
                 .orElseThrow(() ->
@@ -128,6 +128,8 @@ public class AuthService {
 
         return identity.correo().substring(0, identity.correo().indexOf('@'));
     }
+
+    //despues pasa aqui 
 
     private LoginRespuesta crearRespuesta(Usuario usuario) {
         String token = jwtService.generarToken(usuario);

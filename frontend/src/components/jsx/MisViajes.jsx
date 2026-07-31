@@ -7,16 +7,16 @@ import '../css/styles.css';
 
 export default function MisViajes() {
   const { user } = useContext(AuthContext);
-  
+
   const [viajes, setViajes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorCarga, setErrorCarga] = useState('');
-  
+
   // Filtros
   const [busqueda, setBusqueda] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('TODOS');
   const [rolFiltro, setRolFiltro] = useState('TODOS');
-  
+
   // Paginación
   const [paginaActual, setPaginaActual] = useState(0);
   const [totalPaginas, setTotalPaginas] = useState(1);
@@ -25,7 +25,7 @@ export default function MisViajes() {
     try {
       setLoading(true);
       setErrorCarga('');
-      
+
       const response = await api.get('/viajes', {
         params: {
           page: paginaActual,
@@ -110,12 +110,12 @@ export default function MisViajes() {
   const viajesFiltrados = viajes.filter(v => {
     const estadoReal = calcularEstadoVisual(v.fechaInicio, v.fechaFin, v.estado);
     const esOrganizador = user?.id === v.organizadorId;
-    
+
     if (estadoFiltro !== 'TODOS' && estadoReal !== estadoFiltro) return false;
-    
+
     if (rolFiltro === 'ORGANIZADOR' && !esOrganizador) return false;
     if (rolFiltro === 'PARTICIPANTE' && esOrganizador) return false;
-    
+
     if (busqueda.trim() !== '') {
       const q = busqueda.toLowerCase();
       const matchNombre = v.nombre?.toLowerCase().includes(q);
@@ -143,14 +143,14 @@ export default function MisViajes() {
 
           {/* Barra de Filtros */}
           <form className="filters" onSubmit={handleBuscarSubmit}>
-            <input 
+            <input
               type="text"
-              placeholder="Buscar por nombre o destino" 
+              placeholder="Buscar por nombre o destino"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
             />
-            <select 
-              value={estadoFiltro} 
+            <select
+              value={estadoFiltro}
               onChange={(e) => setEstadoFiltro(e.target.value)}
             >
               <option value="TODOS">Todos los estados</option>
@@ -158,8 +158,8 @@ export default function MisViajes() {
               <option value="EN_CURSO">Confirmado / En Curso</option>
               <option value="FINALIZADO">Finalizado</option>
             </select>
-            <select 
-              value={rolFiltro} 
+            <select
+              value={rolFiltro}
               onChange={(e) => setRolFiltro(e.target.value)}
             >
               <option value="TODOS">Cualquier rol</option>
@@ -197,10 +197,10 @@ export default function MisViajes() {
                 const estadoReal = calcularEstadoVisual(viaje.fechaInicio, viaje.fechaFin, viaje.estado);
                 const est = formatearEstado(estadoReal);
                 const esOrganizador = user?.id === viaje.organizadorId;
-                
+
                 // Formatear solo el día y mes de inicio para el recuadro
-                const fechaCorta = viaje.fechaInicio 
-                  ? new Date(viaje.fechaInicio + 'T12:00:00').toLocaleDateString('es-MX', {day: 'numeric', month: 'short'})
+                const fechaCorta = viaje.fechaInicio
+                  ? new Date(viaje.fechaInicio + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })
                   : '--';
 
                 return (
@@ -240,7 +240,7 @@ export default function MisViajes() {
           {/* Paginación */}
           {totalPaginas > 1 && (
             <div className="pagination">
-              <button 
+              <button
                 disabled={paginaActual === 0}
                 onClick={() => setPaginaActual(p => Math.max(0, p - 1))}
               >
@@ -255,7 +255,7 @@ export default function MisViajes() {
                   {i + 1}
                 </button>
               ))}
-              <button 
+              <button
                 disabled={paginaActual >= totalPaginas - 1}
                 onClick={() => setPaginaActual(p => Math.min(totalPaginas - 1, p + 1))}
               >

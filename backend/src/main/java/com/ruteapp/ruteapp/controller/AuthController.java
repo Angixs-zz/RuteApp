@@ -36,6 +36,7 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(entrada));
     }
 
+    //flujo token
     @PostMapping("/google")
     public ResponseEntity<LoginRespuesta> loginGoogle(
             @Valid @RequestBody GoogleLoginEntrada entrada) {

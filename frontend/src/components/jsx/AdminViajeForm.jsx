@@ -5,41 +5,227 @@ import api from '../../service/api';
 import '../css/styles.css';
 
 export default function AdminViajeForm() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [form, setForm] = useState(null);
+  const { id: viajeId } = useParams();
+  const navegar = useNavigate();
+  const [datosFormulario, setDatosFormulario] = useState(null);
   const [usuarios, setUsuarios] = useState([]);
   const [errores, setErrores] = useState({});
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
-    let activo = true;
-    Promise.all([api.get(`/viajes/${id}`), api.get('/usuarios/paginados', { params: { page: 0, size: 50, activo: true } })]).then(([viaje, usuariosRespuesta]) => {
-      if (!activo) return;
-      setForm(viaje.data); setUsuarios(usuariosRespuesta.data?.contenido ?? []);
-    }).catch(() => { if (activo) setError('No fue posible cargar el viaje.'); });
-    return () => { activo = false; };
-  }, [id]);
+    let solicitudActiva = true;
+    Promise.all([
+      api.get(`/viajes/${viajeId}`),
+      api.get('/usuarios/paginados', {
+        params: { page: 0, size: 50, activo: true },
+      }),
+    ])
+      .then(([respuestaViaje, respuestaUsuarios]) => {
+        if (!solicitudActiva) return;
 
-  const cambiar = (event) => { const { name, value, type, checked } = event.target; setForm((actual) => ({ ...actual, [name]: type === 'checkbox' ? checked : value })); setErrores((actual) => ({ ...actual, [name]: '' })); };
-  const guardar = async (event) => {
-    event.preventDefault();
-    const nuevos = {};
-    ['nombre', 'origen', 'destino', 'fechaInicio', 'fechaFin', 'organizadorId'].forEach((campo) => { if (!form[campo]) nuevos[campo] = 'Este campo es obligatorio.'; });
-    if (form.fechaFin && form.fechaInicio && form.fechaFin < form.fechaInicio) nuevos.fechaFin = 'La fecha final no puede ser anterior.';
-    setErrores(nuevos); if (Object.keys(nuevos).length) return;
-    setGuardando(true); setError('');
-    try { await api.put(`/viajes/${id}`, { ...form, organizadorId: Number(form.organizadorId), presupuestoEstimado: Number(form.presupuestoEstimado || 0) }); navigate(`/admin/viajes/${id}`); }
-    catch (err) { setError(err.response?.data?.mensaje || 'No fue posible guardar el viaje.'); }
-    finally { setGuardando(false); }
+        setDatosFormulario(respuestaViaje.data);
+        setUsuarios(respuestaUsuarios.data?.contenido ?? []);
+      })
+      .catch(() => {
+        if (solicitudActiva) setError('No fue posible cargar el viaje.');
+      });
+
+    return () => {
+      solicitudActiva = false;
+    };
+  }, [viajeId]);
+
+  const actualizarCampo = (eventoCambio) => {
+    const {
+      name: nombreCampo,
+      value: valorCampo,
+      type: tipoCampo,
+      checked: marcado,
+    } = eventoCambio.target;
+    setDatosFormulario((formularioActual) => ({
+      ...formularioActual,
+      [nombreCampo]: tipoCampo === 'checkbox' ? marcado : valorCampo,
+    }));
+    setErrores((erroresActuales) => ({
+      ...erroresActuales,
+      [nombreCampo]: '',
+    }));
   };
 
-  if (!form) return <><Navbar /><main className="page"><div className="container"><div className="card panel admin-loading"><div className="spinner"></div><p>{error || 'Cargando viaje...'}</p></div></div></main></>;
-  const campo = (nombre, etiqueta, tipo = 'text') => <label className="field"><span>{etiqueta} *</span><input name={nombre} type={tipo} value={form[nombre] ?? ''} onChange={cambiar} />{errores[nombre] && <small className="error-text">{errores[nombre]}</small>}</label>;
-  return <><Navbar /><main className="page narrow"><div className="container"><div className="page-head"><div><span className="eyebrow">VIAJES</span><h1>Editar viaje</h1></div></div>{error && <p className="banner warn">{error}</p>}<form className="card form-card" onSubmit={guardar}><div className="form-grid">{campo('nombre', 'Nombre')}{campo('origen', 'Origen')}{campo('destino', 'Destino')}{campo('fechaInicio', 'Fecha inicial', 'date')}{campo('fechaFin', 'Fecha final', 'date')}{campo('presupuestoEstimado', 'Presupuesto', 'number')}
-    <label className="field"><span>Organizador *</span><select name="organizadorId" value={form.organizadorId} onChange={cambiar}>{usuarios.map((usuario) => <option key={usuario.id} value={usuario.id}>{usuario.nombre}</option>)}</select>{errores.organizadorId && <small className="error-text">{errores.organizadorId}</small>}</label>
-    <label className="field"><span>Estado</span><select name="estado" value={form.estado} onChange={cambiar}><option value="PLANIFICACION">Planeación</option><option value="EN_CURSO">En curso</option><option value="FINALIZADO">Finalizado</option><option value="CANCELADO">Cancelado</option></select></label>
-    <label className="field"><span>Transporte</span><input name="transporte" value={form.transporte ?? ''} onChange={cambiar} /></label><label className="check"><input name="publico" type="checkbox" checked={form.publico} onChange={cambiar} /> Viaje público</label>
-  </div><label className="field"><span>Descripción</span><textarea name="descripcion" value={form.descripcion ?? ''} onChange={cambiar} /></label><div className="form-actions"><Link className="button ghost" to={`/admin/viajes/${id}`}>Cancelar</Link><button className="button primary" disabled={guardando}>{guardando ? 'Guardando...' : 'Guardar cambios'}</button></div></form></div></main></>;
+  const guardarViaje = async (eventoFormulario) => {
+    eventoFormulario.preventDefault();
+    const nuevosErrores = {};
+
+    [
+      'nombre',
+      'origen',
+      'destino',
+      'fechaInicio',
+      'fechaFin',
+      'organizadorId',
+    ].forEach((nombreCampo) => {
+      if (!datosFormulario[nombreCampo]) {
+        nuevosErrores[nombreCampo] = 'Este campo es obligatorio.';
+      }
+    });
+    if (
+      datosFormulario.fechaFin &&
+      datosFormulario.fechaInicio &&
+      datosFormulario.fechaFin < datosFormulario.fechaInicio
+    ) {
+      nuevosErrores.fechaFin = 'La fecha final no puede ser anterior.';
+    }
+
+    setErrores(nuevosErrores);
+    if (Object.keys(nuevosErrores).length) return;
+
+    setGuardando(true);
+    setError('');
+
+    try {
+      await api.put(`/viajes/${viajeId}`, {
+        ...datosFormulario,
+        organizadorId: Number(datosFormulario.organizadorId),
+        presupuestoEstimado: Number(
+          datosFormulario.presupuestoEstimado || 0,
+        ),
+      });
+      navegar(`/admin/viajes/${viajeId}`);
+    } catch (errorSolicitud) {
+      setError(
+        errorSolicitud.response?.data?.mensaje ||
+          'No fue posible guardar el viaje.',
+      );
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  if (!datosFormulario) {
+    return (
+      <>
+        <Navbar />
+        <main className="page">
+          <div className="container">
+            <div className="card panel admin-loading">
+              <div className="spinner"></div>
+              <p>{error || 'Cargando viaje...'}</p>
+            </div>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  const renderizarCampo = (
+    nombreCampo,
+    etiquetaCampo,
+    tipoCampo = 'text',
+  ) => (
+    <label className="field">
+      <span>{etiquetaCampo} *</span>
+      <input
+        name={nombreCampo}
+        type={tipoCampo}
+        value={datosFormulario[nombreCampo] ?? ''}
+        onChange={actualizarCampo}
+      />
+      {errores[nombreCampo] && (
+        <small className="error-text">{errores[nombreCampo]}</small>
+      )}
+    </label>
+  );
+
+  return (
+    <>
+      <Navbar />
+      <main className="page narrow">
+        <div className="container">
+          <div className="page-head">
+            <div>
+              <span className="eyebrow">VIAJES</span>
+              <h1>Editar viaje</h1>
+            </div>
+          </div>
+          {error && <p className="banner warn">{error}</p>}
+          <form className="card form-card" onSubmit={guardarViaje}>
+            <div className="form-grid">
+              {renderizarCampo('nombre', 'Nombre')}
+              {renderizarCampo('origen', 'Origen')}
+              {renderizarCampo('destino', 'Destino')}
+              {renderizarCampo('fechaInicio', 'Fecha inicial', 'date')}
+              {renderizarCampo('fechaFin', 'Fecha final', 'date')}
+              {renderizarCampo('presupuestoEstimado', 'Presupuesto', 'number')}
+              <label className="field">
+                <span>Organizador *</span>
+                <select
+                  name="organizadorId"
+                  value={datosFormulario.organizadorId}
+                  onChange={actualizarCampo}
+                >
+                  {usuarios.map((usuario) => (
+                    <option key={usuario.id} value={usuario.id}>
+                      {usuario.nombre}
+                    </option>
+                  ))}
+                </select>
+                {errores.organizadorId && (
+                  <small className="error-text">
+                    {errores.organizadorId}
+                  </small>
+                )}
+              </label>
+              <label className="field">
+                <span>Estado</span>
+                <select
+                  name="estado"
+                  value={datosFormulario.estado}
+                  onChange={actualizarCampo}
+                >
+                  <option value="PLANIFICACION">Planeación</option>
+                  <option value="EN_CURSO">En curso</option>
+                  <option value="FINALIZADO">Finalizado</option>
+                  <option value="CANCELADO">Cancelado</option>
+                </select>
+              </label>
+              <label className="field">
+                <span>Transporte</span>
+                <input
+                  name="transporte"
+                  value={datosFormulario.transporte ?? ''}
+                  onChange={actualizarCampo}
+                />
+              </label>
+              <label className="check">
+                <input
+                  name="publico"
+                  type="checkbox"
+                  checked={datosFormulario.publico}
+                  onChange={actualizarCampo}
+                />{' '}
+                Viaje público
+              </label>
+            </div>
+            <label className="field">
+              <span>Descripción</span>
+              <textarea
+                name="descripcion"
+                value={datosFormulario.descripcion ?? ''}
+                onChange={actualizarCampo}
+              />
+            </label>
+            <div className="form-actions">
+              <Link className="button ghost" to={`/admin/viajes/${viajeId}`}>
+                Cancelar
+              </Link>
+              <button className="button primary" disabled={guardando}>
+                {guardando ? 'Guardando...' : 'Guardar cambios'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </>
+  );
 }

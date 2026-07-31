@@ -4,24 +4,450 @@ import Navbar from './Navbar';
 import api from '../../service/api';
 import '../css/styles.css';
 
-const vacio = { id: null, viajeId: '', pagadorId: '', concepto: '', monto: '', categoria: 'OTRO', fecha: '' };
+const gastoVacio = {
+  id: null,
+  viajeId: '',
+  pagadorId: '',
+  concepto: '',
+  monto: '',
+  categoria: 'OTRO',
+  fecha: '',
+};
 
 export default function AdminGastos() {
-  const [gastos, setGastos] = useState([]), [viajes, setViajes] = useState([]), [usuarios, setUsuarios] = useState([]);
-  const [form, setForm] = useState(null), [errores, setErrores] = useState({}), [eliminar, setEliminar] = useState(null);
-  const [busqueda, setBusqueda] = useState(''), [categoria, setCategoria] = useState(''), [filtros, setFiltros] = useState({ busqueda: '', categoria: '' });
-  const [pagina, setPagina] = useState(0), [totalPaginas, setTotalPaginas] = useState(1), [solicitud, setSolicitud] = useState(0);
-  const [loading, setLoading] = useState(true), [error, setError] = useState('');
+  const [gastos, setGastos] = useState([]);
+  const [viajes, setViajes] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
+  const [formularioGasto, setFormularioGasto] = useState(null);
+  const [erroresFormulario, setErroresFormulario] = useState({});
+  const [gastoAEliminar, setGastoAEliminar] = useState(null);
+  const [textoBusqueda, setTextoBusqueda] = useState('');
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
+  const [filtros, setFiltros] = useState({ busqueda: '', categoria: '' });
+  const [pagina, setPagina] = useState(0);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [numeroRecarga, setNumeroRecarga] = useState(0);
+  const [cargando, setCargando] = useState(true);
+  const [mensajeError, setMensajeError] = useState('');
 
-  useEffect(() => { let activo = true; Promise.all([api.get('/viajes', { params: { page: 0, size: 50 } }), api.get('/usuarios/paginados', { params: { page: 0, size: 50, activo: true } })]).then(([v, u]) => { if (activo) { setViajes(v.data?.contenido ?? []); setUsuarios(u.data?.contenido ?? []); } }); return () => { activo = false; }; }, []);
-  useEffect(() => { let activo = true; api.get('/gastos/paginados', { params: { page: pagina, size: 10, busqueda: filtros.busqueda || undefined, categoria: filtros.categoria || undefined } }).then(({ data }) => { if (activo) { setGastos(data?.contenido ?? []); setTotalPaginas(Math.max(data?.totalPaginas ?? 1, 1)); } }).catch(() => { if (activo) setError('No fue posible cargar los gastos.'); }).finally(() => { if (activo) setLoading(false); }); return () => { activo = false; }; }, [filtros, pagina, solicitud]);
-  const abrir = (gasto = vacio) => setForm({ ...vacio, ...gasto, viajeId: gasto.viajeId || viajes[0]?.id || '', pagadorId: gasto.pagadorId || usuarios[0]?.id || '', fecha: gasto.fecha || new Date().toISOString().slice(0, 10) });
-  const guardar = async (e) => { e.preventDefault(); const nuevos = {}; if (!form.viajeId) nuevos.viajeId = 'Selecciona un viaje.'; if (!form.pagadorId) nuevos.pagadorId = 'Selecciona un pagador.'; if (!form.concepto.trim()) nuevos.concepto = 'El concepto es obligatorio.'; if (!(Number(form.monto) > 0)) nuevos.monto = 'El monto debe ser mayor a 0.'; if (!form.fecha) nuevos.fecha = 'La fecha es obligatoria.'; setErrores(nuevos); if (Object.keys(nuevos).length) return; try { const payload = { ...form, viajeId: Number(form.viajeId), pagadorId: Number(form.pagadorId), monto: Number(form.monto) }; if (form.id) await api.put(`/gastos/${form.id}`, payload); else await api.post('/gastos', payload); setForm(null); setLoading(true); setSolicitud((v) => v + 1); } catch (err) { setError(err.response?.data?.mensaje || 'No fue posible guardar el gasto.'); } };
-  const confirmarEliminar = async () => { try { await api.delete(`/gastos/${eliminar.id}`); setEliminar(null); setLoading(true); setSolicitud((v) => v + 1); } catch { setError('No fue posible eliminar el gasto.'); } };
-  const buscar = () => { setLoading(true); setPagina(0); setFiltros({ busqueda: busqueda.trim(), categoria }); setSolicitud((v) => v + 1); };
-  const cambiarPagina = (valor) => { setLoading(true); setPagina(valor); };
-  const categorias = ['TRANSPORTE', 'HOSPEDAJE', 'COMIDA', 'ENTRETENIMIENTO', 'OTRO'];
+  useEffect(() => {
+    let componenteActivo = true;
 
-  return <><Navbar /><main className="page"><div className="container"><div className="page-head"><div><span className="eyebrow">CRUD DE GASTOS</span><h1>Gastos</h1><p className="muted">Administra los gastos de todos los viajes.</p></div><button className="button primary" onClick={() => abrir()}>＋ Nuevo gasto</button></div><section className="filters admin-trip-filters"><input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Concepto, viaje o pagador" /><select value={categoria} onChange={(e) => setCategoria(e.target.value)}><option value="">Todas las categorías</option>{categorias.map((c) => <option key={c}>{c}</option>)}</select><button className="button ghost" onClick={buscar}>Buscar</button></section>{error && <p className="banner warn">{error}</p>}{loading ? <div className="card panel admin-loading"><div className="spinner"></div></div> : <div className="table-wrap"><table><thead><tr><th>Concepto</th><th>Viaje</th><th>Pagador</th><th>Fecha</th><th>Monto</th><th>Acciones</th></tr></thead><tbody>{gastos.map((g) => <tr key={g.id}><td><strong>{g.concepto}</strong><br /><span className="muted">{g.categoria}</span></td><td>{g.viajeNombre}</td><td>{g.pagadorNombre}</td><td>{new Date(`${g.fecha}T00:00:00`).toLocaleDateString('es-MX')}</td><td>${Number(g.monto).toLocaleString('es-MX')}</td><td><div className="admin-actions"><button className="button ghost small" onClick={() => abrir(g)}>Editar</button><button className="button danger small" onClick={() => setEliminar(g)}>Eliminar</button></div></td></tr>)}{!gastos.length && <tr><td colSpan="6" className="admin-empty">No se encontraron gastos.</td></tr>}</tbody></table></div>}{!loading && totalPaginas > 1 && <div className="pagination"><button disabled={!pagina} onClick={() => cambiarPagina(pagina - 1)}>‹</button><span className="admin-page-count">Página {pagina + 1} de {totalPaginas}</span><button disabled={pagina + 1 >= totalPaginas} onClick={() => cambiarPagina(pagina + 1)}>›</button></div>}</div></main>
-  <div className={`modal-backdrop ${form ? 'open' : ''}`}><div className="modal admin-form-modal"><h3>{form?.id ? 'Editar gasto' : 'Nuevo gasto'}</h3>{form && <form onSubmit={guardar}><label className="field"><span>Viaje *</span><select value={form.viajeId} onChange={(e) => setForm({ ...form, viajeId: e.target.value })}>{viajes.map((v) => <option key={v.id} value={v.id}>{v.nombre}</option>)}</select>{errores.viajeId && <small className="error-text">{errores.viajeId}</small>}</label><label className="field"><span>Pagador *</span><select value={form.pagadorId} onChange={(e) => setForm({ ...form, pagadorId: e.target.value })}>{usuarios.map((u) => <option key={u.id} value={u.id}>{u.nombre}</option>)}</select>{errores.pagadorId && <small className="error-text">{errores.pagadorId}</small>}</label><label className="field"><span>Concepto *</span><input value={form.concepto} onChange={(e) => setForm({ ...form, concepto: e.target.value })} />{errores.concepto && <small className="error-text">{errores.concepto}</small>}</label><div className="form-grid"><label className="field"><span>Monto *</span><input type="number" min="0.01" step="0.01" value={form.monto} onChange={(e) => setForm({ ...form, monto: e.target.value })} />{errores.monto && <small className="error-text">{errores.monto}</small>}</label><label className="field"><span>Fecha *</span><input type="date" value={form.fecha} onChange={(e) => setForm({ ...form, fecha: e.target.value })} />{errores.fecha && <small className="error-text">{errores.fecha}</small>}</label></div><label className="field"><span>Categoría</span><select value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })}>{categorias.map((c) => <option key={c}>{c}</option>)}</select></label><div className="modal-actions"><button type="button" className="button ghost" onClick={() => setForm(null)}>Cancelar</button><button className="button primary">Guardar</button></div></form>}</div></div><ConfirmModal isOpen={Boolean(eliminar)} title="Eliminar gasto" message="Esta acción no se puede deshacer." confirmText="Eliminar" onConfirm={confirmarEliminar} onCancel={() => setEliminar(null)} /></>;
+    Promise.all([
+      api.get('/viajes', { params: { page: 0, size: 50 } }),
+      api.get('/usuarios/paginados', {
+        params: { page: 0, size: 50, activo: true },
+      }),
+    ]).then(([respuestaViajes, respuestaUsuarios]) => {
+      if (componenteActivo) {
+        setViajes(respuestaViajes.data?.contenido ?? []);
+        setUsuarios(respuestaUsuarios.data?.contenido ?? []);
+      }
+    });
+
+    return () => {
+      componenteActivo = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let componenteActivo = true;
+
+    api
+      .get('/gastos/paginados', {
+        params: {
+          page: pagina,
+          size: 10,
+          busqueda: filtros.busqueda || undefined,
+          categoria: filtros.categoria || undefined,
+        },
+      })
+      .then(({ data: datosGastos }) => {
+        if (componenteActivo) {
+          setGastos(datosGastos?.contenido ?? []);
+          setTotalPaginas(Math.max(datosGastos?.totalPaginas ?? 1, 1));
+        }
+      })
+      .catch(() => {
+        if (componenteActivo)
+          setMensajeError('No fue posible cargar los gastos.');
+      })
+      .finally(() => {
+        if (componenteActivo) setCargando(false);
+      });
+
+    return () => {
+      componenteActivo = false;
+    };
+  }, [filtros, pagina, numeroRecarga]);
+
+  const abrirFormularioGasto = (gasto = gastoVacio) =>
+    setFormularioGasto({
+      ...gastoVacio,
+      ...gasto,
+      viajeId: gasto.viajeId || viajes[0]?.id || '',
+      pagadorId: gasto.pagadorId || usuarios[0]?.id || '',
+      fecha: gasto.fecha || new Date().toISOString().slice(0, 10),
+    });
+
+  const guardarGasto = async (evento) => {
+    evento.preventDefault();
+    const nuevosErrores = {};
+
+    if (!formularioGasto.viajeId)
+      nuevosErrores.viajeId = 'Selecciona un viaje.';
+    if (!formularioGasto.pagadorId)
+      nuevosErrores.pagadorId = 'Selecciona un pagador.';
+    if (!formularioGasto.concepto.trim())
+      nuevosErrores.concepto = 'El concepto es obligatorio.';
+    if (!(Number(formularioGasto.monto) > 0))
+      nuevosErrores.monto = 'El monto debe ser mayor a 0.';
+    if (!formularioGasto.fecha)
+      nuevosErrores.fecha = 'La fecha es obligatoria.';
+
+    setErroresFormulario(nuevosErrores);
+    if (Object.keys(nuevosErrores).length) return;
+
+    try {
+      const datosGasto = {
+        ...formularioGasto,
+        viajeId: Number(formularioGasto.viajeId),
+        pagadorId: Number(formularioGasto.pagadorId),
+        monto: Number(formularioGasto.monto),
+      };
+
+      if (formularioGasto.id)
+        await api.put(`/gastos/${formularioGasto.id}`, datosGasto);
+      else await api.post('/gastos', datosGasto);
+
+      setFormularioGasto(null);
+      setCargando(true);
+      setNumeroRecarga((numeroActual) => numeroActual + 1);
+    } catch (errorSolicitud) {
+      setMensajeError(
+        errorSolicitud.response?.data?.mensaje ||
+          'No fue posible guardar el gasto.',
+      );
+    }
+  };
+
+  const confirmarEliminacionGasto = async () => {
+    try {
+      await api.delete(`/gastos/${gastoAEliminar.id}`);
+      setGastoAEliminar(null);
+      setCargando(true);
+      setNumeroRecarga((numeroActual) => numeroActual + 1);
+    } catch {
+      setMensajeError('No fue posible eliminar el gasto.');
+    }
+  };
+
+  const aplicarFiltros = () => {
+    setCargando(true);
+    setPagina(0);
+    setFiltros({
+      busqueda: textoBusqueda.trim(),
+      categoria: categoriaSeleccionada,
+    });
+    setNumeroRecarga((numeroActual) => numeroActual + 1);
+  };
+
+  const irAPagina = (numeroPagina) => {
+    setCargando(true);
+    setPagina(numeroPagina);
+  };
+
+  const categorias = [
+    'TRANSPORTE',
+    'HOSPEDAJE',
+    'COMIDA',
+    'ENTRETENIMIENTO',
+    'OTRO',
+  ];
+
+  return (
+    <>
+      <Navbar />
+      <main className="page">
+        <div className="container">
+          <div className="page-head">
+            <div>
+              <span className="eyebrow">CRUD DE GASTOS</span>
+              <h1>Gastos</h1>
+              <p className="muted">
+                Administra los gastos de todos los viajes.
+              </p>
+            </div>
+            <button
+              className="button primary"
+              onClick={() => abrirFormularioGasto()}
+            >
+              ＋ Nuevo gasto
+            </button>
+          </div>
+
+          <section className="filters admin-trip-filters">
+            <input
+              value={textoBusqueda}
+              onChange={(evento) => setTextoBusqueda(evento.target.value)}
+              placeholder="Concepto, viaje o pagador"
+            />
+            <select
+              value={categoriaSeleccionada}
+              onChange={(evento) =>
+                setCategoriaSeleccionada(evento.target.value)
+              }
+            >
+              <option value="">Todas las categorías</option>
+              {categorias.map((categoriaGasto) => (
+                <option key={categoriaGasto}>{categoriaGasto}</option>
+              ))}
+            </select>
+            <button className="button ghost" onClick={aplicarFiltros}>
+              Buscar
+            </button>
+          </section>
+
+          {mensajeError && <p className="banner warn">{mensajeError}</p>}
+
+          {cargando ? (
+            <div className="card panel admin-loading">
+              <div className="spinner"></div>
+            </div>
+          ) : (
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Concepto</th>
+                    <th>Viaje</th>
+                    <th>Pagador</th>
+                    <th>Fecha</th>
+                    <th>Monto</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {gastos.map((gasto) => (
+                    <tr key={gasto.id}>
+                      <td>
+                        <strong>{gasto.concepto}</strong>
+                        <br />
+                        <span className="muted">{gasto.categoria}</span>
+                      </td>
+                      <td>{gasto.viajeNombre}</td>
+                      <td>{gasto.pagadorNombre}</td>
+                      <td>
+                        {new Date(
+                          `${gasto.fecha}T00:00:00`,
+                        ).toLocaleDateString('es-MX')}
+                      </td>
+                      <td>${Number(gasto.monto).toLocaleString('es-MX')}</td>
+                      <td>
+                        <div className="admin-actions">
+                          <button
+                            className="button ghost small"
+                            onClick={() => abrirFormularioGasto(gasto)}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            className="button danger small"
+                            onClick={() => setGastoAEliminar(gasto)}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {!gastos.length && (
+                    <tr>
+                      <td colSpan="6" className="admin-empty">
+                        No se encontraron gastos.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {!cargando && totalPaginas > 1 && (
+            <div className="pagination">
+              <button
+                disabled={!pagina}
+                onClick={() => irAPagina(pagina - 1)}
+              >
+                ‹
+              </button>
+              <span className="admin-page-count">
+                Página {pagina + 1} de {totalPaginas}
+              </span>
+              <button
+                disabled={pagina + 1 >= totalPaginas}
+                onClick={() => irAPagina(pagina + 1)}
+              >
+                ›
+              </button>
+            </div>
+          )}
+        </div>
+      </main>
+
+      <div className={`modal-backdrop ${formularioGasto ? 'open' : ''}`}>
+        <div className="modal admin-form-modal">
+          <h3>{formularioGasto?.id ? 'Editar gasto' : 'Nuevo gasto'}</h3>
+          {formularioGasto && (
+            <form onSubmit={guardarGasto}>
+              <label className="field">
+                <span>Viaje *</span>
+                <select
+                  value={formularioGasto.viajeId}
+                  onChange={(evento) =>
+                    setFormularioGasto({
+                      ...formularioGasto,
+                      viajeId: evento.target.value,
+                    })
+                  }
+                >
+                  {viajes.map((viaje) => (
+                    <option key={viaje.id} value={viaje.id}>
+                      {viaje.nombre}
+                    </option>
+                  ))}
+                </select>
+                {erroresFormulario.viajeId && (
+                  <small className="error-text">
+                    {erroresFormulario.viajeId}
+                  </small>
+                )}
+              </label>
+
+              <label className="field">
+                <span>Pagador *</span>
+                <select
+                  value={formularioGasto.pagadorId}
+                  onChange={(evento) =>
+                    setFormularioGasto({
+                      ...formularioGasto,
+                      pagadorId: evento.target.value,
+                    })
+                  }
+                >
+                  {usuarios.map((usuario) => (
+                    <option key={usuario.id} value={usuario.id}>
+                      {usuario.nombre}
+                    </option>
+                  ))}
+                </select>
+                {erroresFormulario.pagadorId && (
+                  <small className="error-text">
+                    {erroresFormulario.pagadorId}
+                  </small>
+                )}
+              </label>
+
+              <label className="field">
+                <span>Concepto *</span>
+                <input
+                  value={formularioGasto.concepto}
+                  onChange={(evento) =>
+                    setFormularioGasto({
+                      ...formularioGasto,
+                      concepto: evento.target.value,
+                    })
+                  }
+                />
+                {erroresFormulario.concepto && (
+                  <small className="error-text">
+                    {erroresFormulario.concepto}
+                  </small>
+                )}
+              </label>
+
+              <div className="form-grid">
+                <label className="field">
+                  <span>Monto *</span>
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={formularioGasto.monto}
+                    onChange={(evento) =>
+                      setFormularioGasto({
+                        ...formularioGasto,
+                        monto: evento.target.value,
+                      })
+                    }
+                  />
+                  {erroresFormulario.monto && (
+                    <small className="error-text">
+                      {erroresFormulario.monto}
+                    </small>
+                  )}
+                </label>
+
+                <label className="field">
+                  <span>Fecha *</span>
+                  <input
+                    type="date"
+                    value={formularioGasto.fecha}
+                    onChange={(evento) =>
+                      setFormularioGasto({
+                        ...formularioGasto,
+                        fecha: evento.target.value,
+                      })
+                    }
+                  />
+                  {erroresFormulario.fecha && (
+                    <small className="error-text">
+                      {erroresFormulario.fecha}
+                    </small>
+                  )}
+                </label>
+              </div>
+
+              <label className="field">
+                <span>Categoría</span>
+                <select
+                  value={formularioGasto.categoria}
+                  onChange={(evento) =>
+                    setFormularioGasto({
+                      ...formularioGasto,
+                      categoria: evento.target.value,
+                    })
+                  }
+                >
+                  {categorias.map((categoriaGasto) => (
+                    <option key={categoriaGasto}>{categoriaGasto}</option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="button ghost"
+                  onClick={() => setFormularioGasto(null)}
+                >
+                  Cancelar
+                </button>
+                <button className="button primary">Guardar</button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+
+      <ConfirmModal
+        isOpen={Boolean(gastoAEliminar)}
+        title="Eliminar gasto"
+        message="Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        onConfirm={confirmarEliminacionGasto}
+        onCancel={() => setGastoAEliminar(null)}
+      />
+    </>
+  );
 }

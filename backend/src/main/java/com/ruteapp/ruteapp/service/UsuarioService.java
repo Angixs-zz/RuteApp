@@ -58,9 +58,14 @@ public class UsuarioService {
         return respuestas;
     }
 
-    public PaginaRespuesta<UsuarioRespuesta> listarPaginados(int pagina, int tamanio, String busqueda, String rol, Boolean activo) {
-        Page<UsuarioRespuesta> resultado = usuarioRepository.buscar(busqueda == null ? "" : busqueda.trim(), rol == null ? "" : rol, activo, PageRequest.of(pagina, tamanio, Sort.by("fechaCreacion").descending())).map(this::convertirARespuesta);
-        return new PaginaRespuesta<>(resultado.getContent(), resultado.getNumber(), resultado.getSize(), resultado.getTotalElements(), resultado.getTotalPages(), resultado.isLast());
+    public PaginaRespuesta<UsuarioRespuesta> listarPaginados(int pagina, int tamanio, String busqueda, String rol,
+            Boolean activo) {
+        Page<UsuarioRespuesta> resultado = usuarioRepository
+                .buscar(busqueda == null ? "" : busqueda.trim(), rol == null ? "" : rol, activo,
+                        PageRequest.of(pagina, tamanio, Sort.by("fechaCreacion").descending()))
+                .map(this::convertirARespuesta);
+        return new PaginaRespuesta<>(resultado.getContent(), resultado.getNumber(), resultado.getSize(),
+                resultado.getTotalElements(), resultado.getTotalPages(), resultado.isLast());
     }
 
     public UsuarioRespuesta buscarPorId(Long id) {
@@ -73,8 +78,7 @@ public class UsuarioService {
     public UsuarioRespuesta buscarPorCorreo(String correo) {
 
         Usuario usuario = usuarioRepository.findByCorreo(correo)
-                .orElseThrow(() ->
-                        new RecursoNoEncontradoException("Usuario no encontrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
 
         return convertirARespuesta(usuario);
     }
@@ -99,15 +103,15 @@ public class UsuarioService {
                 guardado,
                 "Hola " + guardado.getNombre()
                         + ", tu cuenta de RuteApp fue creada correctamente. "
-                        + "Ya puedes organizar tus próximos viajes."
-        );
+                        + "Ya puedes organizar tus próximos viajes.");
 
         return convertirARespuesta(guardado);
     }
 
     public UsuarioRespuesta crearPublico(UsuarioEntrada entrada) {
         Rol rol = obtenerRolPorId(entrada.getRolId());
-        if ("ADMINISTRADOR".equals(rol.getNombre())) throw new IllegalArgumentException("El rol administrador solo puede asignarlo otro administrador");
+        if ("ADMINISTRADOR".equals(rol.getNombre()))
+            throw new IllegalArgumentException("El rol administrador solo puede asignarlo otro administrador");
         return crear(entrada);
     }
 
@@ -136,7 +140,8 @@ public class UsuarioService {
         usuario.setTelefono(normalizarTelefono(entrada.getTelefono()));
         usuario.setRol(obtenerRolPorId(entrada.getRolId()));
         usuario.setActivo(entrada.getActivo());
-        if (entrada.getPassword() != null && !entrada.getPassword().isBlank()) usuario.setPassword(passwordEncoder.encode(entrada.getPassword()));
+        if (entrada.getPassword() != null && !entrada.getPassword().isBlank())
+            usuario.setPassword(passwordEncoder.encode(entrada.getPassword()));
         return convertirARespuesta(usuarioRepository.save(usuario));
     }
 
@@ -163,15 +168,13 @@ public class UsuarioService {
     public Usuario obtenerEntidadPorId(Long id) {
 
         return usuarioRepository.findById(id)
-                .orElseThrow(() ->
-                        new RecursoNoEncontradoException("Usuario no encontrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
     }
 
     private Rol obtenerRolPorId(Long rolId) {
 
         return rolRepository.findById(rolId)
-                .orElseThrow(() ->
-                        new RecursoNoEncontradoException("Rol no encontrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Rol no encontrado"));
     }
 
     private void copiarDatos(
@@ -202,8 +205,7 @@ public class UsuarioService {
                 && !usuarioConCorreo.getId().equals(usuarioId)) {
 
             throw new CorreoDuplicadoException(
-                    "El correo ya está registrado"
-            );
+                    "El correo ya está registrado");
         }
     }
 
@@ -217,6 +219,7 @@ public class UsuarioService {
                 usuario.getActivo(),
                 usuario.getRol().getNombre(),
                 usuario.getFechaCreacion()
+
         );
     }
 }

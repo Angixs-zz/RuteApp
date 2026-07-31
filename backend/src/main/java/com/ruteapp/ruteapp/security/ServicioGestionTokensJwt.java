@@ -31,7 +31,7 @@ public class ServicioGestionTokensJwt {
 
         this.duracionToken = duracionToken;
     }
-
+    //generacion del tolekj con datos
     public String generarToken(Usuario usuario) {
 
         Date ahora = new Date();

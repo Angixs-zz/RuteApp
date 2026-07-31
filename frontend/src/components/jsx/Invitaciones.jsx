@@ -58,6 +58,7 @@ export default function Invitaciones() {
     const aceptada = respuestaSeleccionada === 'ACEPTADA';
     setProcesando(true);
     try {
+      //acepta o rechaza una invitacion
       await api.patch(`/participantes/${invitacionSeleccionada.id}/respuesta`, {
         respuesta: respuestaSeleccionada,
       });

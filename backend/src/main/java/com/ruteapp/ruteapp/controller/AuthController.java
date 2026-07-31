@@ -30,7 +30,7 @@ public class AuthController {
         this.authService = authService;
         this.recuperacionPasswordService = recuperacionPasswordService;
     }
-
+    //token 
     @PostMapping("/login")
     public ResponseEntity<LoginRespuesta> login(@Valid @RequestBody LoginEntrada entrada) {
         return ResponseEntity.ok(authService.login(entrada));

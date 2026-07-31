@@ -10,6 +10,7 @@ export default function CrearViaje() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  //GUARDA EL ESTADO DEL FOMRLARO, guarda los inputs que escribe el usuario val
   const [formData, setFormData] = useState({
     nombre: '',
     origen: '',
@@ -136,8 +137,8 @@ export default function CrearViaje() {
               <div className="form-grid">
                 <label className="field">
                   <span>Nombre del viaje *</span>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     name="nombre"
                     value={formData.nombre}
                     onChange={handleChange}
@@ -149,7 +150,7 @@ export default function CrearViaje() {
 
               {/* Origen y Destino con Geoapify Autocomplete */}
               <div className="form-grid">
-                <LugarAutocomplete 
+                <LugarAutocomplete
                   label="Lugar de origen (Salida) *"
                   placeholder="Ej. Ciudad de México, CDMX"
                   value={formData.origen}
@@ -157,7 +158,7 @@ export default function CrearViaje() {
                   required
                   error={erroresLugar.origen}
                 />
-                <LugarAutocomplete 
+                <LugarAutocomplete
                   label="Lugar de destino *"
                   placeholder="Ej. Cancún, Quintana Roo"
                   value={formData.destino}
@@ -169,7 +170,7 @@ export default function CrearViaje() {
 
               <label className="field">
                 <span>Descripción</span>
-                <textarea 
+                <textarea
                   name="descripcion"
                   rows="3"
                   value={formData.descripcion}
@@ -184,8 +185,8 @@ export default function CrearViaje() {
               <div className="form-grid">
                 <label className="field">
                   <span>Fecha de inicio *</span>
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     name="fechaInicio"
                     value={formData.fechaInicio}
                     min={new Date().toISOString().split('T')[0]}
@@ -195,8 +196,8 @@ export default function CrearViaje() {
                 </label>
                 <label className="field">
                   <span>Fecha de finalización *</span>
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     name="fechaFin"
                     value={formData.fechaFin}
                     min={formData.fechaInicio || new Date().toISOString().split('T')[0]}
@@ -208,8 +209,8 @@ export default function CrearViaje() {
               <div className="form-grid">
                 <label className="field">
                   <span>Presupuesto por persona ($ MXN)</span>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     name="presupuestoEstimado"
                     value={formData.presupuestoEstimado}
                     onChange={handleChange}
@@ -220,7 +221,7 @@ export default function CrearViaje() {
                 </label>
                 <label className="field">
                   <span>Tipo de transporte</span>
-                  <select 
+                  <select
                     name="transporte"
                     value={formData.transporte}
                     onChange={handleChange}
@@ -238,8 +239,8 @@ export default function CrearViaje() {
               <section className="form-section">
                 <h3>Visibilidad</h3>
                 <label className="checkbox-field" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     name="publico"
                     checked={formData.publico}
                     onChange={handleChange}

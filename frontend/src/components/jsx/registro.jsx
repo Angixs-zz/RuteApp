@@ -1,8 +1,8 @@
 import { useContext, useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { Link, useNavigate } from 'react-router-dom';
-import '../css/styles.css'; 
-import logoImg from '../../assets/logo.png'; 
+import '../css/styles.css';
+import logoImg from '../../assets/logo.png';
 import api from '../../service/api';
 import { AuthContext } from '../../context/AuthContext';
 import { esTelefonoValido, normalizarTelefono } from '../../utils/telefono';
@@ -10,13 +10,13 @@ import { esTelefonoValido, normalizarTelefono } from '../../utils/telefono';
 export default function Registro() {
   const { loginContext } = useContext(AuthContext);
   const navigate = useNavigate();
-  
+
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
   const [telefono, setTelefono] = useState('');
   const [rolId, setRolId] = useState('2');
-  
+
   const [errorNombre, setErrorNombre] = useState('');
   const [errorCorreo, setErrorCorreo] = useState('');
   const [errorPassword, setErrorPassword] = useState('');
@@ -28,7 +28,7 @@ export default function Registro() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    
+
     setErrorNombre('');
     setErrorCorreo('');
     setErrorPassword('');
@@ -45,7 +45,7 @@ export default function Registro() {
 
     if (!correo.trim()) {
       setErrorCorreo('El correo es obligatorio.');
-      hayErrores = true; 
+      hayErrores = true;
     } else if (!/\S+@\S+\.\S+/.test(correo)) {
       setErrorCorreo('El formato del correo no es válido.');
       hayErrores = true;
@@ -77,7 +77,7 @@ export default function Registro() {
     }
 
     if (hayErrores) return;
-
+    //envia un http con el cuerpo json del registrto
     setLoading(true);
     try {
       await api.post('/usuarios', {
@@ -94,7 +94,7 @@ export default function Registro() {
       setPassword('');
       setTelefono('');
       setRolId('2');
-      
+
       setTimeout(() => {
         navigate('/login');
       }, 2000);
@@ -143,14 +143,14 @@ export default function Registro() {
       {/* Lado izquierdo visual */}
       <aside className="auth-visual">
         <div className="brand" style={{ width: '150px' }}>
-            <img src={logoImg} alt="RuteApp" style={{ width: '100%', height: 'auto', display: 'block' }} />
+          <img src={logoImg} alt="RuteApp" style={{ width: '100%', height: 'auto', display: 'block' }} />
         </div>
         <div className="route-line">
           <svg viewBox="0 0 620 450">
-            <path d="M30,370 C155,80 260,400 370,150 C435,15 525,170 585,65" fill="none" stroke="rgba(255,255,255,.9)" strokeWidth="10" strokeLinecap="round" strokeDasharray="12 18"/>
-            <circle cx="32" cy="368" r="13" fill="#FF735C" stroke="#fff" strokeWidth="5"/>
-            <circle cx="370" cy="150" r="13" fill="#F7B955" stroke="#fff" strokeWidth="5"/>
-            <circle cx="585" cy="65" r="13" fill="#FF735C" stroke="#fff" strokeWidth="5"/>
+            <path d="M30,370 C155,80 260,400 370,150 C435,15 525,170 585,65" fill="none" stroke="rgba(255,255,255,.9)" strokeWidth="10" strokeLinecap="round" strokeDasharray="12 18" />
+            <circle cx="32" cy="368" r="13" fill="#FF735C" stroke="#fff" strokeWidth="5" />
+            <circle cx="370" cy="150" r="13" fill="#F7B955" stroke="#fff" strokeWidth="5" />
+            <circle cx="585" cy="65" r="13" fill="#FF735C" stroke="#fff" strokeWidth="5" />
           </svg>
         </div>
         <div className="auth-copy">
@@ -166,7 +166,7 @@ export default function Registro() {
           <div className="mobile-logo brand">
             <img src={logoImg} alt="RuteApp" />
           </div>
-          
+
           <span className="eyebrow">ACCESO A LA PLATAFORMA</span>
           <h1>Crea tu cuenta</h1>
           <p className="muted">Empieza a organizar tus próximas experiencias.</p>
@@ -177,9 +177,9 @@ export default function Registro() {
           <form onSubmit={handleRegister} noValidate>
             <label className={`field ${errorNombre ? 'error' : ''}`}>
               <span>Nombre completo</span>
-              <input 
-                type="text" 
-                value={nombre} 
+              <input
+                type="text"
+                value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
                 placeholder="Nombre Completo"
               />
@@ -188,9 +188,9 @@ export default function Registro() {
 
             <label className={`field ${errorCorreo ? 'error' : ''}`}>
               <span>Correo electrónico</span>
-              <input 
-                type="email" 
-                value={correo} 
+              <input
+                type="email"
+                value={correo}
                 onChange={(e) => setCorreo(e.target.value)}
                 placeholder="correo@ruteapp.mx"
               />
@@ -199,9 +199,9 @@ export default function Registro() {
 
             <label className={`field ${errorTelefono ? 'error' : ''}`}>
               <span>Teléfono</span>
-              <input 
-                type="tel" 
-                value={telefono} 
+              <input
+                type="tel"
+                value={telefono}
                 onChange={(e) => {
                   setTelefono(e.target.value);
                   setErrorTelefono('');
@@ -214,9 +214,9 @@ export default function Registro() {
 
             <label className={`field ${errorPassword ? 'error' : ''}`}>
               <span>Contraseña</span>
-              <input 
-                type="password" 
-                value={password} 
+              <input
+                type="password"
+                value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="********"
               />
@@ -232,8 +232,8 @@ export default function Registro() {
 
             <label className="field">
               <span>Tipo de Usuario / Rol</span>
-              <select 
-                value={rolId} 
+              <select
+                value={rolId}
                 onChange={(e) => setRolId(e.target.value)}
               >
                 <option value="2">USUARIO</option>

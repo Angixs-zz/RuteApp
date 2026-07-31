@@ -17,6 +17,7 @@ public class GeoapifyClient {
     private final String apiKey;
 
     public GeoapifyClient(
+        //credenciales 
             RestClient.Builder restClientBuilder,
             @Value("${geoapify.base-url}") String baseUrl,
             @Value("${geoapify.api-key}") String apiKey
@@ -27,6 +28,7 @@ public class GeoapifyClient {
 
         this.apiKey = apiKey;
     }
+    
 
     public List<LugarSugerenciaRespuesta> autocompletar(String texto) {
         Map<String, Object> respuesta = restClient.get()

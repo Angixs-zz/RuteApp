@@ -77,7 +77,7 @@ public class ParticipanteViajeController {
                 id, entrada, authentication.getName(), esAdministrador(authentication));
         return ResponseEntity.ok(actualizado);
     }
-
+    //ve la respuesta de la invitiacion de un participante a un viaje, si la acepta o la rechaza
     @PatchMapping("/{id}/respuesta")
     public ResponseEntity<ParticipanteRespuesta> responder(
             @PathVariable Long id,

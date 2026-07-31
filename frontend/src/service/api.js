@@ -22,4 +22,3 @@ api.interceptors.request.use( //atrapa las peticiones antes que se envien
 );
 
 export default api;
-D

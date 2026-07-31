@@ -148,28 +148,17 @@ export default function TripHeader({ id, currentTab }) {
       </section>
 
       <nav className="tabs">
-  <Link className={currentTab === 'resumen' ? 'active' : ''} to={`${window.location.pathname.includes('/viajes-agencia') ? '/viajes-agencia' : '/viajes'}/${id}`}>
-    Resumen
-  </Link>
-  
-  {!window.location.pathname.includes('/viajes-agencia') && user?.rol !== 'AGENCIA' && (
-    <Link className={currentTab === 'participantes' ? 'active' : ''} to={`/viajes/${id}/participantes`}>
-      Participantes
-    </Link>
-  )}
+        <Link className={currentTab === 'resumen' ? 'active' : ''} to={`${rutaBase}/${id}`}>Resumen</Link>
+        {!esCatalogoAgencia && user?.rol !== 'AGENCIA' && (
+          <Link className={currentTab === 'participantes' ? 'active' : ''} to={`${rutaBase}/${id}/participantes`}>Participantes</Link>
+        )}
+        <Link className={currentTab === 'itinerario' ? 'active' : ''} to={`${rutaBase}/${id}/itinerario`}>Itinerario</Link>
+        {!esCatalogoAgencia && user?.rol !== 'AGENCIA' && (
+          <Link className={currentTab === 'gastos' ? 'active' : ''} to={`${rutaBase}/${id}/gastos`}>Gastos</Link>
+        )}
+      </nav>
 
-  <Link className={currentTab === 'itinerario' ? 'active' : ''} to={`${window.location.pathname.includes('/viajes-agencia') ? '/viajes-agencia' : '/viajes'}/${id}/itinerario`}>
-    Itinerario
-  </Link>
-
-  {!window.location.pathname.includes('/viajes-agencia') && user?.rol !== 'AGENCIA' && (
-    <Link className={currentTab === 'gastos' ? 'active' : ''} to={`/viajes/${id}/gastos`}>
-      Gastos
-    </Link>
-  )}
-</nav>
-
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={showCancelModal}
         title="¿Cancelar este viaje?"
         message="Los participantes recibirán una notificación y el viaje cambiará al estado cancelado."
@@ -179,7 +168,7 @@ export default function TripHeader({ id, currentTab }) {
         onCancel={() => setShowCancelModal(false)}
       />
 
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={showResumeModal}
         title="¿Reanudar este viaje?"
         message="El viaje volverá a estar activo y el estado se actualizará según las fechas programadas."
@@ -189,7 +178,7 @@ export default function TripHeader({ id, currentTab }) {
         onCancel={() => setShowResumeModal(false)}
       />
 
-      <SuccessModal 
+      <SuccessModal
         isOpen={successModalConfig.isOpen}
         title={successModalConfig.title}
         message={successModalConfig.message}
